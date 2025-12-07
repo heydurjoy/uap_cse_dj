@@ -18,9 +18,9 @@
             <div class="top-bar-right">
                 <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
                 <span class="top-bar-separator">|</span>
-                <a href="#" class="top-bar-link">Login</a>
+                <a href="{% url 'login' %}" class="top-bar-link">Login</a>
                 <span class="top-bar-separator">|</span>
-                <a href="#" class="top-bar-link">Sign Up</a>
+                <a href="{% url 'signup' %}" class="top-bar-link">Sign Up</a>
                 <div class="top-bar-search">
                     <input type="text" placeholder="Search" class="search-input">
                     <button class="search-btn" aria-label="Search">
@@ -44,8 +44,8 @@
                 <li class="mobile-top-bar">
                     <div class="mobile-top-bar-content">
                         <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
-                        <a href="#" class="top-bar-link">Login</a>
-                        <a href="#" class="top-bar-link">Sign Up</a>
+                        <a href="{% url 'login' %}" class="top-bar-link">Login</a>
+                        <a href="{% url 'signup' %}" class="top-bar-link">Sign Up</a>
                         <div class="top-bar-search mobile-search">
                             <input type="text" placeholder="Search" class="search-input">
                             <button class="search-btn" aria-label="Search">

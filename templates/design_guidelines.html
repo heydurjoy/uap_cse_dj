@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Design Guidelines - Design System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero-section">
+        <h1>Design Guidelines</h1>
+        <p>Comprehensive guide on when and where to use different design elements, components, and patterns in our design system.</p>
+    </section>
+
+    <!-- Color Usage -->
+    <section class="guideline-section">
+        <h2>Color Usage</h2>
+        <div class="guideline-card">
+            <h3>Primary Colors</h3>
+            <p><strong>When to use:</strong> Primary colors should be used for main actions, links, and key interactive elements.</p>
+            <ul>
+                <li>Call-to-action buttons</li>
+                <li>Active navigation links</li>
+                <li>Important highlights and accents</li>
+                <li>Interactive elements that require user attention</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Background Colors</h3>
+            <p><strong>When to use:</strong> Background colors create visual hierarchy and define content areas.</p>
+            <ul>
+                <li><strong>Primary Background:</strong> Main page background, default container backgrounds</li>
+                <li><strong>Secondary Background:</strong> Cards, elevated sections, alternate content blocks</li>
+                <li><strong>Tertiary Background:</strong> Nested elements, subtle highlights, code blocks</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Text Colors</h3>
+            <p><strong>When to use:</strong> Text colors ensure readability and establish information hierarchy.</p>
+            <ul>
+                <li><strong>Primary Text:</strong> Headings, main content, important information</li>
+                <li><strong>Secondary Text:</strong> Descriptions, captions, supporting information</li>
+                <li><strong>Tertiary Text:</strong> Placeholders, hints, less important details</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Typography -->
+    <section class="guideline-section">
+        <h2>Typography</h2>
+        <div class="guideline-card">
+            <h3>Headings</h3>
+            <p><strong>When to use:</strong> Headings create content hierarchy and improve scannability.</p>
+            <ul>
+                <li><strong>H1:</strong> Page titles, hero sections (one per page)</li>
+                <li><strong>H2:</strong> Major section headings</li>
+                <li><strong>H3:</strong> Subsection headings</li>
+                <li><strong>H4-H6:</strong> Nested content headings, card titles</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Body Text</h3>
+            <p><strong>When to use:</strong> Body text is for main content and descriptions.</p>
+            <ul>
+                <li>Paragraphs and main content blocks</li>
+                <li>Article text and descriptions</li>
+                <li>Form labels and helper text</li>
+                <li>Navigation items and menu text</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Components -->
+    <section class="guideline-section">
+        <h2>Components</h2>
+        <div class="guideline-card">
+            <h3>Navigation</h3>
+            <p><strong>When to use:</strong> Navigation provides site structure and access to main sections.</p>
+            <ul>
+                <li>Top-level navigation for main site sections</li>
+                <li>Dropdown menus for related sub-sections</li>
+                <li>Breadcrumbs for deep page hierarchies</li>
+                <li>Mobile hamburger menu for responsive navigation</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Buttons</h3>
+            <p><strong>When to use:</strong> Buttons trigger actions and guide user interactions.</p>
+            <ul>
+                <li><strong>Primary Buttons:</strong> Main actions (Submit, Apply, Sign Up)</li>
+                <li><strong>Secondary Buttons:</strong> Alternative actions, less important actions</li>
+                <li><strong>Text Links:</strong> Navigation, less prominent actions</li>
+                <li><strong>Icon Buttons:</strong> Theme toggle, notifications, compact actions</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Cards</h3>
+            <p><strong>When to use:</strong> Cards group related content and create visual separation.</p>
+            <ul>
+                <li>Content collections and grids</li>
+                <li>Feature highlights and showcases</li>
+                <li>Information panels and sidebars</li>
+                <li>Dashboard widgets and metrics</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Dropdowns</h3>
+            <p><strong>When to use:</strong> Dropdowns organize related options and save space.</p>
+            <ul>
+                <li>Navigation menus with sub-items</li>
+                <li>Form select inputs</li>
+                <li>Action menus and options</li>
+                <li>Filter and sort controls</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Effects & Animations -->
+    <section class="guideline-section">
+        <h2>Effects & Animations</h2>
+        <div class="guideline-card">
+            <h3>Liquid Glass Effect</h3>
+            <p><strong>When to use:</strong> Glassmorphism creates depth and modern aesthetics.</p>
+            <ul>
+                <li>Navigation bars and headers</li>
+                <li>Modal dialogs and overlays</li>
+                <li>Dropdown menus</li>
+                <li>Floating action panels</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Gradient Text</h3>
+            <p><strong>When to use:</strong> Animated gradient text draws attention to important elements.</p>
+            <ul>
+                <li>Hero section titles</li>
+                <li>Special call-to-action buttons</li>
+                <li>Highlighted announcements</li>
+                <li>Brand elements and logos</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Hover Effects</h3>
+            <p><strong>When to use:</strong> Hover effects provide feedback and indicate interactivity.</p>
+            <ul>
+                <li>Interactive buttons and links</li>
+                <li>Navigation items</li>
+                <li>Cards and clickable elements</li>
+                <li>Icon buttons and controls</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Spacing & Layout -->
+    <section class="guideline-section">
+        <h2>Spacing & Layout</h2>
+        <div class="guideline-card">
+            <h3>Container Width</h3>
+            <p><strong>When to use:</strong> Consistent container widths maintain readability and visual balance.</p>
+            <ul>
+                <li><strong>Max-width 1200px:</strong> Main content containers, page sections</li>
+                <li><strong>Full-width:</strong> Hero sections, banners, navigation</li>
+                <li><strong>Narrow containers:</strong> Sidebars, forms, focused content</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Padding & Margins</h3>
+            <p><strong>When to use:</strong> Consistent spacing creates rhythm and improves readability.</p>
+            <ul>
+                <li>Section spacing: 3rem vertical padding</li>
+                <li>Card padding: 1.5rem internal spacing</li>
+                <li>Element gaps: 0.5rem to 2rem based on relationship</li>
+                <li>Mobile: Reduced spacing (1rem to 2rem)</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Responsive Design -->
+    <section class="guideline-section">
+        <h2>Responsive Design</h2>
+        <div class="guideline-card">
+            <h3>Breakpoints</h3>
+            <p><strong>When to use:</strong> Breakpoints ensure optimal experience across all devices.</p>
+            <ul>
+                <li><strong>Mobile:</strong> Below 768px - Stacked layouts, hamburger menu</li>
+                <li><strong>Desktop:</strong> 768px and above - Side-by-side layouts, full navigation</li>
+                <li>Always test on multiple screen sizes</li>
+                <li>Use flexible units (rem, %, vw/vh) for scalability</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Mobile-First Approach</h3>
+            <p><strong>When to use:</strong> Design for mobile first, then enhance for larger screens.</p>
+            <ul>
+                <li>Start with mobile layout and constraints</li>
+                <li>Progressive enhancement for desktop</li>
+                <li>Touch-friendly targets (minimum 44x44px)</li>
+                <li>Optimize images and assets for mobile</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Best Practices -->
+    <section class="guideline-section">
+        <h2>Best Practices</h2>
+        <div class="guideline-card">
+            <h3>Accessibility</h3>
+            <ul>
+                <li>Maintain sufficient color contrast ratios (WCAG AA minimum)</li>
+                <li>Provide alt text for images</li>
+                <li>Use semantic HTML elements</li>
+                <li>Ensure keyboard navigation works</li>
+                <li>Include ARIA labels where needed</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Performance</h3>
+            <ul>
+                <li>Optimize images and assets</li>
+                <li>Minimize CSS and JavaScript</li>
+                <li>Use CSS variables for theming</li>
+                <li>Lazy load non-critical content</li>
+                <li>Test loading times on various connections</li>
+            </ul>
+        </div>
+
+        <div class="guideline-card">
+            <h3>Consistency</h3>
+            <ul>
+                <li>Use design system components consistently</li>
+                <li>Follow established patterns and conventions</li>
+                <li>Maintain visual hierarchy</li>
+                <li>Keep spacing and sizing consistent</li>
+                <li>Document custom variations</li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<style>
+.guideline-section {
+    margin: 3rem 0;
+}
+
+.guideline-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.guideline-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.guideline-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-md);
+}
+
+.guideline-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.guideline-card p {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.guideline-card ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.guideline-card li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.guideline-card li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.guideline-card strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+

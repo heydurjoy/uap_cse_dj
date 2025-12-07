@@ -14,20 +14,28 @@
                 <div class="hero-tagline">Committed to excellence...</div>
                 <div class="hero-stats">
                     <!-- <span class="stats-prefix">We have</span> -->
-                    <span class="stats-dynamic" id="dynamicStats">1300+ Students</span>
+                    <span class="stats-dynamic" id="dynamicStats">
+                        {% if hero_tags.first %}
+                            {{ hero_tags.first.title }}
+                        {% else %}
+                            Loading...
+                        {% endif %}
+                    </span>
                 </div>
             </div>
             <div class="hero-visuals">
                 <div class="polaroid-container">
                     {% for card in feature_cards %}
-                    <div class="polaroid-frame polaroid-{{ forloop.counter }}">
-                        <div class="polaroid-image">
-                            {% if card.picture %}
-                                <img src="/media/{{ card.picture.name }}" alt="{{ card.title }}">
-                            {% endif %}
+                    <a href="{% url 'designs:feature_card_detail' card.pk %}" class="polaroid-link polaroid-{{ forloop.counter }}">
+                        <div class="polaroid-frame polaroid-{{ forloop.counter }}">
+                            <div class="polaroid-image">
+                                {% if card.picture %}
+                                    <img src="/media/{{ card.picture.name }}" alt="{{ card.title }}">
+                                {% endif %}
+                            </div>
+                            <div class="polaroid-caption">{{ card.caption }}</div>
                         </div>
-                        <div class="polaroid-caption">{{ card.caption }}</div>
-                    </div>
+                    </a>
                     {% empty %}
                     <!-- Fallback if no feature cards -->
                     <div class="polaroid-frame polaroid-1">
@@ -171,6 +179,14 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+// Pass hero tags from Django to JavaScript
+const heroTagsData = [
+    {% for tag in hero_tags %}
+    '{{ tag.title }}'{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+</script>
 <script src="{% static 'js/hero-animations.js' %}"></script>
 <script>
 // Polaroid Card Rotation Animation
@@ -218,6 +234,11 @@
                     const zIndex = (index - currentFront + totalCards) % totalCards;
                     const newZIndex = totalCards - zIndex;
                     card.style.zIndex = newZIndex.toString();
+                    // Also update z-index on parent link if it exists
+                    const link = card.closest('.polaroid-link');
+                    if (link) {
+                        link.style.zIndex = newZIndex.toString();
+                    }
                 });
                 
                 // Remove transition classes after z-index change to allow normal animation
@@ -261,6 +282,10 @@
                 });
                 // Bring hovered card to front
                 this.style.zIndex = '10';
+                const link = this.closest('.polaroid-link');
+                if (link) {
+                    link.style.zIndex = '10';
+                }
             });
             
             card.addEventListener('mouseleave', function() {

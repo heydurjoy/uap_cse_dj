@@ -25,6 +25,8 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('themes/', views.themes, name='themes'),
     path('design-guidelines/', views.design_guidelines, name='design_guidelines'),
+    path('login/', views.login, name='login'),
+    path('signup/', views.signup, name='signup'),
     path('designs/', include('designs.urls')),
 ]
 

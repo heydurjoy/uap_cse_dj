@@ -403,13 +403,13 @@ body {
     .navbar {
         top: 0;
         border-top: none;
-        padding: 1rem 0 1.5rem 0;
+        padding: 0.5rem 0 0.75rem 0;
     }
     
     .nav-container {
         flex-direction: row;
         min-height: auto;
-        padding: 0 1rem 0 1rem;
+        padding: 0 1rem 0.5rem 1rem;
     }
     
     .nav-main-content {
@@ -418,9 +418,24 @@ body {
         padding-top: 0;
     }
     
+    .nav-logo {
+        height: 32px;
+    }
+    
+    .notification-btn,
+    .theme-toggle {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .hamburger {
+        width: 28px;
+        height: 28px;
+    }
+    
     .nav-menu {
-        top: 70px;
-        height: calc(100vh - 70px);
+        top: 55px;
+        height: calc(100vh - 55px);
     }
 }
 
@@ -601,10 +616,10 @@ body {
 /* Nav Menu - Mobile First (Hidden by default, shown in hamburger) */
 .nav-menu {
     position: fixed;
-    top: 70px;
+    top: 55px;
     left: 0;
     width: 100%;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 55px);
     background: var(--nav-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -647,7 +662,7 @@ body {
 @media (max-width: 767px) {
     .mobile-top-bar {
         display: block;
-        padding: 0.75rem 0.5rem;
+        padding: 0.5rem 0.5rem;
         border-bottom: 1px solid var(--border-color);
         margin-bottom: 0.25rem;
     }
@@ -1972,6 +1987,18 @@ p {
     margin-top: 0.9rem;
 }
 
+.polaroid-link {
+    position: absolute;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+}
+
+.polaroid-link:hover {
+    text-decoration: none;
+}
+
 .polaroid-frame {
     position: absolute;
     width: 216px;
@@ -2016,21 +2043,24 @@ p {
     transform: scale(1.15);
 }
 
+.polaroid-link.polaroid-1,
 .polaroid-1 {
     top: 0;
     left: 0;
     z-index: 3;
 }
 
+.polaroid-link.polaroid-2,
 .polaroid-2 {
-    top: 72px;
-    left: 99px;
+    top: 35px;
+    left: 45px;
     z-index: 2;
 }
 
+.polaroid-link.polaroid-3,
 .polaroid-3 {
-    top: 144px;
-    left: 198px;
+    top: 70px;
+    left: 90px;
     z-index: 1;
 }
 
@@ -2430,7 +2460,7 @@ p {
     }
     
     .polaroid-container {
-        height: 320px;
+        height: 240px;
         max-width: 100%;
         padding-top: 1.5rem;
         margin-top: 0.5rem;
@@ -2454,19 +2484,22 @@ p {
         height: 40px;
     }
     
+    .polaroid-link.polaroid-1,
     .polaroid-1 {
         top: 0;
-        left: 5%;
+        left: 0;
     }
     
+    .polaroid-link.polaroid-2,
     .polaroid-2 {
-        top: 50px;
-        left: 25%;
+        top: 35px;
+        left: 30%;
     }
     
+    .polaroid-link.polaroid-3,
     .polaroid-3 {
-        top: 100px;
-        left: 45%;
+        top: 70px;
+        left: 60%;
     }
     
     .hero-greeting {

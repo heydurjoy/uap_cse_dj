@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block title %}Why Study at CSE UAP?{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="content-section">
+        <h1>Why Study at CSE UAP?</h1>
+        <p>Discover what makes our Computer Science and Engineering program exceptional</p>
+        
+        <div class="feature-cards-grid">
+            {% for card in cards %}
+            <a href="{% url 'designs:feature_card_detail' card.pk %}" class="feature-card-link">
+                <div class="feature-card">
+                    <div class="feature-card-image">
+                        {% if card.picture %}
+                            <img src="/media/{{ card.picture.name }}" alt="{{ card.title }}">
+                        {% else %}
+                            <div class="no-image-placeholder">No Image</div>
+                        {% endif %}
+                        <div class="feature-card-overlay">
+                            <p class="feature-card-caption">{{ card.caption }}</p>
+                        </div>
+                    </div>
+                    <div class="feature-card-body">
+                        <h3 class="feature-card-title">{{ card.title }}</h3>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <p>No feature cards available yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<style>
+.feature-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.feature-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.feature-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+    position: relative;
+    cursor: pointer;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
+                0 0 30px var(--glow-shadow);
+}
+
+.feature-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    position: relative;
+}
+
+.feature-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+}
+
+.no-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    background: var(--bg-tertiary);
+}
+
+.feature-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, 
+        rgba(0, 0, 0, 0.9) 0%,
+        rgba(0, 0, 0, 0.7) 50%,
+        rgba(0, 0, 0, 0) 100%
+    );
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    z-index: 2;
+}
+
+.feature-card-overlay .feature-card-caption {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.feature-card-body {
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+}
+
+.feature-card-body .feature-card-title {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.feature-card:hover .feature-card-image img {
+    transform: scale(1.1);
+}
+
+@media (max-width: 767px) {
+    .feature-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .feature-card-image {
+        aspect-ratio: 1 / 1;
+    }
+}
+</style>
+{% endblock %}
+
