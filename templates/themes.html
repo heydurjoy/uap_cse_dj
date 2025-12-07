@@ -1,0 +1,698 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Themes - Design System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero-section">
+        <h1>Theme Documentation</h1>
+        <p>Complete guide to all available themes in our design system. Each theme features carefully crafted color palettes designed for optimal user experience.</p>
+    </section>
+
+    <!-- Soft Lavender Theme -->
+    <section class="theme-section" data-theme-trigger="light">
+        <div class="theme-header">
+            <div class="theme-preview" style="background: linear-gradient(135deg, #faf8ff 0%, #f5f2ff 50%, #ede8ff 100%);">
+                <div class="theme-preview-content">
+                    <h2 class="theme-title">Soft Lavender</h2>
+                    <p class="theme-subtitle">UAP Style</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="theme-details">
+            <h3>Color Palette</h3>
+            <div class="color-grid">
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #faf8ff;"></div>
+                    <div class="color-info">
+                        <strong>Primary Background</strong>
+                        <code>#faf8ff</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #f5f2ff;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Background</strong>
+                        <code>#f5f2ff</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #9b7ed8;"></div>
+                    <div class="color-info">
+                        <strong>Primary Color</strong>
+                        <code>#9b7ed8</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #8a6bc7;"></div>
+                    <div class="color-info">
+                        <strong>Primary Hover</strong>
+                        <code>#8a6bc7</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #2d1b4e;"></div>
+                    <div class="color-info">
+                        <strong>Primary Text</strong>
+                        <code>#2d1b4e</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #6b5b8a;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Text</strong>
+                        <code>#6b5b8a</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-description">
+                <h3>Description</h3>
+                <p>Soft Lavender is a gentle, soothing theme perfect for creating a calm and peaceful user experience. The light purple tones provide excellent readability while maintaining a modern, elegant aesthetic. This theme is ideal for content-heavy applications and long reading sessions.</p>
+            </div>
+
+            <div class="theme-usage">
+                <h3>Usage</h3>
+                <p>Best suited for:</p>
+                <ul>
+                    <li>Content platforms and blogs</li>
+                    <li>Educational websites</li>
+                    <li>Portfolio sites</li>
+                    <li>Applications requiring extended reading</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- UAP Midnight Lavender Theme -->
+    <section class="theme-section" data-theme-trigger="dark">
+        <div class="theme-header">
+            <div class="theme-preview" style="background: linear-gradient(135deg, #1a1526 0%, #241d35 50%, #2e2544 100%);">
+                <div class="theme-preview-content" style="color: #e8dff5;">
+                    <h2 class="theme-title">UAP Midnight Lavender</h2>
+                    <p class="theme-subtitle">UAP Style</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="theme-details">
+            <h3>Color Palette</h3>
+            <div class="color-grid">
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #1a1526;"></div>
+                    <div class="color-info">
+                        <strong>Primary Background</strong>
+                        <code>#1a1526</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #241d35;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Background</strong>
+                        <code>#241d35</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #7c5fb8;"></div>
+                    <div class="color-info">
+                        <strong>Primary Color</strong>
+                        <code>#7c5fb8</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #8a6bc7;"></div>
+                    <div class="color-info">
+                        <strong>Primary Hover</strong>
+                        <code>#8a6bc7</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #e8dff5;"></div>
+                    <div class="color-info">
+                        <strong>Primary Text</strong>
+                        <code>#e8dff5</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #c4b3d9;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Text</strong>
+                        <code>#c4b3d9</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-description">
+                <h3>Description</h3>
+                <p>UAP Midnight Lavender is a sophisticated dark theme that reduces eye strain in low-light environments. The deep purple backgrounds combined with soft lavender accents create a premium, modern look. Perfect for night-time browsing and professional applications.</p>
+            </div>
+
+            <div class="theme-usage">
+                <h3>Usage</h3>
+                <p>Best suited for:</p>
+                <ul>
+                    <li>Professional dashboards</li>
+                    <li>Developer tools and IDEs</li>
+                    <li>Media consumption apps</li>
+                    <li>Applications used in low-light environments</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beautiful Cyan Theme -->
+    <section class="theme-section" data-theme-trigger="cyan">
+        <div class="theme-header">
+            <div class="theme-preview" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);">
+                <div class="theme-preview-content" style="color: #0c4a6e;">
+                    <h2 class="theme-title">Beautiful Cyan</h2>
+                    <p class="theme-subtitle">Durjoy's Special</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="theme-details">
+            <h3>Color Palette</h3>
+            <div class="color-grid">
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #f0f9ff;"></div>
+                    <div class="color-info">
+                        <strong>Primary Background</strong>
+                        <code>#f0f9ff</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #e0f2fe;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Background</strong>
+                        <code>#e0f2fe</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #06b6d4;"></div>
+                    <div class="color-info">
+                        <strong>Primary Color</strong>
+                        <code>#06b6d4</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #0891b2;"></div>
+                    <div class="color-info">
+                        <strong>Primary Hover</strong>
+                        <code>#0891b2</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #0c4a6e;"></div>
+                    <div class="color-info">
+                        <strong>Primary Text</strong>
+                        <code>#0c4a6e</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #075985;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Text</strong>
+                        <code>#075985</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-description">
+                <h3>Description</h3>
+                <p>Beautiful Cyan is a refreshing, vibrant theme that brings energy and clarity to any interface. The cool cyan tones create a sense of freshness and modernity, making it perfect for creative applications and modern web experiences. This special theme combines the best of both worlds - professional and playful.</p>
+            </div>
+
+            <div class="theme-usage">
+                <h3>Usage</h3>
+                <p>Best suited for:</p>
+                <ul>
+                    <li>Creative portfolios</li>
+                    <li>Modern web applications</li>
+                    <li>Tech startups and SaaS products</li>
+                    <li>Applications requiring a fresh, energetic feel</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Light Blue Theme -->
+    <section class="theme-section" data-theme-trigger="lightblue">
+        <div class="theme-header">
+            <div class="theme-preview" style="background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 50%, #e6f2ff 100%);">
+                <div class="theme-preview-content" style="color: #2c5282;">
+                    <h2 class="theme-title">Light Blue</h2>
+                    <p class="theme-subtitle">Soothing & Professional</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="theme-details">
+            <h3>Color Palette</h3>
+            <div class="color-grid">
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #f8fbff;"></div>
+                    <div class="color-info">
+                        <strong>Primary Background</strong>
+                        <code>#f8fbff</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #f0f7ff;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Background</strong>
+                        <code>#f0f7ff</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #7ab8e8;"></div>
+                    <div class="color-info">
+                        <strong>Primary Color</strong>
+                        <code>#7ab8e8</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #6ba8d8;"></div>
+                    <div class="color-info">
+                        <strong>Primary Hover</strong>
+                        <code>#6ba8d8</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #2c5282;"></div>
+                    <div class="color-info">
+                        <strong>Primary Text</strong>
+                        <code>#2c5282</code>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch-large" style="background-color: #4a6fa5;"></div>
+                    <div class="color-info">
+                        <strong>Secondary Text</strong>
+                        <code>#4a6fa5</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-description">
+                <h3>Description</h3>
+                <p>Light Blue is a calming and professional theme featuring soft pastel blue tones. The gentle, muted colors create a sense of tranquility and trustworthiness, making it perfect for business applications and professional websites. This pastel theme offers excellent readability with a soft, approachable aesthetic.</p>
+            </div>
+
+            <div class="theme-usage">
+                <h3>Usage</h3>
+                <p>Best suited for:</p>
+                <ul>
+                    <li>Business and corporate websites</li>
+                    <li>Professional portfolios</li>
+                    <li>Enterprise applications</li>
+                    <li>Trust-focused platforms</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Theme Comparison -->
+    <section class="comparison-section">
+        <h2>Theme Comparison</h2>
+        <div class="comparison-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Soft Lavender</th>
+                        <th>UAP Midnight Lavender</th>
+                        <th>Beautiful Cyan</th>
+                        <th>Light Blue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Style</strong></td>
+                        <td>Light & Soft</td>
+                        <td>Dark & Sophisticated</td>
+                        <td>Bright & Fresh</td>
+                        <td>Calm & Professional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Best For</strong></td>
+                        <td>Reading & Content</td>
+                        <td>Low-light & Professional</td>
+                        <td>Creative & Modern</td>
+                        <td>Business & Corporate</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Eye Strain</strong></td>
+                        <td>Low (daytime)</td>
+                        <td>Low (nighttime)</td>
+                        <td>Low (balanced)</td>
+                        <td>Low (daytime)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mood</strong></td>
+                        <td>Calm & Peaceful</td>
+                        <td>Premium & Modern</td>
+                        <td>Energetic & Fresh</td>
+                        <td>Trustworthy & Clear</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- CSS Variables Reference -->
+    <section class="variables-section">
+        <h2>CSS Variables Reference</h2>
+        <div class="code-block">
+            <h3>Soft Lavender Variables</h3>
+            <pre><code>--bg-primary: #faf8ff;
+--bg-secondary: #f5f2ff;
+--color-primary: #9b7ed8;
+--color-primary-hover: #8a6bc7;
+--text-primary: #2d1b4e;
+--text-secondary: #6b5b8a;</code></pre>
+        </div>
+        <div class="code-block">
+            <h3>UAP Midnight Lavender Variables</h3>
+            <pre><code>--bg-primary: #1a1526;
+--bg-secondary: #241d35;
+--color-primary: #7c5fb8;
+--color-primary-hover: #8a6bc7;
+--text-primary: #e8dff5;
+--text-secondary: #c4b3d9;</code></pre>
+        </div>
+        <div class="code-block">
+            <h3>Beautiful Cyan Variables</h3>
+            <pre><code>--bg-primary: #f0f9ff;
+--bg-secondary: #e0f2fe;
+--color-primary: #06b6d4;
+--color-primary-hover: #0891b2;
+--text-primary: #0c4a6e;
+--text-secondary: #075985;</code></pre>
+        </div>
+        <div class="code-block">
+            <h3>Light Blue Variables</h3>
+            <pre><code>--bg-primary: #f8fbff;
+--bg-secondary: #f0f7ff;
+--color-primary: #7ab8e8;
+--color-primary-hover: #6ba8d8;
+--text-primary: #2c5282;
+--text-secondary: #4a6fa5;</code></pre>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Ensure page background matches theme */
+body {
+    background-color: var(--bg-primary);
+}
+
+.theme-section {
+    margin: 4rem 0;
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px var(--shadow);
+}
+
+.theme-header {
+    width: 100%;
+}
+
+.theme-preview {
+    padding: 4rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+[data-theme="dark"] .theme-preview::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+[data-theme="cyan"] .theme-preview::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+[data-theme="lightblue"] .theme-preview::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+.theme-preview-content {
+    position: relative;
+    z-index: 1;
+}
+
+.theme-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: inherit;
+}
+
+.theme-subtitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    opacity: 0.8;
+    color: inherit;
+}
+
+.theme-details {
+    padding: 3rem 2rem;
+    background: var(--bg-primary);
+}
+
+.theme-details h3 {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.color-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.color-swatch-large {
+    width: 100%;
+    height: 120px;
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.color-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.color-info strong {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.color-info code {
+    background: var(--bg-tertiary);
+    padding: 0.5rem;
+    border-radius: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.theme-description {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+}
+
+.theme-description p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+.theme-usage {
+    margin-top: 2rem;
+}
+
+.theme-usage p {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.theme-usage ul {
+    list-style: none;
+    padding: 0;
+}
+
+.theme-usage li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.theme-usage li:hover {
+    transform: translateX(5px);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.comparison-section {
+    margin: 4rem 0;
+    padding: 3rem 0;
+    background-color: transparent;
+}
+
+.comparison-section h2 {
+    margin-bottom: 2rem;
+}
+
+.comparison-table {
+    overflow-x: auto;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-primary);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+thead {
+    background: var(--color-primary);
+    color: white;
+}
+
+th {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.variables-section {
+    margin: 4rem 0;
+    background-color: transparent;
+}
+
+.variables-section h2 {
+    margin-bottom: 2rem;
+}
+
+.code-block {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.code-block h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.code-block pre {
+    background: var(--bg-tertiary);
+    padding: 1.5rem;
+    border-radius: 16px;
+    overflow-x: auto;
+    margin: 0;
+}
+
+.code-block code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+    .theme-title {
+        font-size: 2rem;
+    }
+    
+    .theme-details {
+        padding: 2rem 1rem;
+    }
+    
+    .color-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-preview {
+        padding: 3rem 1rem;
+    }
+    
+    table {
+        font-size: 0.9rem;
+    }
+    
+    th, td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/theme-scroll.js' %}"></script>
+{% endblock %}
+

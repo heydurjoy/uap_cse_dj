@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Design System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero-section">
+        <h1>Design System</h1>
+        <p>Welcome to our design system. Here you can test and preview all the colors, typography, and components.</p>
+    </section>
+
+    <!-- Color Test Section -->
+    <section class="color-test-section">
+        <h2>Color Palette</h2>
+        <p>Soothing color system with lavender and cyan themes. Click the theme toggle to cycle through light lavender, dark lavender, and cyan themes.</p>
+        
+        <div class="color-cards-grid">
+            <!-- Bright Lavender (Light Theme) -->
+            <div class="color-card">
+                <div class="color-card-header">
+                    <h3 class="color-card-title">Bright Lavender</h3>
+                    <div class="color-swatch color-primary"></div>
+                </div>
+                <div class="color-card-body">
+                    <p><strong>Main:</strong> <span class="color-code">var(--color-primary)</span></p>
+                    <p><strong>Hover:</strong> <span class="color-code">var(--color-primary-hover)</span></p>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">Used in light theme</p>
+                </div>
+                <div class="color-variant">
+                    <div class="color-variant-swatch color-primary-light"></div>
+                    <div class="color-variant-info">
+                        <div class="color-variant-name">Light Variant</div>
+                        <div class="color-variant-code">--color-primary-light</div>
+                    </div>
+                </div>
+                <div class="color-variant">
+                    <div class="color-variant-swatch color-primary-dark"></div>
+                    <div class="color-variant-info">
+                        <div class="color-variant-name">Dark Variant</div>
+                        <div class="color-variant-code">--color-primary-dark</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dark Lavender (Dark Theme) -->
+            <div class="color-card">
+                <div class="color-card-header">
+                    <h3 class="color-card-title">Dark Lavender</h3>
+                    <div class="color-swatch color-primary"></div>
+                </div>
+                <div class="color-card-body">
+                    <p><strong>Main:</strong> <span class="color-code">var(--color-primary)</span></p>
+                    <p><strong>Hover:</strong> <span class="color-code">var(--color-primary-hover)</span></p>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">Used in dark theme</p>
+                </div>
+                <div class="color-variant">
+                    <div class="color-variant-swatch color-primary-light"></div>
+                    <div class="color-variant-info">
+                        <div class="color-variant-name">Light Variant</div>
+                        <div class="color-variant-code">--color-primary-light</div>
+                    </div>
+                </div>
+                <div class="color-variant">
+                    <div class="color-variant-swatch color-primary-dark"></div>
+                    <div class="color-variant-info">
+                        <div class="color-variant-name">Dark Variant</div>
+                        <div class="color-variant-code">--color-primary-dark</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cyan Theme -->
+            <div class="color-card">
+                <div class="color-card-header">
+                    <h3 class="color-card-title">Cyan</h3>
+                    <div class="color-swatch color-primary"></div>
+                </div>
+                <div class="color-card-body">
+                    <p><strong>Main:</strong> <span class="color-code">var(--color-primary)</span></p>
+                    <p><strong>Hover:</strong> <span class="color-code">var(--color-primary-hover)</span></p>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">Used in cyan theme</p>
+                </div>
+                <div class="color-variant">
+                    <div class="color-variant-swatch color-primary-light"></div>
+                    <div class="color-variant-info">
+                        <div class="color-variant-name">Light Variant</div>
+                        <div class="color-variant-code">--color-primary-light</div>
+                    </div>
+                </div>
+                <div class="color-variant">
+                    <div class="color-variant-swatch color-primary-dark"></div>
+                    <div class="color-variant-info">
+                        <div class="color-variant-name">Dark Variant</div>
+                        <div class="color-variant-code">--color-primary-dark</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Animated Text Section -->
+    <section class="animated-text-section">
+        <div class="container">
+            <div class="animated-text-label">Animated Color Text</div>
+            <div class="animated-text">Beautiful Design</div>
+            <p style="color: var(--text-secondary); margin-top: 1rem;">Watch the text color subtly shift through theme shades</p>
+        </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section class="content-section">
+        <h2>Typography</h2>
+        <h1>Heading 1 - Main Title</h1>
+        <h2>Heading 2 - Section Title</h2>
+        <h3>Heading 3 - Subsection Title</h3>
+        <h4>Heading 4 - Minor Heading</h4>
+        <h5>Heading 5 - Small Heading</h5>
+        <h6>Heading 6 - Smallest Heading</h6>
+        
+        <p>This is a paragraph with some sample text. It demonstrates the typography and styling for body text in our design system.</p>
+        
+        <p>Another paragraph to show spacing and readability. The design is clean, modern, and focuses on excellent user experience.</p>
+    </section>
+</div>
+{% endblock %}
