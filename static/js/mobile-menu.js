@@ -11,12 +11,15 @@
         document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
     });
 
-    // Close menu when clicking on a nav link
+    // Close menu when clicking on a nav link (but not dropdown toggles)
     navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
-            document.body.style.overflow = '';
+        link.addEventListener('click', function(e) {
+            // Don't close menu if clicking on a dropdown toggle
+            if (!link.classList.contains('dropdown-toggle')) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         });
     });
 

@@ -1,13 +1,59 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Home - Design System{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
+<section class="home-hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="hero-welcome">Welcome to</div>
+                <h1 class="hero-title">UAP-CSE</h1>
+                <div class="hero-tagline">Committed to excellence...</div>
+                <div class="hero-stats">
+                    <!-- <span class="stats-prefix">We have</span> -->
+                    <span class="stats-dynamic" id="dynamicStats">1300+ Students</span>
+                </div>
+            </div>
+            <div class="hero-visuals">
+                <div class="polaroid-container">
+                    {% for card in feature_cards %}
+                    <div class="polaroid-frame polaroid-{{ forloop.counter }}">
+                        <div class="polaroid-image">
+                            {% if card.picture %}
+                                <img src="/media/{{ card.picture.name }}" alt="{{ card.title }}">
+                            {% endif %}
+                        </div>
+                        <div class="polaroid-caption">{{ card.caption }}</div>
+                    </div>
+                    {% empty %}
+                    <!-- Fallback if no feature cards -->
+                    <div class="polaroid-frame polaroid-1">
+                        <div class="polaroid-image"></div>
+                        <div class="polaroid-caption">Student Life</div>
+                    </div>
+                    <div class="polaroid-frame polaroid-2">
+                        <div class="polaroid-image"></div>
+                        <div class="polaroid-caption">Innovation</div>
+                    </div>
+                    <div class="polaroid-frame polaroid-3">
+                        <div class="polaroid-image"></div>
+                        <div class="polaroid-caption">Community</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="hero-greeting">
+                    <!-- <br> -->
+                    <!-- <span class="brief-text" id="briefText">Whats up?</span> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="container">
-    <section class="hero-section">
-        <h1>Design System</h1>
-        <p>Welcome to our design system. Here you can test and preview all the colors, typography, and components.</p>
-    </section>
 
     <!-- Color Test Section -->
     <section class="color-test-section">
@@ -122,4 +168,115 @@
         <p>Another paragraph to show spacing and readability. The design is clean, modern, and focuses on excellent user experience.</p>
     </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/hero-animations.js' %}"></script>
+<script>
+// Polaroid Card Rotation Animation
+(function() {
+    const polaroidCards = document.querySelectorAll('.polaroid-frame');
+    
+    if (polaroidCards.length >= 3) {
+        // Add rotating class to all cards
+        polaroidCards.forEach(card => {
+            card.classList.add('rotating');
+        });
+        
+        // Cycle through z-index to create stacking rotation effect
+        let currentFront = 0;
+        const totalCards = polaroidCards.length;
+        let rotationInterval = null;
+        let isPaused = false;
+        
+        function rotateStack() {
+            if (isPaused) return;
+            
+            // Remove previous state classes
+            polaroidCards.forEach(card => {
+                card.classList.remove('moving-back', 'moving-forward');
+            });
+            
+            // First, apply visual transitions (opacity, blur, scale)
+            polaroidCards.forEach((card, index) => {
+                const zIndex = (index - currentFront + totalCards) % totalCards;
+                const newZIndex = totalCards - zIndex;
+                
+                // Add transition classes for smooth visual effect
+                if (newZIndex === 1) {
+                    // Card going to back - fade and blur
+                    card.classList.add('moving-back');
+                } else if (newZIndex === totalCards) {
+                    // Card coming to front - brighten and focus
+                    card.classList.add('moving-forward');
+                }
+            });
+            
+            // Then update z-index after a longer delay to allow smooth visual transition
+            setTimeout(() => {
+                polaroidCards.forEach((card, index) => {
+                    const zIndex = (index - currentFront + totalCards) % totalCards;
+                    const newZIndex = totalCards - zIndex;
+                    card.style.zIndex = newZIndex.toString();
+                });
+                
+                // Remove transition classes after z-index change to allow normal animation
+                setTimeout(() => {
+                    polaroidCards.forEach(card => {
+                        card.classList.remove('moving-back', 'moving-forward');
+                    });
+                }, 500);
+            }, 800);
+            
+            // Move to next card
+            currentFront = (currentFront + 1) % totalCards;
+        }
+        
+        function startRotation() {
+            if (rotationInterval) clearInterval(rotationInterval);
+            isPaused = false;
+            rotateStack();
+            rotationInterval = setInterval(rotateStack, 7000);
+        }
+        
+        function stopRotation() {
+            if (rotationInterval) {
+                clearInterval(rotationInterval);
+                rotationInterval = null;
+            }
+            isPaused = true;
+        }
+        
+        // Start rotation
+        startRotation();
+        
+        // Handle hover - bring card to front
+        polaroidCards.forEach((card, index) => {
+            card.addEventListener('mouseenter', function() {
+                // Pause rotation
+                stopRotation();
+                // Pause all animations
+                polaroidCards.forEach(c => {
+                    c.style.animationPlayState = 'paused';
+                });
+                // Bring hovered card to front
+                this.style.zIndex = '10';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                // Remove transition classes
+                polaroidCards.forEach(c => {
+                    c.classList.remove('moving-back', 'moving-forward');
+                });
+                // Resume animations
+                polaroidCards.forEach(c => {
+                    c.style.animationPlayState = 'running';
+                });
+                // Resume rotation
+                startRotation();
+            });
+        });
+    }
+})();
+</script>
 {% endblock %}

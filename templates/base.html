@@ -16,6 +16,8 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="top-bar-right">
+                <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
+                <span class="top-bar-separator">|</span>
                 <a href="#" class="top-bar-link">Login</a>
                 <span class="top-bar-separator">|</span>
                 <a href="#" class="top-bar-link">Sign Up</a>
@@ -35,12 +37,14 @@
                 <span></span>
                 <span></span>
             </button>
-            <img src="{% static 'images/logo.png' %}" alt="UAP CSE" class="nav-logo">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="UAP CSE" class="nav-logo">
+            </a>
             <ul class="nav-menu" id="navMenu">
                 <li class="mobile-top-bar">
                     <div class="mobile-top-bar-content">
+                        <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
                         <a href="#" class="top-bar-link">Login</a>
-                        <span class="top-bar-separator">|</span>
                         <a href="#" class="top-bar-link">Sign Up</a>
                         <div class="top-bar-search mobile-search">
                             <input type="text" placeholder="Search" class="search-input">
@@ -54,9 +58,49 @@
                     </div>
                 </li>
                 <li class="nav-divider"></li>
-                <li><a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
-                <li><a href="{% url 'themes' %}" class="nav-link {% if request.resolver_match.url_name == 'themes' %}active{% endif %}">Themes</a></li>
-                <li><a href="#" class="nav-link">Contact</a></li>
+                <!-- <li><a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li> -->
+                <li><a href="{% url 'designs:feature_cards_list' %}" class="nav-link">About</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">Admission <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-link">Admission Info</a></li>
+                        <li><a href="#" class="dropdown-link">Tuition Fees</a></li>
+                        <li><a href="#" class="dropdown-link">Waiver</a></li>
+                        <li><a href="#" class="dropdown-link">Programs</a></li>
+                        <li><a href="#" class="dropdown-link">BSc in CSE</a></li>
+                        <li><a href="#" class="dropdown-link">MCSE</a></li>
+                        <li><a href="#" class="dropdown-link">Apply Online</a></li>
+                        <li><a href="#" class="dropdown-link">Admission Result</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">People <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-link">Faculty</a></li>
+                        <li><a href="#" class="dropdown-link">Staff</a></li>
+                        <li><a href="#" class="dropdown-link">Admins</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">Clubs <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-link">CLBUS</a></li>
+                        <li><a href="#" class="dropdown-link">Activities</a></li>
+                    </ul>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">More <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'designs:feature_cards_list' %}" class="dropdown-link">Why Study at CSE UAP?</a></li>
+                        <li><a href="{% url 'themes' %}" class="dropdown-link">Themes</a></li>
+                        <li><a href="{% url 'design_guidelines' %}" class="dropdown-link">Design Guidelines</a></li>
+                        <li><a href="#" class="dropdown-link">Notices</a></li>
+                        <li><a href="#" class="dropdown-link">Research</a></li>
+                        <li><a href="#" class="dropdown-link">Events</a></li>
+                        <li><a href="#" class="dropdown-link">Contact</a></li>
+                        <li><a href="#" class="dropdown-link">Resources</a></li>
+                    </ul>
+                </li>
             </ul>
             <div class="nav-actions">
                 <button class="notification-btn" id="notificationBtn" aria-label="Notifications">
@@ -108,6 +152,7 @@
 
     <script src="{% static 'js/theme.js' %}"></script>
     <script src="{% static 'js/mobile-menu.js' %}"></script>
+    <script src="{% static 'js/dropdown.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
