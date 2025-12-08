@@ -13,8 +13,21 @@
         </div>
         
         <div class="faculty-profile-section">
-            <div class="faculty-profile-image">
-                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+            <div class="faculty-image-bio-column">
+                <div class="faculty-profile-image">
+                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                    {% if faculty.shortname %}
+                    <div class="faculty-shortname-overlay">{{ faculty.shortname }}</div>
+                    {% endif %}
+                </div>
+                
+                {% if faculty.bio %}
+                <div class="bio-section-below-image">
+                    <br>
+                    <h3 class="section-title">Biography</h3>
+                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                </div>
+                {% endif %}
             </div>
             
             <div class="faculty-profile-info">
@@ -31,12 +44,6 @@
                     </div>
                     {% endif %}
                     
-                    {% if faculty.joining_date %}
-                    <div class="info-item">
-                        <span class="info-label">Joining Date</span>
-                        <span class="info-value">{{ faculty.joining_date|date:"F Y" }}</span>
-                    </div>
-                    {% endif %}
                     
                     {% if faculty.phone %}
                     <div class="info-item">
@@ -101,10 +108,36 @@
                 </div>
                 {% endif %}
                 
-                {% if faculty.bio %}
-                <div class="bio-section">
-                    <h3 class="section-title">Biography</h3>
-                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                <!-- Years of Service Display -->
+                {% if service_data %}
+                <div class="service-duration-section">
+                    <div class="service-time-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <div class="service-duration-card">
+                        <div class="service-duration-header">
+                            <span class="service-label">Serving UAP</span>
+                            {% if faculty.joining_date %}
+                            <span class="service-joining-date">Since {{ faculty.joining_date|date:"F Y" }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="service-duration-content">
+                            <div class="service-time-main">
+                                <span class="service-days">{{ service_data.total_days }}</span>
+                                <span class="service-unit">days</span>
+                                <span class="service-separator-main">:</span>
+                                <span class="service-time-item">{{ service_data.hours }}<span class="service-time-label">hr</span></span>
+                                <span class="service-time-separator">:</span>
+                                <span class="service-time-item">{{ service_data.minutes }}<span class="service-time-label">min</span></span>
+                                <span class="service-summary-inline">
+                                    <span class="service-summary-text">({{ service_data.years }} yr {{ service_data.months }} month)</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             </div>
@@ -232,6 +265,51 @@
     transform: scale(1.05);
 }
 
+/* Shortname Overlay */
+.faculty-shortname-overlay {
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, 
+        rgba(0, 0, 0, 0.85) 0%,
+        rgba(0, 0, 0, 0.6) 50%,
+        transparent 100%);
+    padding: 2rem 1.5rem 0.75rem;
+    font-size: 3.75rem;
+    font-weight: 900;
+    color: white;
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
+                 0 0 30px rgba(255, 255, 255, 0.3);
+    mix-blend-mode: normal;
+    z-index: 2;
+    line-height: 1;
+    font-family: 'Lexend', sans-serif;
+}
+
+/* Biography below image */
+.bio-section-below-image {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.bio-section-below-image .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+    color: var(--color-primary);
+}
+
+.bio-section-below-image .faculty-bio-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin: 0;
+}
+
 
 .faculty-profile-info {
     display: flex;
@@ -307,6 +385,20 @@
         opacity: 0.5;
         filter: blur(12px);
     }
+}
+
+.service-item {
+    position: relative;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 6%, var(--bg-secondary)),
+        color-mix(in srgb, var(--color-primary) 3%, var(--bg-secondary)));
+    border-color: var(--color-primary);
+}
+
+.service-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-primary);
 }
 
 .citation-value {
@@ -403,6 +495,207 @@
     line-height: 1.6;
     color: var(--text-primary);
     margin: 0;
+}
+
+/* Service Duration Section */
+.service-duration-section {
+    margin-top: 2rem;
+    padding: 0.5rem 2rem;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary) 4%, var(--bg-secondary)) 50%,
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)) 100%);
+    border-radius: 20px;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    animation: servicePulse 3s ease-in-out infinite;
+}
+
+@keyframes servicePulse {
+    0%, 100% {
+        box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    }
+    50% {
+        box-shadow: 0 12px 48px color-mix(in srgb, var(--color-primary) 35%, transparent),
+                    0 0 60px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    }
+}
+
+.service-time-icon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-primary);
+    opacity: 0.6;
+    z-index: 1;
+    animation: timeIconPulse 3s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes timeIconPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: translateY(-50%) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-50%) scale(1.1);
+    }
+}
+
+.service-time-icon svg {
+    width: 48px;
+    height: 48px;
+    filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent));
+}
+
+.service-duration-card {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-left: 5rem;
+}
+
+.service-duration-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.service-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.9;
+}
+
+.service-joining-date {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.service-duration-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.service-time-main {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.service-days {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    line-height: 1;
+    text-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
+                 0 0 40px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    animation: daysGlow 2.5s ease-in-out infinite;
+    font-family: 'Lexend', sans-serif;
+}
+
+@keyframes daysGlow {
+    0%, 100% {
+        text-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
+                     0 0 40px color-mix(in srgb, var(--color-primary) 20%, transparent);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 0 6px 30px color-mix(in srgb, var(--color-primary) 60%, transparent),
+                     0 0 60px color-mix(in srgb, var(--color-primary) 35%, transparent);
+        transform: scale(1.05);
+    }
+}
+
+.service-unit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.service-separator-main {
+    color: var(--text-secondary);
+    font-weight: 400;
+    opacity: 0.6;
+    font-size: 2rem;
+    margin: 0 0.25rem;
+}
+
+.service-time-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.service-time-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    color: var(--color-primary);
+    animation: timePulse 2s ease-in-out infinite;
+}
+
+.service-time-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes timePulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(0.98);
+    }
+}
+
+.service-time-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.service-time-separator {
+    color: var(--text-secondary);
+    font-weight: 400;
+    opacity: 0.5;
+}
+
+.service-summary-inline {
+    margin-left: 0.5rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.service-summary-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    opacity: 0.9;
+    white-space: nowrap;
 }
 
 /* Tabs */
@@ -508,6 +801,12 @@
     .faculty-detail-name {
         font-size: 2rem;
     }
+    
+    .faculty-shortname-overlay {
+        font-size: 3rem;
+        padding: 1.5rem 1rem 0.5rem;
+        bottom: -0.3rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -517,9 +816,19 @@
         padding: 1.5rem;
     }
     
+    .faculty-image-bio-column {
+        gap: 1.25rem;
+    }
+    
     .faculty-profile-image {
         max-width: 300px;
         margin: 0 auto;
+    }
+    
+    .faculty-shortname-overlay {
+        font-size: 2.5rem;
+        padding: 1.25rem 1rem 0.5rem;
+        bottom: -0.3rem;
     }
     
     .faculty-detail-name {
@@ -528,6 +837,10 @@
     }
     
     .faculty-detail-designation {
+        text-align: center;
+    }
+    
+    .bio-section-below-image {
         text-align: center;
     }
     
@@ -557,6 +870,32 @@
     
     .research-link {
         justify-content: center;
+    }
+    
+    .service-duration-section {
+        padding: 0.5rem 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .service-days {
+        font-size: 2.75rem;
+    }
+    
+    .service-time-icon {
+        left: 1rem;
+    }
+    
+    .service-time-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .service-duration-card {
+        margin-left: 3.5rem;
+    }
+    
+    .service-time-details {
+        font-size: 1.25rem;
     }
 }
 
