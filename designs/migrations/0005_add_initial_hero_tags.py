@@ -6,18 +6,18 @@ def create_initial_hero_tags(apps, schema_editor):
     HeroTags = apps.get_model('designs', 'HeroTags')
     
     hero_tags_data = [
-        {'sl': 1, 'title': '1400+ Students', 'is_active': True},
-        {'sl': 2, 'title': '20k+ Graduates', 'is_active': True},
-        {'sl': 3, 'title': 'Largest Dept. of UAP', 'is_active': True},
-        {'sl': 4, 'title': '50+ Faculty', 'is_active': True},
-        {'sl': 5, 'title': '9 Clubs & Societies', 'is_active': True},
-        {'sl': 6, 'title': 'JRC Scholarship', 'is_active': True},
+        {'sl': 1, 'title': '1400+ Students'},
+        {'sl': 2, 'title': '20k+ Graduates'},
+        {'sl': 3, 'title': 'Largest Dept. of UAP'},
+        {'sl': 4, 'title': '50+ Faculty'},
+        {'sl': 5, 'title': '9 Clubs & Societies'},
+        {'sl': 6, 'title': 'JRC Scholarship'},
     ]
     
     for tag_data in hero_tags_data:
         HeroTags.objects.get_or_create(
             sl=tag_data['sl'],
-            defaults={'title': tag_data['title'], 'is_active': tag_data['is_active']}
+            defaults={'title': tag_data['title']}
         )
 
 def remove_initial_hero_tags(apps, schema_editor):

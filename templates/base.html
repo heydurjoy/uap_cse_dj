@@ -1,10 +1,12 @@
 {% load static %}
+{% load user_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Design System{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,9 +20,33 @@
             <div class="top-bar-right">
                 <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
                 <span class="top-bar-separator">|</span>
-                <a href="{% url 'login' %}" class="top-bar-link">Login</a>
-                <span class="top-bar-separator">|</span>
-                <a href="{% url 'signup' %}" class="top-bar-link">Sign Up</a>
+                {% if user.is_authenticated %}
+                    <span class="top-bar-link user-greeting">Hi, {{ user|greeting_name }}</span>
+                    <a href="{% url 'people:user_profile' %}" class="profile-pic-link" title="View Profile">
+                        <div class="profile-pic-wrapper">
+                            {% if user.profile_picture %}
+                                <img src="/media/{{ user.profile_picture.name }}" alt="Profile" class="profile-pic-small">
+                            {% elif user.user_type == 'faculty' and user.faculty_profile and user.faculty_profile.profile_pic %}
+                                <img src="/media/{{ user.faculty_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                            {% elif user.user_type == 'staff' and user.staff_profile and user.staff_profile.profile_pic %}
+                                <img src="/media/{{ user.staff_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                            {% elif user.user_type == 'officer' and user.officer_profile and user.officer_profile.profile_pic %}
+                                <img src="/media/{{ user.officer_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                            {% elif user.user_type == 'club_member' and user.club_member_profile and user.club_member_profile.profile_pic %}
+                                <img src="/media/{{ user.club_member_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                            {% else %}
+                                <img src="{% static 'defaults/people.png' %}" alt="Profile" class="profile-pic-small">
+                            {% endif %}
+                            <div class="profile-pic-ring"></div>
+                        </div>
+                    </a>
+                    <span class="top-bar-separator">|</span>
+                    <a href="{% url 'logout' %}" class="top-bar-link">Log Out</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="top-bar-link">Login</a>
+                    <span class="top-bar-separator">|</span>
+                    <a href="{% url 'signup' %}" class="top-bar-link">Sign Up</a>
+                {% endif %}
                 <div class="top-bar-search">
                     <input type="text" placeholder="Search" class="search-input">
                     <button class="search-btn" aria-label="Search">
@@ -44,8 +70,33 @@
                 <li class="mobile-top-bar">
                     <div class="mobile-top-bar-content">
                         <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
-                        <a href="{% url 'login' %}" class="top-bar-link">Login</a>
-                        <a href="{% url 'signup' %}" class="top-bar-link">Sign Up</a>
+                        {% if user.is_authenticated %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="top-bar-link user-greeting">Hi, {{ user|greeting_name }}</span>
+                                <a href="{% url 'people:user_profile' %}" class="profile-pic-link mobile" title="View Profile">
+                                    <div class="profile-pic-wrapper">
+                                        {% if user.profile_picture %}
+                                            <img src="/media/{{ user.profile_picture.name }}" alt="Profile" class="profile-pic-small">
+                                        {% elif user.user_type == 'faculty' and user.faculty_profile and user.faculty_profile.profile_pic %}
+                                            <img src="/media/{{ user.faculty_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                        {% elif user.user_type == 'staff' and user.staff_profile and user.staff_profile.profile_pic %}
+                                            <img src="/media/{{ user.staff_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                        {% elif user.user_type == 'officer' and user.officer_profile and user.officer_profile.profile_pic %}
+                                            <img src="/media/{{ user.officer_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                        {% elif user.user_type == 'club_member' and user.club_member_profile and user.club_member_profile.profile_pic %}
+                                            <img src="/media/{{ user.club_member_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                        {% else %}
+                                            <img src="{% static 'defaults/people.png' %}" alt="Profile" class="profile-pic-small">
+                                        {% endif %}
+                                        <div class="profile-pic-ring"></div>
+                                    </div>
+                                </a>
+                            </div>
+                            <a href="{% url 'logout' %}" class="top-bar-link">Log Out</a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="top-bar-link">Login</a>
+                            <a href="{% url 'signup' %}" class="top-bar-link">Sign Up</a>
+                        {% endif %}
                         <div class="top-bar-search mobile-search">
                             <input type="text" placeholder="Search" class="search-input">
                             <button class="search-btn" aria-label="Search">
@@ -76,9 +127,9 @@
                 <li class="nav-dropdown">
                     <a href="#" class="nav-link dropdown-toggle">People <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" class="dropdown-link">Faculty</a></li>
+                        <li><a href="{% url 'people:faculty_list' %}" class="dropdown-link">Faculty</a></li>
+                        <li><a href="#" class="dropdown-link">Officer</a></li>
                         <li><a href="#" class="dropdown-link">Staff</a></li>
-                        <li><a href="#" class="dropdown-link">Admins</a></li>
                     </ul>
                 </li>
                 <li class="nav-dropdown">

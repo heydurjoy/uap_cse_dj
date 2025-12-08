@@ -1,0 +1,1237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - CSE UAP{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+<link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
+<style>
+.drag-drop-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: var(--bg-tertiary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+}
+
+.drag-drop-area:hover,
+.drag-drop-area.dragover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-tertiary));
+}
+
+.drag-drop-area.dragover {
+    transform: scale(1.02);
+}
+
+.drag-drop-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+}
+
+.drag-drop-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.drag-drop-hint {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.cropper-container-wrapper {
+    display: none;
+    margin-top: 1.5rem;
+}
+
+.cropper-container-wrapper.active {
+    display: block;
+}
+
+.cropper-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.cropper-preview-container {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.cropper-preview-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.cropper-preview {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto;
+    border: 3px solid var(--color-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cropper-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.cropper-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Lexend', sans-serif;
+}
+
+.cropper-btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.cropper-btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.cropper-btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.cropper-btn-secondary:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.hidden-crop-input {
+    display: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-profile-section">
+        <div class="edit-profile-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">
+                ← Back to Profile
+            </a>
+            <h1>Edit Profile</h1>
+            <p class="subtitle">Update your profile information</p>
+        </div>
+        
+        {% if messages %}
+            <div class="profile-messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="POST" enctype="multipart/form-data" class="edit-profile-form">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h2 class="section-title">Basic Information</h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" value="{% if profile %}{{ profile.name }}{% else %}{{ user.get_full_name }}{% endif %}" required>
+                    </div>
+                    
+                    {% if profile_type == 'faculty' %}
+                    <div class="form-group">
+                        <label for="shortname">Short Name</label>
+                        <input type="text" id="shortname" name="shortname" value="{{ profile.shortname }}" maxlength="5" placeholder="e.g., DM">
+                    </div>
+                    {% endif %}
+                    
+                    {% if profile_type == 'faculty' %}
+                    <div class="form-group">
+                        <label for="designation">Designation</label>
+                        <select id="designation" name="designation">
+                            <option value="">Select Designation</option>
+                            <option value="Professor" {% if profile.designation == 'Professor' %}selected{% endif %}>Professor</option>
+                            <option value="Associate Professor" {% if profile.designation == 'Associate Professor' %}selected{% endif %}>Associate Professor</option>
+                            <option value="Assistant Professor" {% if profile.designation == 'Assistant Professor' %}selected{% endif %}>Assistant Professor</option>
+                            <option value="Lecturer" {% if profile.designation == 'Lecturer' %}selected{% endif %}>Lecturer</option>
+                            <option value="Teaching Assistant" {% if profile.designation == 'Teaching Assistant' %}selected{% endif %}>Teaching Assistant</option>
+                        </select>
+                    </div>
+                    {% elif profile_type == 'staff' %}
+                    <div class="form-group">
+                        <label for="designation">Designation *</label>
+                        <select id="designation" name="designation" required>
+                            <option value="">Select Designation</option>
+                            <option value="Lab Assistant" {% if profile.designation == 'Lab Assistant' %}selected{% endif %}>Lab Assistant</option>
+                            <option value="Lab Attendant" {% if profile.designation == 'Lab Attendant' %}selected{% endif %}>Lab Attendant</option>
+                        </select>
+                    </div>
+                    {% elif profile_type == 'officer' %}
+                    <div class="form-group">
+                        <label for="position">Position</label>
+                        <input type="text" id="position" name="position" value="{{ profile.position }}" placeholder="e.g., Administrative Officer">
+                    </div>
+                    {% elif profile_type == 'club_member' %}
+                    <div class="form-group">
+                        <label for="last_club_position">Club Position</label>
+                        <input type="text" id="last_club_position" name="last_club_position" value="{{ profile.last_club_position }}" placeholder="e.g., President, Secretary">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" value="{% if profile %}{{ profile.phone }}{% else %}{{ user.phone_number }}{% endif %}" placeholder="e.g., 01712345678">
+                    </div>
+                    
+                    {% if profile_type == 'club_member' %}
+                    <div class="form-group">
+                        <label for="student_id">Student ID</label>
+                        <input type="text" id="student_id" name="student_id" value="{{ profile.student_id }}" placeholder="e.g., 201012345">
+                    </div>
+                    {% endif %}
+                    
+                    {% if profile_type == 'staff' %}
+                    <div class="form-group">
+                        <label for="lab_number">Lab Number</label>
+                        <input type="text" id="lab_number" name="lab_number" value="{{ profile.lab_number }}" placeholder="e.g., Lab 101">
+                    </div>
+                    <div class="form-group">
+                        <label for="lab_address">Lab Address</label>
+                        <textarea id="lab_address" name="lab_address" rows="3" placeholder="Lab location or address">{{ profile.lab_address }}</textarea>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="joining_date">Joining Date</label>
+                        <input type="date" id="joining_date" name="joining_date" value="{% if profile and profile.joining_date %}{{ profile.joining_date|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    
+                    {% if profile_type == 'faculty' %}
+                    <div class="form-group">
+                        <label for="citation">Citation Count</label>
+                        <input type="number" id="citation" name="citation" value="{{ profile.citation }}" min="0" placeholder="0">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Profile Picture Section -->
+            <div class="form-section">
+                <h2 class="section-title">Profile Picture</h2>
+                <div class="profile-pic-upload-section">
+                    <div class="current-pic-preview" id="currentPicPreview">
+                        {% if profile %}
+                            {% if profile_type == 'faculty' and profile.profile_pic %}
+                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                            {% elif profile_type == 'staff' and profile.profile_pic %}
+                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                            {% elif profile_type == 'officer' and profile.profile_pic %}
+                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                            {% elif profile_type == 'club_member' and profile.profile_pic %}
+                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                            {% elif user.profile_picture %}
+                                <img src="/media/{{ user.profile_picture.name }}" alt="Current Profile Picture" id="currentPic">
+                            {% else %}
+                                <img src="{% static 'defaults/people.png' %}" alt="Default Profile Picture" id="currentPic">
+                            {% endif %}
+                        {% elif user.profile_picture %}
+                            <img src="/media/{{ user.profile_picture.name }}" alt="Current Profile Picture" id="currentPic">
+                        {% else %}
+                            <img src="{% static 'defaults/people.png' %}" alt="Default Profile Picture" id="currentPic">
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Drag and Drop Area -->
+                    <div class="drag-drop-area" id="dragDropArea">
+                        <div class="drag-drop-icon">📷</div>
+                        <div class="drag-drop-text">Drag and drop an image here, or click to select</div>
+                        <div class="drag-drop-hint">Recommended: Square image (1:1 ratio), at least 400x400 pixels</div>
+                        <input type="file" id="profile_pic" name="profile_pic" accept="image/*" class="hidden-crop-input">
+                    </div>
+                    
+                    <!-- Cropper Container -->
+                    <div class="cropper-container-wrapper" id="cropperWrapper">
+                        <div class="cropper-container">
+                            <img id="cropperImage" style="max-width: 100%; display: block;">
+                        </div>
+                        <div class="cropper-preview-container">
+                            <div class="cropper-preview-label">Preview (200x200)</div>
+                            <div class="cropper-preview" id="cropperPreview"></div>
+                        </div>
+                        <div class="cropper-actions">
+                            <button type="button" class="cropper-btn cropper-btn-primary" id="cropConfirmBtn">Confirm Crop</button>
+                            <button type="button" class="cropper-btn cropper-btn-secondary" id="cropCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden input for cropping coordinates (Faculty only) -->
+                    {% if profile_type == 'faculty' %}
+                    <input type="hidden" id="cropping" name="cropping" value="{{ profile.cropping|default:'' }}">
+                    {% else %}
+                    <input type="hidden" id="cropping" name="cropping" value="">
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Biography Section -->
+            <div class="form-section">
+                <h2 class="section-title">Biography</h2>
+                <div class="form-group">
+                    <label for="bio">Short Biography</label>
+                    <textarea id="bio" name="bio" rows="4" maxlength="200" placeholder="Write a short biography (max 200 characters)">{% if profile %}{{ profile.bio }}{% endif %}</textarea>
+                    <small class="form-help">Maximum 200 characters</small>
+                </div>
+            </div>
+            
+            <!-- Faculty-specific sections -->
+            {% if profile_type == 'faculty' %}
+            <!-- Research Links Section -->
+            <div class="form-section">
+                <h2 class="section-title">Research Profile Links</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="google_scholar_url">Google Scholar URL</label>
+                        <input type="text" id="google_scholar_url" name="google_scholar_url" value="{{ profile.google_scholar_url }}" placeholder="https://scholar.google.com/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="researchgate_url">ResearchGate URL</label>
+                        <input type="text" id="researchgate_url" name="researchgate_url" value="{{ profile.researchgate_url }}" placeholder="https://www.researchgate.net/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="orcid_url">ORCID URL</label>
+                        <input type="text" id="orcid_url" name="orcid_url" value="{{ profile.orcid_url }}" placeholder="https://orcid.org/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="scopus_url">Scopus URL</label>
+                        <input type="text" id="scopus_url" name="scopus_url" value="{{ profile.scopus_url }}" placeholder="https://www.scopus.com/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkedin_url">LinkedIn URL</label>
+                        <input type="text" id="linkedin_url" name="linkedin_url" value="{{ profile.linkedin_url }}" placeholder="https://www.linkedin.com/...">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rich Text Sections -->
+            <div class="form-section">
+                <h2 class="section-title">Detailed Information</h2>
+                <div class="form-group">
+                    <label for="about">About</label>
+                    <textarea id="about" name="about" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.about %}{{ profile.about }}{% endif %}</textarea>
+                    <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                </div>
+                <div class="form-group">
+                    <label for="researches">Research Information</label>
+                    <textarea id="researches" name="researches" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.researches %}{{ profile.researches }}{% endif %}</textarea>
+                    <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                </div>
+                <div class="form-group">
+                    <label for="routine">Routine</label>
+                    <textarea id="routine" name="routine" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.routine %}{{ profile.routine }}{% endif %}</textarea>
+                    <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                </div>
+            </div>
+            {% elif profile_type == 'officer' or profile_type == 'club_member' %}
+            <!-- About Section for Officer and Club Member -->
+            <div class="form-section">
+                <h2 class="section-title">About</h2>
+                <div class="form-group">
+                    <label for="about">About</label>
+                    <textarea id="about" name="about" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.about %}{{ profile.about }}{% endif %}</textarea>
+                    <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">Save Changes</button>
+                <a href="{% url 'people:user_profile' %}" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+<style>
+.edit-profile-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.edit-profile-header {
+    margin-bottom: 2.5rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.edit-profile-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+    background: linear-gradient(135deg, 
+        var(--color-primary) 0%,
+        var(--color-primary-hover) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.edit-profile-header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.profile-messages {
+    margin-bottom: 2rem;
+}
+
+.alert {
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.alert-error {
+    background: color-mix(in srgb, #dc3545 15%, transparent);
+    color: #dc3545;
+    border: 1px solid color-mix(in srgb, #dc3545 30%, transparent);
+}
+
+.alert-success {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+    border: 1px solid color-mix(in srgb, #28a745 30%, transparent);
+}
+
+.edit-profile-form {
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    padding: 3rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.form-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="url"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group input[type="file"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: 'Lexend', sans-serif;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--glow-shadow),
+                0 0 20px var(--glow-shadow);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.rich-text-field {
+    min-height: 200px;
+}
+
+/* CKEditor Modal - Full Page */
+.ckeditor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+.ckeditor-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ckeditor-modal-content {
+    background: var(--bg-primary);
+    border-radius: 20px;
+    width: 95%;
+    max-width: 1400px;
+    height: 90vh;
+    max-height: 900px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.ckeditor-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+}
+
+.ckeditor-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.ckeditor-modal-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.ckeditor-close-btn,
+.ckeditor-save-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.95rem;
+}
+
+.ckeditor-close-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.ckeditor-close-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.ckeditor-save-btn {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.ckeditor-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-shadow);
+}
+
+.ckeditor-modal-body {
+    flex: 1;
+    padding: 2rem;
+    overflow: auto;
+    position: relative;
+}
+
+.ckeditor-container {
+    height: 100%;
+    min-height: 500px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Rich text textarea styling */
+.rich-text-textarea {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.rich-text-textarea:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 2%, var(--bg-tertiary));
+}
+
+.rich-text-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--glow-shadow);
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.profile-pic-upload-section {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.current-pic-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 3px solid var(--color-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.current-pic-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profile-pic-upload-section .form-group {
+    flex: 1;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.submit-btn {
+    flex: 1;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, 
+        var(--color-primary) 0%,
+        var(--color-primary-hover) 100%
+    );
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Lexend', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px var(--glow-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px var(--glow-shadow),
+                0 0 30px var(--glow-shadow);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.cancel-btn {
+    padding: 1rem 2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'Lexend', sans-serif;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .edit-profile-form {
+        padding: 2rem 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-pic-upload-section {
+        flex-direction: column;
+    }
+    
+    .current-pic-preview {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dragDropArea = document.getElementById('dragDropArea');
+    const fileInput = document.getElementById('profile_pic');
+    const cropperWrapper = document.getElementById('cropperWrapper');
+    const cropperImage = document.getElementById('cropperImage');
+    const cropperPreview = document.getElementById('cropperPreview');
+    const cropConfirmBtn = document.getElementById('cropConfirmBtn');
+    const cropCancelBtn = document.getElementById('cropCancelBtn');
+    const currentPicPreview = document.getElementById('currentPicPreview');
+    const croppingInput = document.getElementById('cropping');
+    
+    let cropper = null;
+    
+    // Click to select file
+    dragDropArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // Drag and drop handlers
+    dragDropArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dragDropArea.classList.add('dragover');
+    });
+    
+    dragDropArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dragDropArea.classList.remove('dragover');
+    });
+    
+    dragDropArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dragDropArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type.startsWith('image/')) {
+            handleFileSelect(files[0]);
+        }
+    });
+    
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+    
+    function handleFileSelect(file) {
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file.');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            cropperImage.src = e.target.result;
+            cropperWrapper.classList.add('active');
+            dragDropArea.style.display = 'none';
+            
+            // Initialize Cropper.js
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            cropper = new Cropper(cropperImage, {
+                aspectRatio: 1, // 1:1 ratio for square
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 0.8,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+                preview: cropperPreview,
+                ready: function() {
+                    // Update preview on crop
+                    cropper.cropper.addEventListener('crop', function() {
+                        updatePreview();
+                    });
+                }
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function updatePreview() {
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas({
+                width: 200,
+                height: 200,
+            });
+            
+            if (canvas) {
+                const previewImg = cropperPreview.querySelector('img');
+                if (previewImg) {
+                    previewImg.src = canvas.toDataURL();
+                } else {
+                    const img = document.createElement('img');
+                    img.src = canvas.toDataURL();
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    cropperPreview.appendChild(img);
+                }
+            }
+        }
+    }
+    
+    // Confirm crop button
+    cropConfirmBtn.addEventListener('click', function() {
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas({
+                width: 400,
+                height: 400,
+            });
+            
+            if (canvas) {
+                // Convert canvas to blob
+                canvas.toBlob(function(blob) {
+                    // Create a new File object from the blob
+                    const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
+                    
+                    // Create a new FileList-like object
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Get cropping coordinates
+                    const cropData = cropper.getData();
+                    const croppingCoords = `${Math.round(cropData.x)},${Math.round(cropData.y)},${Math.round(cropData.x + cropData.width)},${Math.round(cropData.y + cropData.height)}`;
+                    
+                    // Store cropping coordinates if faculty
+                    if (croppingInput) {
+                        croppingInput.value = croppingCoords;
+                    }
+                    
+                    // Update preview
+                    const currentPic = document.getElementById('currentPic');
+                    if (currentPic) {
+                        currentPic.src = canvas.toDataURL();
+                    } else {
+                        const img = document.createElement('img');
+                        img.id = 'currentPic';
+                        img.src = canvas.toDataURL();
+                        img.alt = 'Cropped Profile Picture';
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        currentPicPreview.innerHTML = '';
+                        currentPicPreview.appendChild(img);
+                    }
+                    
+                    // Hide cropper, show drag area again
+                    cropperWrapper.classList.remove('active');
+                    dragDropArea.style.display = 'block';
+                    
+                    // Destroy cropper
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                }, 'image/jpeg', 0.95);
+            }
+        }
+    });
+    
+    // Cancel crop button
+    cropCancelBtn.addEventListener('click', function() {
+        cropperWrapper.classList.remove('active');
+        dragDropArea.style.display = 'block';
+        fileInput.value = '';
+        
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    });
+});
+
+// CKEditor Modal - Full Page Popup
+(function() {
+    const richTextFields = {
+        'about': 'About',
+        'researches': 'Research Information',
+        'routine': 'Routine'
+    };
+    
+    let ckeditorLoaded = false;
+    let currentModal = null;
+    let currentEditor = null;
+    let currentTextarea = null;
+    let originalContent = '';
+    
+    // Load CKEditor from CDN (trying multiple sources)
+    function loadCKEditor(callback) {
+        if (typeof CKEDITOR !== 'undefined') {
+            ckeditorLoaded = true;
+            if (callback) callback();
+            return;
+        }
+        
+        if (ckeditorLoaded) {
+            if (callback) callback();
+            return;
+        }
+        
+        // Try multiple CDN sources (in order of preference)
+        const cdnSources = [
+            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',  // Most stable version
+            'https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.20.2/ckeditor.js',
+            'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js'
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript(index) {
+            if (index >= cdnSources.length) {
+                console.error('All CKEditor CDN sources failed');
+                alert('Failed to load editor. Please check your internet connection and refresh the page.');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = cdnSources[index];
+            script.onload = function() {
+                ckeditorLoaded = true;
+                console.log('CKEditor loaded successfully from:', cdnSources[index]);
+                if (callback) callback();
+            };
+            script.onerror = function() {
+                console.warn('Failed to load from:', cdnSources[index], 'trying next...');
+                currentIndex++;
+                tryLoadScript(currentIndex);
+            };
+            document.head.appendChild(script);
+        }
+        
+        tryLoadScript(0);
+    }
+    
+    // Create modal HTML
+    function createModal(fieldId, fieldLabel) {
+        const modal = document.createElement('div');
+        modal.className = 'ckeditor-modal';
+        modal.id = 'ckeditor-modal-' + fieldId;
+        modal.innerHTML = `
+            <div class="ckeditor-modal-content">
+                <div class="ckeditor-modal-header">
+                    <h3 class="ckeditor-modal-title">Edit ${fieldLabel}</h3>
+                    <div class="ckeditor-modal-actions">
+                        <button type="button" class="ckeditor-close-btn" id="ckeditor-close-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Cancel
+                        </button>
+                        <button type="button" class="ckeditor-save-btn" id="ckeditor-save-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save
+                        </button>
+                    </div>
+                </div>
+                <div class="ckeditor-modal-body">
+                    <div class="ckeditor-container" id="ckeditor-container-${fieldId}">
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading editor...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        return modal;
+    }
+    
+    function showEditor(fieldId, fieldLabel) {
+        console.log('showEditor called for:', fieldId);
+        const textarea = document.getElementById(fieldId);
+        if (!textarea) {
+            console.error('Textarea not found:', fieldId);
+            return;
+        }
+        
+        // Store original content
+        originalContent = textarea.value;
+        currentTextarea = textarea;
+        
+        // Create or get modal
+        let modal = document.getElementById('ckeditor-modal-' + fieldId);
+        if (!modal) {
+            modal = createModal(fieldId, fieldLabel);
+        }
+        currentModal = modal;
+        
+        // Show modal immediately
+        modal.classList.add('active');
+        console.log('Modal shown');
+        
+        // Load CKEditor and initialize
+        loadCKEditor(function() {
+            if (typeof CKEDITOR === 'undefined') {
+                console.error('CKEDITOR is still undefined');
+                return;
+            }
+            
+            const container = document.getElementById('ckeditor-container-' + fieldId);
+            if (!container) {
+                console.error('Container not found');
+                return;
+            }
+            
+            // Clear loading message
+            container.innerHTML = '';
+            
+            // Create a temporary textarea for CKEditor
+            const editorTextarea = document.createElement('textarea');
+            editorTextarea.id = 'ckeditor-textarea-' + fieldId;
+            editorTextarea.value = originalContent;
+            container.appendChild(editorTextarea);
+            
+            // Initialize CKEditor with full toolbar
+            try {
+                currentEditor = CKEDITOR.replace(editorTextarea, {
+                    toolbar: 'Full',
+                    height: '100%',
+                    width: '100%',
+                    removePlugins: 'elementspath',
+                    resize_enabled: false
+                });
+                console.log('CKEditor initialized');
+            } catch (e) {
+                console.error('Error initializing CKEditor:', e);
+            }
+        });
+        
+        // Close button handler
+        const closeBtn = document.getElementById('ckeditor-close-' + fieldId);
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                closeEditor(false);
+            };
+        }
+        
+        // Save button handler
+        const saveBtn = document.getElementById('ckeditor-save-' + fieldId);
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                closeEditor(true);
+            };
+        }
+        
+        // Click outside to close (discard changes)
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeEditor(false);
+            }
+        };
+        
+        // Escape key to close
+        const escapeHandler = function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeEditor(false);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+    
+    function closeEditor(save) {
+        if (currentModal) {
+            if (save && currentEditor) {
+                // Update textarea with editor content
+                currentEditor.updateElement();
+                const editorTextarea = document.getElementById(currentEditor.element.$.id);
+                if (editorTextarea && currentTextarea) {
+                    currentTextarea.value = editorTextarea.value;
+                }
+            } else if (!save && currentTextarea) {
+                // Discard changes - restore original content
+                currentTextarea.value = originalContent;
+            }
+            
+            // Destroy editor
+            if (currentEditor) {
+                try {
+                    currentEditor.destroy();
+                } catch (e) {
+                    console.error('Error destroying editor:', e);
+                }
+                currentEditor = null;
+            }
+            
+            // Hide modal
+            currentModal.classList.remove('active');
+            
+            // Clean up temporary textarea
+            const container = currentModal.querySelector('.ckeditor-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            currentModal = null;
+            currentTextarea = null;
+        }
+    }
+    
+    // Add click handlers to textareas immediately
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Setting up CKEditor click handlers');
+        Object.keys(richTextFields).forEach(function(fieldId) {
+            const textarea = document.getElementById(fieldId);
+            if (textarea) {
+                console.log('Adding click handler to:', fieldId);
+                textarea.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Textarea clicked:', fieldId);
+                    showEditor(fieldId, richTextFields[fieldId]);
+                });
+            } else {
+                console.warn('Textarea not found:', fieldId);
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}
+

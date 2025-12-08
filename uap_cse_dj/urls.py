@@ -27,7 +27,11 @@ urlpatterns = [
     path('design-guidelines/', views.design_guidelines, name='design_guidelines'),
     path('login/', views.login, name='login'),
     path('signup/', views.signup, name='signup'),
+    path('logout/', views.logout, name='logout'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/<str:token>/', views.reset_password, name='reset_password'),
     path('designs/', include('designs.urls')),
+    path('people/', include('people.urls')),
 ]
 
 # Serve media files in development

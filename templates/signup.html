@@ -11,7 +11,18 @@
             <p>Join us and start your journey</p>
         </div>
         
-        <form class="auth-form" id="signupForm">
+        {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form class="auth-form" id="signupForm" method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="fullname">Full Name</label>
                 <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
@@ -333,6 +344,37 @@
     text-decoration: underline;
 }
 
+.auth-messages {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.alert-error {
+    background: color-mix(in srgb, #dc3545 15%, transparent);
+    color: #dc3545;
+    border: 1px solid color-mix(in srgb, #dc3545 30%, transparent);
+}
+
+.alert-success {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+    border: 1px solid color-mix(in srgb, #28a745 30%, transparent);
+}
+
+.alert-info {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
 @media (max-width: 767px) {
     .auth-card {
         padding: 2rem 1.5rem;
@@ -376,23 +418,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Form submission (frontend only - no actual signup)
+    // Form submission with client-side validation
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
         signupForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             // Simple password match validation
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
             if (password !== confirmPassword) {
+                e.preventDefault();
                 alert('Passwords do not match!');
-                return;
+                return false;
             }
             
-            // Show a simple alert (you can replace this with a toast notification)
-            alert('Sign up functionality will be implemented in the backend.');
+            if (password.length < 8) {
+                e.preventDefault();
+                alert('Password must be at least 8 characters long.');
+                return false;
+            }
+            
+            // Let form submit normally if validation passes
         });
     }
 });

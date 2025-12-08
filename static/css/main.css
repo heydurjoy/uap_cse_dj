@@ -206,6 +206,97 @@ body {
     color: var(--color-primary);
 }
 
+.user-greeting {
+    color: var(--color-primary);
+    font-weight: 600;
+    cursor: default;
+}
+
+.user-greeting:hover {
+    color: var(--color-primary);
+}
+
+/* Profile Picture with Animated Ring */
+.profile-pic-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    margin-left: 0.5rem;
+    position: relative;
+}
+
+.profile-pic-wrapper {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-pic-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-primary);
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+.profile-pic-link:hover .profile-pic-small {
+    transform: scale(1.1);
+}
+
+.profile-pic-ring {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--color-primary);
+    border-right-color: var(--color-primary);
+    animation: profileRingRotate 2s linear infinite;
+    z-index: 1;
+}
+
+@keyframes profileRingRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.profile-pic-link:hover .profile-pic-ring {
+    border-top-color: var(--color-primary-hover);
+    border-right-color: var(--color-primary-hover);
+    animation-duration: 1s;
+}
+
+/* Mobile profile pic adjustments */
+.mobile-top-bar-content .profile-pic-link {
+    margin-left: 0.25rem;
+}
+
+.mobile-top-bar-content .profile-pic-wrapper {
+    width: 26px;
+    height: 26px;
+}
+
+.mobile-top-bar-content .profile-pic-small {
+    width: 22px;
+    height: 22px;
+}
+
+.mobile-top-bar-content .profile-pic-ring {
+    width: 26px;
+    height: 26px;
+}
+
 .apply-now-btn {
     background: transparent;
     color: #06b6d4; /* Fallback color - Cyan */

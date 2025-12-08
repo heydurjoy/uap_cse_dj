@@ -1,0 +1,833 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="faculty-detail">
+        <div class="detail-header">
+            <a href="{% url 'home' %}" class="back-link">
+                ← Back to Home
+            </a>
+        </div>
+        
+        <div class="faculty-profile-section">
+            <div class="faculty-profile-image">
+                {% if profile %}
+                    {% if profile_type == 'faculty' and profile.profile_pic %}
+                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                    {% elif profile_type == 'staff' and profile.profile_pic %}
+                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                    {% elif profile_type == 'officer' and profile.profile_pic %}
+                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                    {% elif profile_type == 'club_member' and profile.profile_pic %}
+                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                    {% elif user.profile_picture %}
+                        <img src="/media/{{ user.profile_picture.name }}" alt="{{ user.get_full_name }}">
+                    {% else %}
+                        <img src="{% static 'defaults/people.png' %}" alt="Profile">
+                    {% endif %}
+                {% elif user.profile_picture %}
+                    <img src="/media/{{ user.profile_picture.name }}" alt="{{ user.get_full_name }}">
+                {% else %}
+                    <img src="{% static 'defaults/people.png' %}" alt="Profile">
+                {% endif %}
+            </div>
+            
+            <div class="faculty-profile-info">
+                <h1 class="faculty-detail-name">
+                    {% if profile %}{{ profile.name }}{% else %}{{ user.get_full_name|default:user.email }}{% endif %}
+                </h1>
+                {% if profile %}
+                    {% if profile_type == 'faculty' and profile.designation %}
+                        <p class="faculty-detail-designation">{{ profile.designation }}</p>
+                    {% elif profile_type == 'staff' and profile.designation %}
+                        <p class="faculty-detail-designation">{{ profile.designation }}</p>
+                    {% elif profile_type == 'officer' and profile.position %}
+                        <p class="faculty-detail-designation">{{ profile.position }}</p>
+                    {% elif profile_type == 'club_member' and profile.last_club_position %}
+                        <p class="faculty-detail-designation">{{ profile.last_club_position }}</p>
+                    {% endif %}
+                {% endif %}
+                
+                <div class="info-grid">
+                    {% if profile %}
+                        {% if profile_type == 'faculty' %}
+                            {% if profile.citation %}
+                            <div class="info-item citation-item">
+                                <span class="info-label">Citations</span>
+                                <span class="info-value citation-value">{{ profile.citation|floatformat:0 }}</span>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% if profile.joining_date %}
+                        <div class="info-item">
+                            <span class="info-label">Joining Date</span>
+                            <span class="info-value">{{ profile.joining_date|date:"F Y" }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.phone %}
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ profile.phone }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_type == 'staff' and profile.lab_number %}
+                        <div class="info-item">
+                            <span class="info-label">Lab Number</span>
+                            <span class="info-value">{{ profile.lab_number }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_type == 'club_member' and profile.student_id %}
+                        <div class="info-item">
+                            <span class="info-label">Student ID</span>
+                            <span class="info-value">{{ profile.student_id }}</span>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if user.email %}
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value email-value">{{ user.email }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if profile and profile_type == 'faculty' %}
+                    {% if profile.google_scholar_url or profile.researchgate_url or profile.orcid_url or profile.scopus_url or profile.linkedin_url %}
+                    <div class="social-links-section">
+                        <h3 class="section-title">Research Profiles</h3>
+                        <div class="research-links">
+                            {% if profile.google_scholar_url %}
+                                <a href="{{ profile.google_scholar_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="Google Scholar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M5.242 13.769L0 9.5 12.5 0 25 9.5l-5.242 4.269C17.548 11.249 14.978 9.5 12.5 9.5c-2.477 0-5.048 1.748-7.258 4.269zM12.5 10a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15z"/>
+                                    </svg>
+                                    <span>Google Scholar</span>
+                                </a>
+                            {% endif %}
+                            {% if profile.researchgate_url %}
+                                <a href="{{ profile.researchgate_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="ResearchGate">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.524 0H5.476C2.453 0 0 2.453 0 5.476v13.048C0 21.547 2.453 24 5.476 24h13.048C21.547 24 24 21.547 24 18.524V5.476C24 2.453 21.547 0 18.524 0zM8.57 17.637h-2.87v-7.98h2.87v7.98zm-1.435-9.068c-.92 0-1.664-.744-1.664-1.664 0-.92.744-1.664 1.664-1.664.92 0 1.664.744 1.664 1.664 0 .92-.744 1.664-1.664 1.664zm12.344 9.068h-2.87v-3.86c0-1.036-.02-2.366-1.443-2.366-1.443 0-1.664 1.126-1.664 2.292v3.934h-2.87v-7.98h2.755v1.09h.04c.392-.74 1.352-1.52 2.782-1.52 2.978 0 3.525 1.96 3.525 4.508v3.922z"/>
+                                    </svg>
+                                    <span>ResearchGate</span>
+                                </a>
+                            {% endif %}
+                            {% if profile.orcid_url %}
+                                <a href="{{ profile.orcid_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="ORCID">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 16.338c-.192 0-.34-.002-.455-.006v-4.127H5.375v4.111c-.117.004-.272.006-.455.006H4.23v-5.842H7.4c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827zm4.76 3.39c-.192 0-.34-.002-.455-.006v-4.127h-1.539v4.111c-.117.004-.272.006-.455.006h-.69v-5.842h3.17c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827zm4.76 3.39c-.192 0-.34-.002-.455-.006v-4.127h-1.539v4.111c-.117.004-.272.006-.455.006h-.69v-5.842h3.17c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827z"/>
+                                    </svg>
+                                    <span>ORCID</span>
+                                </a>
+                            {% endif %}
+                            {% if profile.scopus_url %}
+                                <a href="{{ profile.scopus_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="Scopus">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M24 19.5c0 .828-.672 1.5-1.5 1.5H1.5c-.828 0-1.5-.672-1.5-1.5v-15C0 3.672.672 3 1.5 3h21c.828 0 1.5.672 1.5 1.5v15zM5.027 18.75h2.948V9.75H5.027v9zm3.198 0h2.948v-4.5c0-1.5.75-2.25 2.25-2.25s2.25.75 2.25 2.25v4.5h2.948v-4.5c0-2.25-1.5-3.75-4.5-3.75s-4.5 1.5-4.5 3.75v4.5zm10.5-9.75h-2.948v9h2.948V9z"/>
+                                    </svg>
+                                    <span>Scopus</span>
+                                </a>
+                            {% endif %}
+                            {% if profile.linkedin_url %}
+                                <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="LinkedIn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                    </svg>
+                                    <span>LinkedIn</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                {% if profile and profile.bio %}
+                <div class="bio-section">
+                    <h3 class="section-title">Biography</h3>
+                    <p class="faculty-bio-text">{{ profile.bio }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- Edit Profile Button -->
+                <div class="profile-actions-section">
+                    <a href="{% url 'people:edit_profile' %}" class="edit-profile-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        <span>Edit Profile</span>
+                    </a>
+                    {% if profile_type == 'faculty' %}
+                        <a href="{% url 'people:faculty_detail' profile.pk %}" class="view-public-btn">
+                            <span>View Public Profile</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs (only for Faculty) -->
+        {% if profile and profile_type == 'faculty' %}
+        <div class="faculty-tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="research">Research</button>
+                <button class="tab-button" data-tab="about">About</button>
+                <button class="tab-button" data-tab="routine">Routine</button>
+            </div>
+            
+            <div class="tab-content">
+                <!-- Tab 1: Research -->
+                <div class="tab-pane active" id="research-tab">
+                    {% if profile.researches %}
+                        <div class="faculty-research-content">
+                            {{ profile.researches|safe }}
+                        </div>
+                    {% else %}
+                        <p class="no-content">No research information available. <a href="/admin/people/faculty/{{ profile.pk }}/change/">Add research information</a></p>
+                    {% endif %}
+                </div>
+                
+                <!-- Tab 2: About -->
+                <div class="tab-pane" id="about-tab">
+                    {% if profile.about %}
+                        <div class="faculty-about-content">
+                            {{ profile.about|safe }}
+                        </div>
+                    {% else %}
+                        <p class="no-content">No additional information available. <a href="/admin/people/faculty/{{ profile.pk }}/change/">Add about information</a></p>
+                    {% endif %}
+                </div>
+                
+                <!-- Tab 3: Routine -->
+                <div class="tab-pane" id="routine-tab">
+                    {% if profile.routine %}
+                        <div class="faculty-routine-content">
+                            {{ profile.routine|safe }}
+                        </div>
+                    {% else %}
+                        <p class="no-content">No routine information available. <a href="/admin/people/faculty/{{ profile.pk }}/change/">Add routine information</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% elif profile and profile_type == 'officer' and profile.about %}
+        <!-- Officer About Section -->
+        <div class="faculty-tabs">
+            <div class="tab-content">
+                <div class="tab-pane active" id="about-tab">
+                    <div class="faculty-about-content">
+                        {{ profile.about|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% elif profile and profile_type == 'club_member' and profile.about %}
+        <!-- Club Member About Section -->
+        <div class="faculty-tabs">
+            <div class="tab-content">
+                <div class="tab-pane active" id="about-tab">
+                    <div class="faculty-about-content">
+                        {{ profile.about|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Missing Fields Suggestions -->
+        {% if profile %}
+        <div class="missing-fields-section">
+            <h3 class="section-title">Complete Your Profile</h3>
+            <div class="missing-fields-list">
+                {% if profile_type == 'faculty' %}
+                    {% if not profile.profile_pic %}<div class="missing-field-item">📷 Profile Picture</div>{% endif %}
+                    {% if not profile.designation %}<div class="missing-field-item">🎓 Designation</div>{% endif %}
+                    {% if not profile.phone %}<div class="missing-field-item">📞 Phone Number</div>{% endif %}
+                    {% if not profile.bio %}<div class="missing-field-item">📝 Biography</div>{% endif %}
+                    {% if not profile.joining_date %}<div class="missing-field-item">📅 Joining Date</div>{% endif %}
+                    {% if not profile.citation %}<div class="missing-field-item">📊 Citation Count</div>{% endif %}
+                    {% if not profile.google_scholar_url and not profile.researchgate_url and not profile.orcid_url and not profile.scopus_url and not profile.linkedin_url %}<div class="missing-field-item">🔗 Research Profile Links</div>{% endif %}
+                    {% if not profile.researches %}<div class="missing-field-item">🔬 Research Information</div>{% endif %}
+                    {% if not profile.about %}<div class="missing-field-item">ℹ️ About Section</div>{% endif %}
+                    {% if not profile.routine %}<div class="missing-field-item">📋 Routine</div>{% endif %}
+                {% elif profile_type == 'staff' %}
+                    {% if not profile.profile_pic %}<div class="missing-field-item">📷 Profile Picture</div>{% endif %}
+                    {% if not profile.phone %}<div class="missing-field-item">📞 Phone Number</div>{% endif %}
+                    {% if not profile.bio %}<div class="missing-field-item">📝 Biography</div>{% endif %}
+                    {% if not profile.joining_date %}<div class="missing-field-item">📅 Joining Date</div>{% endif %}
+                    {% if not profile.lab_number %}<div class="missing-field-item">🏢 Lab Number</div>{% endif %}
+                    {% if not profile.lab_address %}<div class="missing-field-item">📍 Lab Address</div>{% endif %}
+                {% elif profile_type == 'officer' %}
+                    {% if not profile.profile_pic %}<div class="missing-field-item">📷 Profile Picture</div>{% endif %}
+                    {% if not profile.position %}<div class="missing-field-item">💼 Position</div>{% endif %}
+                    {% if not profile.phone %}<div class="missing-field-item">📞 Phone Number</div>{% endif %}
+                    {% if not profile.bio %}<div class="missing-field-item">📝 Biography</div>{% endif %}
+                    {% if not profile.joining_date %}<div class="missing-field-item">📅 Joining Date</div>{% endif %}
+                    {% if not profile.about %}<div class="missing-field-item">ℹ️ About Section</div>{% endif %}
+                {% elif profile_type == 'club_member' %}
+                    {% if not profile.profile_pic %}<div class="missing-field-item">📷 Profile Picture</div>{% endif %}
+                    {% if not profile.student_id %}<div class="missing-field-item">🆔 Student ID</div>{% endif %}
+                    {% if not profile.last_club_position %}<div class="missing-field-item">👔 Club Position</div>{% endif %}
+                    {% if not profile.about %}<div class="missing-field-item">ℹ️ About Section</div>{% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.faculty-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.detail-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.faculty-profile-section {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    align-items: start;
+    padding: 2rem;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 3%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 1%, transparent) 100%);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.faculty-profile-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    background: var(--bg-secondary);
+    position: relative;
+}
+
+.faculty-profile-image::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.faculty-profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.faculty-profile-image:hover img {
+    transform: scale(1.05);
+}
+
+.faculty-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.faculty-detail-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.faculty-detail-designation {
+    font-size: 1.35rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    margin: 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.875rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+}
+
+.citation-item {
+    position: relative;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)),
+        color-mix(in srgb, var(--color-primary) 4%, var(--bg-secondary)));
+    border-color: var(--color-primary);
+}
+
+.citation-item::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    opacity: 0.3;
+    filter: blur(8px);
+    z-index: -1;
+    animation: citationGlow 2s ease-in-out infinite;
+}
+
+@keyframes citationGlow {
+    0%, 100% {
+        opacity: 0.3;
+        filter: blur(8px);
+    }
+    50% {
+        opacity: 0.5;
+        filter: blur(12px);
+    }
+}
+
+.citation-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--color-primary) 40%, transparent);
+    animation: citationPulse 2s ease-in-out infinite;
+}
+
+@keyframes citationPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.info-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.email-value {
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+
+.social-links-section {
+    margin-top: 0.25rem;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+    color: var(--color-primary);
+}
+
+.research-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+}
+
+.research-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.research-link:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.research-link svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+}
+
+.bio-section {
+    margin-top: 0.25rem;
+}
+
+.faculty-bio-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Edit Profile Button */
+.profile-actions-section {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.edit-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.edit-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.edit-profile-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.view-public-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.view-public-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+/* Missing Fields Section */
+.missing-fields-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.missing-fields-section .section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary);
+}
+
+.missing-fields-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.missing-field-item {
+    padding: 0.75rem 1rem;
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary));
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.missing-field-item:hover {
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--bg-tertiary));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Tabs */
+.faculty-tabs {
+    margin-top: 2rem;
+    padding: 0 2rem;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 0.875rem 2rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: -2px;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-button:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.tab-button.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+}
+
+.tab-content {
+    min-height: 300px;
+}
+
+.tab-pane {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.faculty-about-content,
+.faculty-research-content,
+.faculty-routine-content {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text-primary);
+}
+
+.faculty-about-content p,
+.faculty-research-content p,
+.faculty-routine-content p {
+    margin: 0 0 1.25rem 0;
+}
+
+.faculty-about-content p:last-child,
+.faculty-research-content p:last-child,
+.faculty-routine-content p:last-child {
+    margin-bottom: 0;
+}
+
+.no-content {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.no-content a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.no-content a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 968px) {
+    .faculty-profile-section {
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+        padding: 1.5rem;
+    }
+    
+    .faculty-detail-name {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .faculty-profile-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 1.5rem;
+    }
+    
+    .faculty-profile-image {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .faculty-detail-name {
+        font-size: 1.75rem;
+        text-align: center;
+    }
+    
+    .faculty-detail-designation {
+        text-align: center;
+    }
+    
+    .tab-buttons {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding: 0;
+    }
+    
+    .tab-button {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .faculty-tabs {
+        padding: 0;
+    }
+    
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .research-links {
+        flex-direction: column;
+    }
+    
+    .research-link {
+        justify-content: center;
+    }
+    
+    .missing-fields-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-actions-section {
+        flex-direction: column;
+    }
+    
+    .edit-profile-btn,
+    .view-public-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and panes
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding pane
+            this.classList.add('active');
+            document.getElementById(targetTab + '-tab').classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

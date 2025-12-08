@@ -11,7 +11,18 @@
             <p>Sign in to your account to continue</p>
         </div>
         
-        <form class="auth-form" id="loginForm">
+        {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form class="auth-form" id="loginForm" method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" placeholder="Enter your email" required>
@@ -35,7 +46,7 @@
                     <input type="checkbox" name="remember">
                     <span>Remember me</span>
                 </label>
-                <a href="#" class="forgot-password">Forgot password?</a>
+                <a href="{% url 'forgot_password' %}" class="forgot-password">Forgot password?</a>
             </div>
             
             <button type="submit" class="auth-submit-btn">Sign In</button>
@@ -315,9 +326,40 @@
     transition: color 0.3s ease;
 }
 
-.auth-footer a:hover {
+    .auth-footer a:hover {
     color: var(--color-primary-hover);
     text-decoration: underline;
+}
+
+.auth-messages {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.alert-error {
+    background: color-mix(in srgb, #dc3545 15%, transparent);
+    color: #dc3545;
+    border: 1px solid color-mix(in srgb, #dc3545 30%, transparent);
+}
+
+.alert-success {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+    border: 1px solid color-mix(in srgb, #28a745 30%, transparent);
+}
+
+.alert-info {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 @media (max-width: 767px) {
@@ -357,15 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Form submission (frontend only - no actual login)
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Show a simple alert (you can replace this with a toast notification)
-            alert('Login functionality will be implemented in the backend.');
-        });
-    }
+    // Form submission - let it submit normally to backend
 });
 </script>
 {% endblock %}

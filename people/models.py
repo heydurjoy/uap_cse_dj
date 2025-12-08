@@ -1,0 +1,711 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator
+from django.core.files.base import ContentFile
+from ckeditor.fields import RichTextField
+from image_cropping.fields import ImageRatioField, ImageCropField
+from PIL import Image
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+import io
+import os
+
+
+class AllowedEmail(models.Model):
+    USER_TYPE_CHOICES = [
+        ('faculty', 'Faculty'),
+        ('staff', 'Staff'),
+        ('officer', 'Officer'),
+        ('club_member', 'Club Member'),
+    ]
+    
+    ACCESS_LEVEL_CHOICES = [
+        ('5', 'Head'),           # highest access
+        ('4', 'Super Admin'),    # highest access
+        ('3', 'Course Access'),  # medium access
+        ('2', 'General User'),   # lower access
+        ('1', 'Club Member'),     # lowest access
+    ]
+    
+    email = models.EmailField(
+        unique=True,
+        max_length=255,
+        help_text="Email address that can sign up"
+    )
+    
+    user_type = models.CharField(
+        max_length=20,
+        choices=USER_TYPE_CHOICES,
+        help_text="Type of user this email belongs to"
+    )
+    
+    access_level = models.CharField(
+        max_length=1,
+        choices=ACCESS_LEVEL_CHOICES,
+        default='2',
+        help_text="Access level for this user"
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Allow this email to sign up (uncheck to prevent new signups)"
+    )
+    
+    is_blocked = models.BooleanField(
+        default=False,
+        help_text="Block this user from logging in (blocks existing accounts)"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this email was added to allowed list"
+    )
+    
+    blocked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When this email was blocked"
+    )
+    
+    block_reason = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500,
+        help_text="Reason for blocking (optional)"
+    )
+    
+    class Meta:
+        verbose_name = 'Allowed Email'
+        verbose_name_plural = 'Allowed Emails'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.email
+
+
+class BaseUser(AbstractUser):
+    USER_TYPE_CHOICES = [
+        ('faculty', 'Faculty'),
+        ('staff', 'Staff'),
+        ('officer', 'Officer'),
+        ('club_member', 'Club Member'),
+    ]
+    
+    ACCESS_LEVEL_CHOICES = [
+        ('5', 'Head'),
+        ('4', 'Super Admin'),
+        ('3', 'Course Access'),
+        ('2', 'General User'),
+        ('1', 'Club Member'),
+    ]
+    
+    allowed_email = models.OneToOneField(
+        AllowedEmail,
+        on_delete=models.CASCADE,
+        related_name='base_user',
+        blank=True,
+        null=True,
+        help_text="Reference to the allowed email entry (optional for superusers)"
+    )
+    
+    user_type = models.CharField(
+        max_length=20,
+        choices=USER_TYPE_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Type of user (synced from AllowedEmail, optional for superusers)"
+    )
+    
+    access_level = models.CharField(
+        max_length=1,
+        choices=ACCESS_LEVEL_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Access level (synced from AllowedEmail, optional for superusers)"
+    )
+    
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Contact phone number"
+    )
+    
+    profile_picture = models.ImageField(
+        upload_to='user_profiles/',
+        blank=True,
+        null=True,
+        help_text="User profile picture"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Account creation date"
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="Last update date"
+    )
+    
+    def save(self, *args, **kwargs):
+        # Sync user_type and access_level from allowed_email if provided
+        if self.allowed_email:
+            if not self.user_type:
+                self.user_type = self.allowed_email.user_type
+            if not self.access_level:
+                self.access_level = self.allowed_email.access_level
+            # Also sync email if not set
+            if not self.email:
+                self.email = self.allowed_email.email
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = 'Base User'
+        verbose_name_plural = 'Base Users'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.email or self.username
+
+
+class Faculty(models.Model):
+    DESIGNATION_CHOICES = [
+        ('Professor', 'Professor'),
+        ('Associate Professor', 'Associate Professor'),
+        ('Assistant Professor', 'Assistant Professor'),
+        ('Lecturer', 'Lecturer'),
+        ('Teaching Assistant', 'Teaching Assistant'),
+    ]
+    
+    base_user = models.OneToOneField(
+        BaseUser,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='faculty_profile',
+        help_text="Base user account"
+    )
+    
+    name = models.CharField(
+        max_length=50,
+        default="Name",
+        help_text="Full name of the faculty member"
+    )
+    
+    shortname = models.CharField(
+        max_length=5,
+        default='N/A',
+        help_text="Short name or initials"
+    )
+    
+    designation = models.CharField(
+        max_length=20,
+        choices=DESIGNATION_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Academic designation"
+    )
+    
+    phone = models.CharField(
+        max_length=11,
+        blank=True,
+        null=True,
+        help_text="Contact phone number"
+    )
+    
+    bio = models.TextField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Short biography"
+    )
+    
+    about = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Detailed about section with rich text"
+    )
+    
+    profile_pic = ImageCropField(
+        upload_to='faculty_photos/',
+        null=True,
+        blank=True,
+        help_text="Faculty profile picture"
+    )
+    cropping = ImageRatioField(
+        'profile_pic',
+        '400x400',
+        size_warning=True,
+        help_text="Crop image to 1:1 aspect ratio (400x400)"
+    )
+    
+    joining_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when faculty joined"
+    )
+    
+    google_scholar_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Google Scholar profile URL"
+    )
+    
+    researchgate_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="ResearchGate profile URL"
+    )
+    
+    orcid_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="ORCID profile URL"
+    )
+    
+    scopus_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Scopus profile URL"
+    )
+    
+    linkedin_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="LinkedIn profile URL"
+    )
+    
+    researches = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Research information with rich text"
+    )
+    
+    citation = models.PositiveIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        help_text="Total citations count"
+    )
+    
+    sl = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        blank=True,
+        null=True,
+        help_text="Serial number for ordering"
+    )
+    
+    routine = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Faculty routine with rich text"
+    )
+    
+    class Meta:
+        verbose_name = 'Faculty'
+        verbose_name_plural = 'Faculties'
+        ordering = ['sl']
+    
+    def __str__(self):
+        return f'{self.sl}. {self.name} | {self.designation or "N/A"}'
+    
+    def save(self, *args, **kwargs):
+        is_update = self.pk is not None
+        # Detect if profile_pic file was replaced
+        picture_changed = False
+        if is_update:
+            try:
+                old = Faculty.objects.get(pk=self.pk)
+                picture_changed = old.profile_pic.name != self.profile_pic.name if self.profile_pic and old.profile_pic else bool(self.profile_pic)
+            except Faculty.DoesNotExist:
+                picture_changed = False
+        else:
+            picture_changed = bool(self.profile_pic and self.profile_pic.name)
+        
+        cropping_set = bool(self.profile_pic and self.cropping and self.cropping.strip())
+        
+        # On first upload (new object), auto-crop to center 1:1
+        if not is_update and self.profile_pic and self.profile_pic.name:
+            try:
+                # Read the image file
+                if hasattr(self.profile_pic, 'read'):
+                    self.profile_pic.seek(0)
+                    image_data = self.profile_pic.read()
+                else:
+                    image_path = self.profile_pic.path
+                    with open(image_path, 'rb') as f:
+                        image_data = f.read()
+                
+                # Open image with PIL from bytes
+                image = Image.open(io.BytesIO(image_data))
+                width, height = image.size
+                
+                # Calculate center crop for 1:1 ratio
+                min_dim = min(width, height)
+                left = (width - min_dim) / 2
+                top = (height - min_dim) / 2
+                right = (width + min_dim) / 2
+                bottom = (height + min_dim) / 2
+                
+                # Crop the image
+                cropped_image = image.crop((int(left), int(top), int(right), int(bottom)))
+                
+                # Resize to exact 400x400
+                if cropped_image.size != (400, 400):
+                    cropped_image = cropped_image.resize((400, 400), Image.Resampling.LANCZOS)
+                
+                # Save to memory
+                img_io = io.BytesIO()
+                format = image.format or 'JPEG'
+                if format not in ['JPEG', 'PNG', 'WEBP']:
+                    format = 'JPEG'
+                
+                # Convert RGBA to RGB if necessary for JPEG
+                if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
+                    rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
+                    if cropped_image.mode == 'P':
+                        cropped_image = cropped_image.convert('RGBA')
+                    rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
+                    cropped_image = rgb_image
+                
+                cropped_image.save(img_io, format=format, quality=95)
+                img_io.seek(0)
+                
+                # Replace the original file
+                file_name = os.path.basename(self.profile_pic.name)
+                self.profile_pic.save(
+                    file_name,
+                    ContentFile(img_io.read()),
+                    save=False
+                )
+                
+            except Exception as e:
+                # If auto-cropping fails, just save normally
+                import traceback
+                traceback.print_exc()
+        
+        # On subsequent edits, only crop if cropping coordinates are explicitly set
+        elif cropping_set and is_update and not picture_changed:
+            try:
+                # Get the original image path
+                if self.profile_pic.name:
+                    # Read the image file
+                    if hasattr(self.profile_pic, 'read'):
+                        self.profile_pic.seek(0)
+                        image_data = self.profile_pic.read()
+                    else:
+                        image_path = self.profile_pic.path
+                        with open(image_path, 'rb') as f:
+                            image_data = f.read()
+                    
+                    # Open image with PIL from bytes
+                    image = Image.open(io.BytesIO(image_data))
+                    
+                    # Parse cropping coordinates (format: "x1,y1,x2,y2")
+                    crop_coords = [int(x.strip()) for x in self.cropping.split(',')]
+                    if len(crop_coords) == 4:
+                        x1, y1, x2, y2 = crop_coords
+                        
+                        # Crop the image
+                        cropped_image = image.crop((x1, y1, x2, y2))
+                        
+                        # Resize to exact 400x400 if needed
+                        if cropped_image.size != (400, 400):
+                            cropped_image = cropped_image.resize((400, 400), Image.Resampling.LANCZOS)
+                        
+                        # Save to memory
+                        img_io = io.BytesIO()
+                        # Determine format from original
+                        format = image.format or 'JPEG'
+                        if format not in ['JPEG', 'PNG', 'WEBP']:
+                            format = 'JPEG'
+                        
+                        # Convert RGBA to RGB if necessary for JPEG
+                        if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
+                            rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
+                            if cropped_image.mode == 'P':
+                                cropped_image = cropped_image.convert('RGBA')
+                            rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
+                            cropped_image = rgb_image
+                        
+                        cropped_image.save(img_io, format=format, quality=95)
+                        img_io.seek(0)
+                        
+                        # Replace the original file
+                        file_name = os.path.basename(self.profile_pic.name)
+                        self.profile_pic.save(
+                            file_name,
+                            ContentFile(img_io.read()),
+                            save=False
+                        )
+                        
+                        # Clear cropping coordinates after applying
+                        self.cropping = ''
+                        
+            except Exception as e:
+                # If cropping fails, just save normally
+                import traceback
+                traceback.print_exc()
+        
+        super().save(*args, **kwargs)
+
+
+class Staff(models.Model):
+    DESIGNATION_CHOICES = [
+        ('Lab Assistant', 'Lab Assistant'),
+        ('Lab Attendant', 'Lab Attendant'),
+    ]
+    
+    base_user = models.OneToOneField(
+        BaseUser,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='staff_profile',
+        help_text="Base user account"
+    )
+    
+    name = models.CharField(
+        max_length=100,
+        help_text="Full name of the staff member"
+    )
+    
+    designation = models.CharField(
+        max_length=20,
+        choices=DESIGNATION_CHOICES,
+        help_text="Staff designation"
+    )
+    
+    phone = models.CharField(
+        max_length=11,
+        blank=True,
+        null=True,
+        help_text="Contact phone number"
+    )
+    
+    bio = models.TextField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Short biography"
+    )
+    
+    profile_pic = models.ImageField(
+        upload_to='staff_photos/',
+        null=True,
+        blank=True,
+        help_text="Staff profile picture"
+    )
+    
+    joining_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when staff joined"
+    )
+    
+    sl = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text="Serial number for ordering"
+    )
+    
+    lab_number = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Lab number or identifier"
+    )
+    
+    lab_address = models.TextField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Lab address or location"
+    )
+    
+    class Meta:
+        verbose_name = 'Staff'
+        verbose_name_plural = 'Staff'
+        ordering = ['sl']
+    
+    def __str__(self):
+        return f'{self.sl}. {self.name} | {self.designation}'
+
+
+class Officer(models.Model):
+    base_user = models.OneToOneField(
+        BaseUser,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='officer_profile',
+        help_text="Base user account"
+    )
+    
+    name = models.CharField(
+        max_length=100,
+        help_text="Full name of the officer"
+    )
+    
+    position = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Official position or title"
+    )
+    
+    phone = models.CharField(
+        max_length=11,
+        blank=True,
+        null=True,
+        help_text="Contact phone number"
+    )
+    
+    bio = models.TextField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Short biography"
+    )
+    
+    profile_pic = models.ImageField(
+        upload_to='officer_photos/',
+        null=True,
+        blank=True,
+        help_text="Officer profile picture"
+    )
+    
+    joining_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when officer joined"
+    )
+    
+    sl = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text="Serial number for ordering"
+    )
+    
+    about = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Detailed about section with rich text"
+    )
+    
+    class Meta:
+        verbose_name = 'Officer'
+        verbose_name_plural = 'Officers'
+        ordering = ['sl']
+    
+    def __str__(self):
+        return f'{self.sl}. {self.name} | {self.position or "N/A"}'
+
+
+class ClubMember(models.Model):
+    base_user = models.OneToOneField(
+        BaseUser,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='club_member_profile',
+        help_text="Base user account"
+    )
+    
+    name = models.CharField(
+        max_length=100,
+        help_text="Full name of the club member"
+    )
+    
+    student_id = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text="Student ID number"
+    )
+    
+    about = RichTextField(
+        blank=True,
+        null=True,
+        help_text="About the club member with rich text"
+    )
+    
+    profile_pic = models.ImageField(
+        upload_to='club_member_photos/',
+        null=True,
+        blank=True,
+        help_text="Club member profile picture"
+    )
+    
+    last_club_position = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Last position held in the club"
+    )
+    
+    class Meta:
+        verbose_name = 'Club Member'
+        verbose_name_plural = 'Club Members'
+        ordering = ['name']
+    
+    def __str__(self):
+        return f'{self.name} | {self.student_id}'
+
+
+class PasswordResetToken(models.Model):
+    """Model to store password reset tokens"""
+    user = models.ForeignKey(
+        BaseUser,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(
+        max_length=64,
+        unique=True,
+        help_text="Unique token for password reset"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the token was created"
+    )
+    expires_at = models.DateTimeField(
+        help_text="When the token expires"
+    )
+    used = models.BooleanField(
+        default=False,
+        help_text="Whether this token has been used"
+    )
+    
+    class Meta:
+        verbose_name = 'Password Reset Token'
+        verbose_name_plural = 'Password Reset Tokens'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['user', 'used']),
+        ]
+    
+    def __str__(self):
+        return f'Token for {self.user.email} - {"Used" if self.used else "Active"}'
+    
+    def is_valid(self):
+        """Check if token is valid (not used and not expired)"""
+        return not self.used and timezone.now() < self.expires_at
+    
+    @classmethod
+    def generate_token(cls, user, hours=24):
+        """Generate a new password reset token for a user"""
+        # Delete old unused tokens for this user
+        cls.objects.filter(user=user, used=False).delete()
+        
+        # Generate new token
+        token = get_random_string(64)
+        expires_at = timezone.now() + timezone.timedelta(hours=hours)
+        
+        return cls.objects.create(
+            user=user,
+            token=token,
+            expires_at=expires_at
+        )

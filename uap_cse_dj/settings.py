@@ -41,7 +41,11 @@ INSTALLED_APPS = [
     'easy_thumbnails',
     'image_cropping',
     'designs',
+    'people',
 ]
+
+# Custom User Model
+AUTH_USER_MODEL = 'people.BaseUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -153,3 +157,12 @@ THUMBNAIL_ALIASES = {
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email settings (for password reset)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mdsahriar.asif@gmail.com'
+EMAIL_HOST_PASSWORD = 'mhkz utxt afnr wute'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

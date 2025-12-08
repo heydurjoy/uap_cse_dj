@@ -1,5 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
+from django.contrib import messages
+from django.db import transaction
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
 from designs.models import FeatureCard, HeroTags
+from people.models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, PasswordResetToken
 
 
 def home(request):
@@ -27,9 +35,285 @@ def design_guidelines(request):
 
 
 def login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
+        remember = request.POST.get('remember', False)
+        
+        if not email or not password:
+            messages.error(request, 'Please provide both email and password.')
+            return render(request, 'login.html')
+        
+        # Authenticate user (Django uses username, but we use email as username)
+        user = authenticate(request, username=email, password=password)
+        
+        if user is None:
+            messages.error(request, 'Invalid email or password.')
+            return render(request, 'login.html')
+        
+        # Check if user is blocked via AllowedEmail
+        if user.allowed_email and user.allowed_email.is_blocked:
+            messages.error(request, 'Your account has been blocked. Please contact the administrator.')
+            return render(request, 'login.html')
+        
+        # Check if user account is active
+        if not user.is_active:
+            messages.error(request, 'Your account is inactive. Please contact the administrator.')
+            return render(request, 'login.html')
+        
+        # Login the user
+        auth_login(request, user)
+        
+        # Set session expiry based on remember me
+        if not remember:
+            request.session.set_expiry(0)  # Session expires when browser closes
+        else:
+            request.session.set_expiry(1209600)  # 2 weeks
+        
+        messages.success(request, f'Welcome back, {user.get_full_name() or user.email}!')
+        return redirect('people:user_profile')
+    
     return render(request, 'login.html')
 
 
 def signup(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        fullname = request.POST.get('fullname', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirmPassword', '')
+        
+        # Validation
+        errors = []
+        
+        if not email:
+            errors.append('Email is required.')
+        if not fullname:
+            errors.append('Full name is required.')
+        if not password:
+            errors.append('Password is required.')
+        elif len(password) < 8:
+            errors.append('Password must be at least 8 characters long.')
+        if password != confirm_password:
+            errors.append('Passwords do not match.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'signup.html')
+        
+        # Check if email exists in AllowedEmail
+        try:
+            allowed_email = AllowedEmail.objects.get(email=email)
+        except AllowedEmail.DoesNotExist:
+            messages.error(request, 'This email is not authorized to sign up. Only faculty, staff, officers, and club members can create accounts.')
+            return render(request, 'signup.html')
+        
+        # Check if email is active for signup
+        if not allowed_email.is_active:
+            messages.error(request, 'This email is not currently active for signup. Please contact the administrator.')
+            return render(request, 'signup.html')
+        
+        # Check if email is blocked
+        if allowed_email.is_blocked:
+            messages.error(request, 'This email has been blocked. Please contact the administrator.')
+            return render(request, 'signup.html')
+        
+        # Check if user already exists
+        if BaseUser.objects.filter(email=email).exists():
+            messages.error(request, 'An account with this email already exists. Please sign in instead.')
+            return render(request, 'signup.html')
+        
+        # Create user
+        try:
+            with transaction.atomic():
+                # Create BaseUser
+                user = BaseUser.objects.create_user(
+                    username=email,  # Use email as username
+                    email=email,
+                    password=password,
+                    allowed_email=allowed_email,
+                    user_type=allowed_email.user_type,
+                    access_level=allowed_email.access_level,
+                    first_name=fullname.split()[0] if fullname.split() else '',
+                    last_name=' '.join(fullname.split()[1:]) if len(fullname.split()) > 1 else '',
+                )
+                
+                # Create appropriate profile based on user_type
+                if allowed_email.user_type == 'faculty':
+                    # Generate shortname from first letters of first two words
+                    name_parts = fullname.split()
+                    if len(name_parts) >= 2:
+                        shortname = ''.join([n[0].upper() for n in name_parts[:2]])
+                    else:
+                        shortname = fullname[:2].upper() if len(fullname) >= 2 else 'N/A'
+                    
+                    Faculty.objects.create(
+                        base_user=user,
+                        name=fullname,
+                        shortname=shortname,
+                    )
+                elif allowed_email.user_type == 'staff':
+                    Staff.objects.create(
+                        base_user=user,
+                        name=fullname,
+                        designation='Lab Assistant',  # Default, can be changed later
+                    )
+                elif allowed_email.user_type == 'officer':
+                    Officer.objects.create(
+                        base_user=user,
+                        name=fullname,
+                    )
+                elif allowed_email.user_type == 'club_member':
+                    ClubMember.objects.create(
+                        base_user=user,
+                        name=fullname,
+                    )
+                
+                # Auto-login the user
+                auth_login(request, user)
+                messages.success(request, f'Welcome, {fullname}! Your account has been created successfully.')
+                return redirect('people:user_profile')
+                
+        except Exception as e:
+            messages.error(request, f'An error occurred during signup: {str(e)}')
+            return render(request, 'signup.html')
+    
     return render(request, 'signup.html')
 
+
+def logout(request):
+    auth_logout(request)
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('home')
+
+
+def forgot_password(request):
+    """Handle forgot password request"""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        
+        if not email:
+            messages.error(request, 'Please enter your email address.')
+            return render(request, 'forgot_password.html')
+        
+        # First check if email is in AllowedEmail list
+        try:
+            allowed_email = AllowedEmail.objects.get(email=email)
+            
+            # Check if email is blocked
+            if allowed_email.is_blocked:
+                messages.error(request, 'This email has been blocked. Please contact the administrator.')
+                return render(request, 'forgot_password.html')
+            
+            # Check if email is active for signup (should be active to reset password)
+            if not allowed_email.is_active:
+                messages.error(request, 'This email is not currently active. Please contact the administrator.')
+                return render(request, 'forgot_password.html')
+            
+        except AllowedEmail.DoesNotExist:
+            # Email is not in the allowed list
+            messages.error(request, 'This email is not authorized. Only faculty, staff, officers, and club members can reset their passwords.')
+            return render(request, 'forgot_password.html')
+        
+        # Now check if user account exists
+        try:
+            user = BaseUser.objects.get(email=email)
+            
+            # Check if user is active
+            if not user.is_active:
+                messages.error(request, 'Your account is inactive. Please contact the administrator.')
+                return render(request, 'forgot_password.html')
+            
+            # Generate reset token
+            reset_token = PasswordResetToken.generate_token(user, hours=24)
+            
+            # Create reset URL
+            reset_url = request.build_absolute_uri(
+                reverse('reset_password', kwargs={'token': reset_token.token})
+            )
+            
+            # Send email
+            try:
+                send_mail(
+                    subject='Password Reset Request - CSE UAP',
+                    message=f'''Hello {user.get_full_name() or user.email},
+
+You requested to reset your password for your CSE UAP account.
+
+Click the following link to reset your password:
+{reset_url}
+
+This link will expire in 24 hours.
+
+If you did not request this password reset, please ignore this email.
+
+Best regards,
+CSE UAP Team''',
+                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@uap-cse.edu'),
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
+            except Exception as e:
+                # If email sending fails, show error message
+                messages.error(request, 'Failed to send password reset email. Please try again later or contact the administrator.')
+                # Log the error for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Failed to send password reset email: {str(e)}')
+            
+            return render(request, 'forgot_password.html')
+            
+        except BaseUser.DoesNotExist:
+            # Email is allowed but user account doesn't exist yet
+            messages.info(request, 'This email is authorized but no account exists yet. Please sign up first.')
+            return render(request, 'forgot_password.html')
+    
+    return render(request, 'forgot_password.html')
+
+
+def reset_password(request, token):
+    """Handle password reset with token"""
+    # Get the token
+    try:
+        reset_token = PasswordResetToken.objects.get(token=token)
+    except PasswordResetToken.DoesNotExist:
+        messages.error(request, 'Invalid or expired password reset link.')
+        return redirect('forgot_password')
+    
+    # Check if token is valid
+    if not reset_token.is_valid():
+        messages.error(request, 'This password reset link has expired or has already been used.')
+        return redirect('forgot_password')
+    
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirmPassword', '')
+        
+        # Validation
+        if not password:
+            messages.error(request, 'Please enter a new password.')
+            return render(request, 'reset_password.html', {'token': token})
+        
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            return render(request, 'reset_password.html', {'token': token})
+        
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'reset_password.html', {'token': token})
+        
+        # Update password
+        user = reset_token.user
+        user.set_password(password)
+        user.save()
+        
+        # Mark token as used
+        reset_token.used = True
+        reset_token.save()
+        
+        messages.success(request, 'Your password has been reset successfully. You can now log in with your new password.')
+        return redirect('login')
+    
+    return render(request, 'reset_password.html', {'token': token})

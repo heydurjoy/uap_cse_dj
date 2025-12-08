@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Faculty - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="faculty-list-section">
+        <div class="faculty-header">
+            <h1>Our Faculty</h1>
+            <p class="subtitle">Meet the distinguished members of our Computer Science and Engineering department</p>
+        </div>
+        
+        {% if faculties_by_designation %}
+            {% for designation, faculty_list in faculties_by_designation.items %}
+            <div class="designation-group">
+                <h2 class="designation-title">{{ designation }}</h2>
+                <div class="faculty-grid">
+                    {% for faculty in faculty_list %}
+                    <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                        <div class="faculty-card">
+                            <div class="faculty-card-image">
+                                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                            </div>
+                            <div class="faculty-card-body">
+                                <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                {% if faculty.designation %}
+                                    <p class="faculty-designation">{{ faculty.designation }}</p>
+                                {% endif %}
+                                {% if faculty.bio %}
+                                    <p class="faculty-bio">{{ faculty.bio|truncatewords:20 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-faculty">No faculty members available yet.</p>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.faculty-list-section {
+    padding: 3rem 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.faculty-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.faculty-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+}
+
+.faculty-header .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.designation-group {
+    margin-bottom: 4rem;
+}
+
+.designation-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--color-primary);
+}
+
+.faculty-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.faculty-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.faculty-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.faculty-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.faculty-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    position: relative;
+}
+
+.faculty-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.faculty-card:hover .faculty-card-image img {
+    transform: scale(1.05);
+}
+
+
+.faculty-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.faculty-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.faculty-designation {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    font-weight: 500;
+    margin: 0 0 0.75rem 0;
+}
+
+.faculty-bio {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.no-faculty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .faculty-list-section {
+        padding: 2rem 0;
+    }
+    
+    .faculty-header h1 {
+        font-size: 2rem;
+    }
+    
+    .faculty-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .designation-group {
+        margin-bottom: 3rem;
+    }
+}
+</style>
+{% endblock %}
+
