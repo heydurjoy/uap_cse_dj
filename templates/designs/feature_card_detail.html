@@ -10,12 +10,15 @@
             <a href="{% url 'designs:feature_cards_list' %}" class="back-link">
                 ← Back to Feature Cards
             </a>
-            <div class="detail-number">{{ card.sl_number }}</div>
+            <!-- <div class="detail-number">{{ card.sl_number }}</div> -->
         </div>
         
         <div class="detail-main-image">
             {% if card.picture %}
                 <img src="/media/{{ card.picture.name }}" alt="{{ card.title }}">
+                <div class="detail-image-overlay">
+                    <div class="detail-image-caption">{{ card.caption }}</div>
+                </div>
             {% else %}
                 <div class="no-image-placeholder">No Image</div>
             {% endif %}
@@ -77,21 +80,41 @@
 
 .detail-main-image {
     width: 100%;
+    aspect-ratio: 3 / 1;
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 2rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.detail-main-image {
-    aspect-ratio: 1 / 1;
+    position: relative;
 }
 
 .detail-main-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    filter: blur(3.5px);
+    transform: scale(1.02);
     display: block;
+}
+
+.detail-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1.5rem;
+    box-sizing: border-box;
+}
+
+.detail-image-caption {
+    color: #fff;
+    font-size: clamp(3.5rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    text-shadow: 0 10px 28px rgba(0,0,0,0.55);
+    text-align: center;
 }
 
 .detail-content {
