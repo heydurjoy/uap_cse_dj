@@ -2,6 +2,7 @@ from django.contrib import admin
 from image_cropping import ImageCroppingMixin
 from .models import FeatureCard, HeroTags
 
+
 @admin.register(FeatureCard)
 class FeatureCardAdmin(ImageCroppingMixin, admin.ModelAdmin):
     list_display = ['sl_number', 'caption', 'title', 'is_active', 'created_at']
@@ -20,6 +21,7 @@ class FeatureCardAdmin(ImageCroppingMixin, admin.ModelAdmin):
         }),
     )
 
+
 @admin.register(HeroTags)
 class HeroTagsAdmin(admin.ModelAdmin):
     list_display = ['sl', 'title', 'is_active', '__str__']
@@ -28,4 +30,3 @@ class HeroTagsAdmin(admin.ModelAdmin):
     search_fields = ['title']
     ordering = ['sl']
     fields = ['sl', 'title', 'is_active']
-
