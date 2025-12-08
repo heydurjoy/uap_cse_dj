@@ -26,8 +26,8 @@
             <div class="hero-visuals">
                 <div class="polaroid-container">
                     {% for card in feature_cards %}
-                    <a href="{% url 'designs:feature_card_detail' card.pk %}" class="polaroid-link polaroid-{{ forloop.counter }}">
-                        <div class="polaroid-frame polaroid-{{ forloop.counter }}">
+                    <a href="{% url 'designs:feature_card_detail' card.pk %}" class="polaroid-link">
+    <div class="polaroid-frame polaroid-{{ forloop.counter }}">
                             <div class="polaroid-image">
                                 {% if card.picture %}
                                     <img src="/media/{{ card.picture.name }}" alt="{{ card.title }}">
@@ -430,6 +430,49 @@
     </div>
 </section>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const allCards = Array.from(document.querySelectorAll(".polaroid-link"));
+    const visibleCount = 3;
+
+    // Initial positions for the top 3 cards
+    const positions = [
+        { top: 0, left: 0, z: 3 },
+        { top: 35, left: 45, z: 2 },
+        { top: 70, left: 90, z: 1 }
+    ];
+
+    let index = 0; // index of the top card
+
+    function showCards() {
+        allCards.forEach((card, i) => {
+            card.style.display = "none"; // hide all
+            card.classList.remove("moving-back", "moving-forward");
+        });
+
+        for (let i = 0; i < visibleCount; i++) {
+            const card = allCards[(index + i) % allCards.length];
+            const pos = positions[i];
+            card.style.display = "block";
+            card.style.top = pos.top + "px";
+            card.style.left = pos.left + "px";
+            card.style.zIndex = pos.z;
+
+            // Add scale/opacity effect
+            if (i === 0) card.classList.add("moving-forward");
+            else card.classList.add("moving-back");
+        }
+    }
+
+    showCards(); // initial display
+
+    // Shuffle every 3 seconds
+    setInterval(() => {
+        index = (index + 1) % allCards.length;
+        showCards();
+    }, 3000);
+});
+</script>
 
 
 <style>
