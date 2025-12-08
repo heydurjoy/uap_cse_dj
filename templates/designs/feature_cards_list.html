@@ -7,11 +7,11 @@
 {% block content %}
 <div class="container">
     <section class="content-section">
-        <h1>Why Study at CSE UAP?</h1>
+        <h1>Why Study CSE at UAP?</h1>
         <p>Discover what makes our Computer Science and Engineering program exceptional</p>
         
         <div class="feature-cards-grid">
-            {% for card in cards %}
+            {% for card in cards|slice:'1:' %}
             <a href="{% url 'designs:feature_card_detail' card.pk %}" class="feature-card-link">
                 <div class="feature-card">
                     <div class="feature-card-image">

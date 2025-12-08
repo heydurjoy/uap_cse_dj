@@ -3,13 +3,18 @@ from designs.models import FeatureCard, HeroTags
 
 
 def home(request):
-    # Get first 3 active feature cards for the hero section
-    feature_cards = FeatureCard.objects.filter(is_active=True).order_by('sl_number')[:3]
+    # Get active feature cards for the hero section
+    all_cards = list(FeatureCard.objects.filter(is_active=True).order_by('sl_number'))
+    # Start from the second card and include the rest
+    feature_cards = all_cards[1:] if len(all_cards) > 1 else all_cards
     # Get all active hero tags ordered by serial number
     hero_tags = HeroTags.objects.filter(is_active=True).order_by('sl')
+    # Use the first active feature card as the HoD highlight (editable via admin)
+    hod_card = FeatureCard.objects.filter(is_active=True).order_by('sl_number').first()
     return render(request, 'home.html', {
         'feature_cards': feature_cards,
-        'hero_tags': hero_tags
+        'hero_tags': hero_tags,
+        'hod_card': hod_card
     })
 
 
