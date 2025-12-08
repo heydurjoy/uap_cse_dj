@@ -147,7 +147,7 @@
             </div>
         {% endif %}
         
-        <form method="POST" enctype="multipart/form-data" class="edit-profile-form">
+        <form method="POST" enctype="multipart/form-data" class="edit-profile-form" id="editProfileForm">
             {% csrf_token %}
             
             <!-- Basic Information Section -->
@@ -300,8 +300,10 @@
                 <h2 class="section-title">Biography</h2>
                 <div class="form-group">
                     <label for="bio">Short Biography</label>
-                    <textarea id="bio" name="bio" rows="4" maxlength="200" placeholder="Write a short biography (max 200 characters)">{% if profile %}{{ profile.bio }}{% endif %}</textarea>
-                    <small class="form-help">Maximum 200 characters</small>
+                    <textarea id="bio" name="bio" rows="4" maxlength="92" placeholder="Write a short biography (max 92 characters)" required>{% if profile %}{{ profile.bio }}{% endif %}</textarea>
+                    <small class="form-help">
+                        <span id="bio-char-count">0</span>/92 characters
+                    </small>
                 </div>
             </div>
             
@@ -560,10 +562,10 @@
 .ckeditor-modal-content {
     background: var(--bg-primary);
     border-radius: 20px;
-    width: 95%;
-    max-width: 1400px;
-    height: 90vh;
-    max-height: 900px;
+    width: 98%;
+    max-width: 1600px;
+    height: 95vh;
+    max-height: none;
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -630,14 +632,42 @@
 
 .ckeditor-modal-body {
     flex: 1;
-    padding: 2rem;
-    overflow: auto;
+    padding: 1rem;
+    overflow: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .ckeditor-container {
+    flex: 1;
     height: 100%;
-    min-height: 500px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Ensure CKEditor iframe takes full height */
+.ckeditor-container .cke {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container .cke_contents {
+    flex: 1 !important;
+    min-height: 0 !important;
+}
+
+.ckeditor-container .cke_inner {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container .cke_wysiwyg_div {
+    min-height: 100% !important;
 }
 
 @keyframes fadeIn {
@@ -812,6 +842,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const croppingInput = document.getElementById('cropping');
     
     let cropper = null;
+    
+    // Bio character counter and validation
+    const bioTextarea = document.getElementById('bio');
+    const bioCharCount = document.getElementById('bio-char-count');
+    const editProfileForm = document.getElementById('editProfileForm');
+    
+    if (bioTextarea && bioCharCount) {
+        function updateBioCharCount() {
+            const currentLength = bioTextarea.value.length;
+            bioCharCount.textContent = currentLength;
+            if (currentLength > 92) {
+                bioCharCount.style.color = 'var(--color-error, #e74c3c)';
+                bioTextarea.setCustomValidity('Biography cannot exceed 92 characters');
+            } else if (currentLength > 80) {
+                bioCharCount.style.color = 'var(--color-warning, #f39c12)';
+                bioTextarea.setCustomValidity('');
+            } else {
+                bioCharCount.style.color = '';
+                bioTextarea.setCustomValidity('');
+            }
+        }
+        updateBioCharCount(); // Initial count
+        bioTextarea.addEventListener('input', updateBioCharCount);
+        bioTextarea.addEventListener('keyup', updateBioCharCount);
+    }
+    
+    // Form validation on submit
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(e) {
+            if (bioTextarea && bioTextarea.value.length > 92) {
+                e.preventDefault();
+                alert('Biography cannot exceed 92 characters. Please shorten your biography.');
+                bioTextarea.focus();
+                return false;
+            }
+        });
+    }
     
     // Click to select file
     dragDropArea.addEventListener('click', function() {
@@ -1129,14 +1196,60 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Initialize CKEditor with full toolbar
             try {
+                // Calculate available height (modal body height minus padding)
+                const modalBody = container.closest('.ckeditor-modal-body');
+                const modalContent = container.closest('.ckeditor-modal-content');
+                const headerHeight = modalContent ? modalContent.querySelector('.ckeditor-modal-header').offsetHeight : 80;
+                const availableHeight = modalBody ? (modalBody.offsetHeight - 20) : window.innerHeight - headerHeight - 40;
+                
                 currentEditor = CKEDITOR.replace(editorTextarea, {
                     toolbar: 'Full',
-                    height: '100%',
+                    height: availableHeight + 'px',
                     width: '100%',
                     removePlugins: 'elementspath',
                     resize_enabled: false
                 });
-                console.log('CKEditor initialized');
+                
+                // After editor is ready, ensure it uses full height
+                currentEditor.on('instanceReady', function() {
+                    const editorInstance = this;
+                    const editorElement = editorInstance.container;
+                    const editorInner = editorElement.findOne('.cke_inner');
+                    const editorContents = editorElement.findOne('.cke_contents');
+                    
+                    if (editorInner) {
+                        editorInner.setStyle('height', '100%');
+                        editorInner.setStyle('display', 'flex');
+                        editorInner.setStyle('flex-direction', 'column');
+                    }
+                    
+                    if (editorContents) {
+                        editorContents.setStyle('flex', '1');
+                        editorContents.setStyle('min-height', '0');
+                    }
+                    
+                    // Force resize to ensure proper height
+                    setTimeout(function() {
+                        if (modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            editorInstance.resize('100%', newHeight + 'px');
+                        }
+                    }, 100);
+                });
+                
+                // Update editor height on window resize
+                let resizeTimeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(function() {
+                        if (currentEditor && modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            currentEditor.resize('100%', newHeight + 'px');
+                        }
+                    }, 250);
+                });
+                
+                console.log('CKEditor initialized with height:', availableHeight);
             } catch (e) {
                 console.error('Error initializing CKEditor:', e);
             }

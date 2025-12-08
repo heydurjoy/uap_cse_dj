@@ -25,7 +25,7 @@
                 <div class="bio-section-below-image">
                     <br>
                     <h3 class="section-title">Biography</h3>
-                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                    <p class="faculty-bio-text">{{ faculty.bio|truncatechars:400 }}</p>
                 </div>
                 {% endif %}
             </div>
@@ -69,7 +69,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M5.242 13.769L0 9.5 12.5 0 25 9.5l-5.242 4.269C17.548 11.249 14.978 9.5 12.5 9.5c-2.477 0-5.048 1.748-7.258 4.269zM12.5 10a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15z"/>
                                 </svg>
-                                <span>Google Scholar</span>
+                                <span>Scholar</span>
                             </a>
                         {% endif %}
                         {% if faculty.researchgate_url %}

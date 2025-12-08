@@ -213,11 +213,11 @@ class Faculty(models.Model):
         help_text="Contact phone number"
     )
     
-    bio = models.TextField(
-        max_length=200,
+    bio = models.CharField(
+        max_length=92,
         blank=True,
         null=True,
-        help_text="Short biography"
+        help_text="Short biography (max 92 characters)"
     )
     
     about = RichTextField(
