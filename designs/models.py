@@ -124,3 +124,24 @@ class HeroTags(models.Model):
     def __str__(self):
         return f"{self.sl} - {self.title}"
 
+class AdmissionElement(models.Model):
+    sl = models.IntegerField(unique=True, help_text="Serial number for ordering")
+    title = models.CharField(max_length=200, help_text="Title for the admission element")
+    content = RichTextField(help_text="Rich text content for the admission element")
+    curriculum_pdf = models.FileField(
+        upload_to='admission/curricula/',
+        blank=True,
+        null=True,
+        help_text="Upload curriculum PDF (for BSc and MCSE programs)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['sl']
+        verbose_name = 'Admission Element'
+        verbose_name_plural = 'Admission Elements'
+    
+    def __str__(self):
+        return f"{self.sl} - {self.title}"
+

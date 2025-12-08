@@ -890,6 +890,10 @@ body {
     position: relative;
 }
 
+.nav-dropdown:hover .dropdown-menu {
+    pointer-events: auto;
+}
+
 .dropdown-toggle {
     display: flex;
     align-items: center;
@@ -947,10 +951,15 @@ body {
     border-radius: 16px;
 }
 
-.nav-dropdown.active .dropdown-menu {
+.nav-dropdown.active .dropdown-menu,
+.nav-dropdown:hover .dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+}
+
+.nav-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
 }
 
 .dropdown-link {

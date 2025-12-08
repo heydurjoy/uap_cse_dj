@@ -114,13 +114,9 @@
                 <li class="nav-dropdown">
                     <a href="#" class="nav-link dropdown-toggle">Admission <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" class="dropdown-link">Admission Info</a></li>
-                        <li><a href="#" class="dropdown-link">Tuition Fees</a></li>
-                        <li><a href="#" class="dropdown-link">Waiver</a></li>
-                        <li><a href="#" class="dropdown-link">Programs</a></li>
-                        <li><a href="#" class="dropdown-link">BSc in CSE</a></li>
-                        <li><a href="#" class="dropdown-link">MCSE</a></li>
-                        <li><a href="#" class="dropdown-link">Apply Online</a></li>
+                        {% for element in admission_elements %}
+                        <li><a href="{% url 'designs:admission_element_detail' element.pk %}" class="dropdown-link">{{ element.title }}</a></li>
+                        {% endfor %}
                         <li><a href="#" class="dropdown-link">Admission Result</a></li>
                     </ul>
                 </li>

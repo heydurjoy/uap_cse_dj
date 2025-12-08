@@ -1,6 +1,6 @@
 from django.contrib import admin
 from image_cropping import ImageCroppingMixin
-from .models import FeatureCard, HeroTags
+from .models import FeatureCard, HeroTags, AdmissionElement
 
 
 @admin.register(FeatureCard)
@@ -30,3 +30,23 @@ class HeroTagsAdmin(admin.ModelAdmin):
     search_fields = ['title']
     ordering = ['sl']
     fields = ['sl', 'title', 'is_active']
+
+
+@admin.register(AdmissionElement)
+class AdmissionElementAdmin(admin.ModelAdmin):
+    list_display = ['sl', 'title', 'created_at', 'updated_at']
+    list_filter = ['created_at', 'updated_at']
+    search_fields = ['title', 'content']
+    ordering = ['sl']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('sl', 'title')
+        }),
+        ('Content', {
+            'fields': ('content',)
+        }),
+        ('Curriculum PDF', {
+            'fields': ('curriculum_pdf',),
+            'description': 'Upload curriculum PDF for BSc and MCSE programs'
+        }),
+    )

@@ -120,14 +120,14 @@
                 <h3 class="rules-title">Permission Rules</h3>
                 <div class="rules-content">
                     {% if user.access_level == '5' %}
-                        <p class="rule-item"><strong>Head (Level 5):</strong> Full access - Can do everything including creating users, managing courses, clubs, and all administrative tasks.</p>
+                        <p class="rule-item"><strong>Head (Level 5):</strong> Full access - Can do everything including creating users, managing courses, publishing admission test results, clubs, and all administrative tasks.</p>
                     {% elif user.access_level == '4' %}
-                        <p class="rule-item"><strong>Super Admin (Level 4):</strong> Can edit profile, manage courses, create/manage clubs, and create new users of any level.</p>
+                        <p class="rule-item"><strong>Super Admin (Level 4):</strong> Can edit profile, manage courses, publish admission test results, create/manage clubs, and create new users of any level.</p>
                         {% if profile_type == 'officer' %}
-                        <p class="rule-item"><strong>Officer with Super Admin:</strong> Can post notices, create new users (any level), create clubs, and assign club conveners.</p>
+                        <p class="rule-item"><strong>Officer with Super Admin:</strong> Can post notices, publish admission test results, create new users (any level), create clubs, and assign club conveners.</p>
                         {% endif %}
                     {% elif user.access_level == '3' %}
-                        <p class="rule-item"><strong>Course Access (Level 3):</strong> Can edit profile and manage courses.</p>
+                        <p class="rule-item"><strong>Course Access (Level 3):</strong> Can edit profile, manage courses, and publish admission test results (available to both Faculty and Officers).</p>
                     {% elif user.access_level == '2' %}
                         <p class="rule-item"><strong>General User (Level 2):</strong> Can edit your own profile.</p>
                     {% elif user.access_level == '1' %}
@@ -182,6 +182,19 @@
                         <p class="action-desc">Coming soon - Manage course content</p>
                     </div>
                 </div>
+                {% endif %}
+                
+                <!-- Publish Admission Test Results - Level 3+ (Faculty and Officers) -->
+                {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    <div class="action-card action-disabled">
+                        <div class="action-icon">📋</div>
+                        <div class="action-content">
+                            <h3 class="action-title">Publish Admission Test Results</h3>
+                            <p class="action-desc">Coming soon - Publish and manage admission test results</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 {% endif %}
                 
                 <!-- Manage Clubs - Level 4+ -->

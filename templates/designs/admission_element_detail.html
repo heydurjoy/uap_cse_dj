@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ element.title }} - Admission - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="admission-element-page">
+        <div class="admission-header">
+            <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+            <h1 class="admission-title">{{ element.title }}</h1>
+        </div>
+        
+        <div class="admission-content">
+            <div class="admission-rich-content">
+                {{ element.content|safe }}
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.admission-element-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.admission-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.admission-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.admission-content {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.admission-rich-content {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text-primary);
+}
+
+.admission-rich-content h1,
+.admission-rich-content h2,
+.admission-rich-content h3,
+.admission-rich-content h4,
+.admission-rich-content h5,
+.admission-rich-content h6 {
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.admission-rich-content h1 {
+    font-size: 2rem;
+}
+
+.admission-rich-content h2 {
+    font-size: 1.75rem;
+}
+
+.admission-rich-content h3 {
+    font-size: 1.5rem;
+}
+
+.admission-rich-content h4 {
+    font-size: 1.25rem;
+}
+
+.admission-rich-content p {
+    margin: 0 0 1.25rem 0;
+}
+
+.admission-rich-content p:last-child {
+    margin-bottom: 0;
+}
+
+.admission-rich-content ul,
+.admission-rich-content ol {
+    margin: 1rem 0;
+    padding-left: 2rem;
+}
+
+.admission-rich-content li {
+    margin: 0.5rem 0;
+}
+
+.admission-rich-content a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.admission-rich-content a:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.admission-rich-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.admission-rich-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.admission-rich-content table th,
+.admission-rich-content table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admission-rich-content table th {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.admission-rich-content blockquote {
+    border-left: 4px solid var(--color-primary);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text-secondary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+}
+
+.admission-rich-content code {
+    background: var(--bg-tertiary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--color-primary);
+}
+
+.admission-rich-content pre {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+.admission-rich-content pre code {
+    background: none;
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .admission-element-page {
+        padding: 1rem 0.5rem;
+    }
+    
+    .admission-title {
+        font-size: 2rem;
+    }
+    
+    .admission-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .admission-rich-content {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+}
+
+@media (max-width: 480px) {
+    .admission-title {
+        font-size: 1.75rem;
+    }
+    
+    .admission-content {
+        padding: 1.5rem 1rem;
+    }
+}
+</style>
+{% endblock %}
+
