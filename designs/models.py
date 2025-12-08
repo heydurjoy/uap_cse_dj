@@ -30,8 +30,24 @@ class FeatureCard(models.Model):
         return reverse('designs:feature_card_detail', kwargs={'pk': self.pk})
     
     def save(self, *args, **kwargs):
-        # Check if cropping coordinates are set and picture exists
-        if self.picture and self.cropping and self.cropping.strip():
+        is_update = self.pk is not None
+        # Detect if picture file was replaced
+        picture_changed = False
+        if is_update:
+            try:
+                old = FeatureCard.objects.get(pk=self.pk)
+                picture_changed = old.picture.name != self.picture.name
+            except FeatureCard.DoesNotExist:
+                picture_changed = False
+        else:
+            picture_changed = True
+
+        cropping_set = bool(self.picture and self.cropping and self.cropping.strip())
+
+        # Only apply cropping when coords exist AND the picture hasn't just been changed.
+        # This prevents aggressive cropping on first upload or when replacing an image.
+        # Admins can crop after saving the new image.
+        if cropping_set and is_update and not picture_changed:
             try:
                 # Get the original image path
                 if self.picture.name:
