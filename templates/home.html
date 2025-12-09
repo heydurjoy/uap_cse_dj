@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - Design System{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -432,45 +432,66 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const allCards = Array.from(document.querySelectorAll(".polaroid-link"));
-    const visibleCount = 3;
+  const allCards = Array.from(document.querySelectorAll(".polaroid-link"));
+  const visibleCount = 3;
+  let index = 0;
 
-    // Initial positions for the top 3 cards
-    const positions = [
-        { top: 0, left: 0, z: 3 },
-        { top: 35, left: 45, z: 2 },
-        { top: 70, left: 90, z: 1 }
-    ];
+  function getPositions() {
+    const isMobile = window.innerWidth <= 768;
+    return isMobile
+      ? [
+          { x: 20, y: 0, z: 3 },
+          { x: 45, y: 25, z: 2 },
+          { x: 70, y: 50, z: 1 },
+        ]
+      : [
+          { x: 0, y: 0, z: 3 },
+          { x: 45, y: 35, z: 2 },
+          { x: 90, y: 70, z: 1 },
+        ];
+  }
 
-    let index = 0; // index of the top card
+  function showCards() {
+    const positions = getPositions();
 
-    function showCards() {
-        allCards.forEach((card, i) => {
-            card.style.display = "none"; // hide all
-            card.classList.remove("moving-back", "moving-forward");
-        });
+    // Hide all cards first
+    allCards.forEach(card => {
+      card.style.position = "absolute";
+      card.style.transition = "transform 0.6s ease, opacity 0.6s ease";
+      card.style.opacity = "0";
+      card.style.pointerEvents = "none";
+      card.style.zIndex = "0";
+      card.style.transform = "translate(0,0)";
+      const frame = card.querySelector(".polaroid-frame");
+      frame.classList.remove("moving-forward", "moving-back");
+    });
 
-        for (let i = 0; i < visibleCount; i++) {
-            const card = allCards[(index + i) % allCards.length];
-            const pos = positions[i];
-            card.style.display = "block";
-            card.style.top = pos.top + "px";
-            card.style.left = pos.left + "px";
-            card.style.zIndex = pos.z;
+    // Show only visibleCount cards
+    for (let i = 0; i < visibleCount; i++) {
+      const card = allCards[(index + i) % allCards.length];
+      const pos = positions[i];
 
-            // Add scale/opacity effect
-            if (i === 0) card.classList.add("moving-forward");
-            else card.classList.add("moving-back");
-        }
+      card.style.opacity = "1";
+      card.style.pointerEvents = "auto";
+      card.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+      card.style.zIndex = pos.z;
+
+      const frame = card.querySelector(".polaroid-frame");
+      frame.classList.add(i === 0 ? "moving-forward" : "moving-back");
     }
+  }
 
-    showCards(); // initial display
+  // Initial load
+  showCards();
 
-    // Shuffle every 3 seconds
-    setInterval(() => {
-        index = (index + 1) % allCards.length;
-        showCards();
-    }, 3000);
+  // Shuffle every 3 seconds
+  setInterval(() => {
+    index = (index + 1) % allCards.length;
+    showCards();
+  }, 3000);
+
+  // Re-run on resize
+  window.addEventListener("resize", showCards);
 });
 </script>
 
