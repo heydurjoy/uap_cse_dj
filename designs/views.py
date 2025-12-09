@@ -129,6 +129,16 @@ def admission_element_detail(request, pk):
             
             courses = courses_list
             
+            # Calculate total marks for each category for percentage calculations
+            if lifetime_stats:
+                lifetime_stats['totals'] = {
+                    'program_outcomes': sum(data['marks'] for data in lifetime_stats['program_outcomes'].values()),
+                    'blooms': sum(data['marks'] for data in lifetime_stats['blooms'].values()),
+                    'knowledge': sum(data['marks'] for data in lifetime_stats['knowledge'].values()),
+                    'problem': sum(data['marks'] for data in lifetime_stats['problem'].values()),
+                    'activity': sum(data['marks'] for data in lifetime_stats['activity'].values()),
+                }
+            
     except ImportError:
         # Academics app not available or models not migrated yet
         lifetime_stats = None
@@ -141,9 +151,21 @@ def admission_element_detail(request, pk):
     if program:
         try:
             from academics.models import ProgramOutcome
-            program_outcomes = ProgramOutcome.objects.filter(program=program).order_by('code')
+            import re
+            # Fetch all POs and sort them numerically by the number in the code
+            pos_list = list(ProgramOutcome.objects.filter(program=program))
+            # Sort by extracting the numeric part from the code (e.g., "PO1" -> 1, "PO10" -> 10)
+            pos_list.sort(key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0)
+            program_outcomes = pos_list
         except ImportError:
             pass
+        except Exception:
+            # Fallback to simple ordering if regex fails
+            try:
+                from academics.models import ProgramOutcome
+                program_outcomes = ProgramOutcome.objects.filter(program=program).order_by('code')
+            except ImportError:
+                pass
     
     context = {
         'element': element,

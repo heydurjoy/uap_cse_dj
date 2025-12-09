@@ -110,34 +110,38 @@
                                 <table class="stats-table">
                                     <thead>
                                         <tr>
-                                            <th>PO</th>
-                                            <th>Title</th>
+                                            <th>PO & Title</th>
                                             <th>Credits</th>
                                             <th>Marks</th>
+                                            <th>% of Marks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% if program_outcomes %}
                                         {% for po in program_outcomes %}
                                         {% with data=lifetime_stats.program_outcomes|get_item:po.code %}
+                                        {% with total=lifetime_stats.totals.program_outcomes %}
                                         <tr>
-                                            <td><strong>{{ po.code }}</strong></td>
-                                            <td>{{ po.title }}</td>
+                                            <td><strong>{{ po.code }}:</strong> {{ po.title }}</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
                                         </tr>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endfor %}
                                         {% else %}
                                         {% for po_num in "1,2,3,4,5,6,7,8,9,10,11,12"|split_string:"," %}
                                         {% with po_code="PO"|add:po_num %}
                                         {% with data=lifetime_stats.program_outcomes|get_item:po_code %}
+                                        {% with total=lifetime_stats.totals.program_outcomes %}
                                         <tr>
-                                            <td><strong>{{ po_code }}</strong></td>
-                                            <td>-</td>
+                                            <td><strong>{{ po_code }}:</strong> -</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
                                         </tr>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                         {% endfor %}
@@ -154,16 +158,20 @@
                                             <th>Level</th>
                                             <th>Credits</th>
                                             <th>Marks</th>
+                                            <th>% of Marks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for level in "K1,K2,K3,K4,K5,K6"|split_string:"," %}
                                         {% with data=lifetime_stats.blooms|get_item:level %}
+                                        {% with total=lifetime_stats.totals.blooms %}
                                         <tr>
-                                            <td>{{ level }}</td>
+                                            <td><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
                                         </tr>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endfor %}
                                     </tbody>
@@ -178,16 +186,20 @@
                                             <th>Profile</th>
                                             <th>Credits</th>
                                             <th>Marks</th>
+                                            <th>% of Marks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for k in "K1,K2,K3,K4,K5,K6,K7,K8"|split_string:"," %}
                                         {% with data=lifetime_stats.knowledge|get_item:k %}
+                                        {% with total=lifetime_stats.totals.knowledge %}
                                         <tr>
-                                            <td>{{ k }}</td>
+                                            <td><strong>{{ k }}:</strong> {{ k|get_kp_display }}</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
                                         </tr>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endfor %}
                                     </tbody>
@@ -202,16 +214,20 @@
                                             <th>Attribute</th>
                                             <th>Credits</th>
                                             <th>Marks</th>
+                                            <th>% of Marks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for p in "P1,P2,P3,P4,P5,P6,P7"|split_string:"," %}
                                         {% with data=lifetime_stats.problem|get_item:p %}
+                                        {% with total=lifetime_stats.totals.problem %}
                                         <tr>
-                                            <td>{{ p }}</td>
+                                            <td><strong>{{ p }}:</strong> {{ p|get_pa_display }}</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
                                         </tr>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endfor %}
                                     </tbody>
@@ -226,16 +242,20 @@
                                             <th>Attribute</th>
                                             <th>Credits</th>
                                             <th>Marks</th>
+                                            <th>% of Marks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for a in "A1,A2,A3,A4,A5"|split_string:"," %}
                                         {% with data=lifetime_stats.activity|get_item:a %}
+                                        {% with total=lifetime_stats.totals.activity %}
                                         <tr>
-                                            <td>{{ a }}</td>
+                                            <td><strong>{{ a }}:</strong> {{ a|get_a_display }}</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
                                         </tr>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endfor %}
                                     </tbody>
@@ -990,7 +1010,6 @@
         font-size: 0.85rem;
     }
 }
-</style>
 
 /* You Should Know Button (Pill Style) */
 .you-should-know-btn-pill {
@@ -1022,7 +1041,8 @@
     background: linear-gradient(45deg, var(--color-primary), #00d4ff, #7c3aed, #00d4ff, var(--color-primary));
     background-size: 400% 400%;
     animation: running-border 3s linear infinite;
-    z-index: -1;
+    z-index: 0;
+    opacity: 1;
 }
 
 .you-should-know-btn-pill::after {
@@ -1034,7 +1054,13 @@
     bottom: -1px;
     border-radius: 50px;
     background: var(--color-primary);
-    z-index: -1;
+    z-index: 1;
+}
+
+.you-should-know-btn-pill span,
+.you-should-know-btn-pill .toggle-icon {
+    position: relative;
+    z-index: 2;
 }
 
 @keyframes running-border {
@@ -1202,17 +1228,20 @@
     border: 2px solid var(--color-primary);
     background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
 }
 
 .stats-table-wrapper.po-table-highlight h4 {
     color: var(--color-primary);
     font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
 }
 
 .stats-table-wrapper h4 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--text-primary);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-weight: 600;
 }
 
@@ -1220,9 +1249,9 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
 }
 
@@ -1231,11 +1260,11 @@
 }
 
 .stats-table th {
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.6rem;
     text-align: left;
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     border-bottom: 2px solid var(--border-color);
     border-right: 1px solid var(--border-color);
 }
@@ -1245,10 +1274,22 @@
 }
 
 .stats-table td {
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.6rem;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
+    line-height: 1.4;
+}
+
+.stats-table td:first-child {
+    min-width: 180px;
+    max-width: 280px;
+    font-size: 0.75rem;
+}
+
+.stats-table td:first-child strong {
+    color: var(--color-primary);
+    font-weight: 600;
 }
 
 .stats-table td:last-child {
@@ -1287,6 +1328,7 @@
         padding: 0.4rem 0.3rem;
     }
 }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

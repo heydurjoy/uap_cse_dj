@@ -25,7 +25,12 @@ def get_blooms_display(value):
     from academics.models import BLOOMS_CHOICES
     for code, display in BLOOMS_CHOICES:
         if code == value:
-            return display.split(':')[1].strip() if ':' in display else display
+            # Extract the description part after the colon
+            if ':' in display:
+                parts = display.split(':', 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+            return display
     return value
 
 
@@ -35,7 +40,12 @@ def get_kp_display(value):
     from academics.models import KP_CHOICES
     for code, display in KP_CHOICES:
         if code == value:
-            return display.split(':')[1].strip() if ':' in display else display
+            # Extract the description part after the colon
+            if ':' in display:
+                parts = display.split(':', 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+            return display
     return value
 
 
@@ -45,7 +55,12 @@ def get_pa_display(value):
     from academics.models import PA_CHOICES
     for code, display in PA_CHOICES:
         if code == value:
-            return display.split(':')[1].strip() if ':' in display else display
+            # Extract the description part after the colon
+            if ':' in display:
+                parts = display.split(':', 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+            return display
     return value
 
 
@@ -55,7 +70,12 @@ def get_a_display(value):
     from academics.models import A_CHOICES
     for code, display in A_CHOICES:
         if code == value:
-            return display.split(':')[1].strip() if ':' in display else display
+            # Extract the description part after the colon
+            if ':' in display:
+                parts = display.split(':', 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+            return display
     return value
 
 
@@ -66,4 +86,25 @@ def add(value, arg):
         return str(value) + str(arg)
     except (ValueError, TypeError):
         return ''
+
+
+@register.filter
+def mul(value, arg):
+    """Multiply value by arg"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
+
+
+@register.filter
+def div(value, arg):
+    """Divide value by arg"""
+    try:
+        arg_float = float(arg)
+        if arg_float == 0:
+            return 0
+        return float(value) / arg_float
+    except (ValueError, TypeError):
+        return 0
 
