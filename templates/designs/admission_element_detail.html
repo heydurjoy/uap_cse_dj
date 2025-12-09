@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load academics_filters %}
 
 {% block title %}{{ element.title }} - Admission - CSE UAP{% endblock %}
 
@@ -15,6 +16,353 @@
             <div class="admission-rich-content">
                 {{ element.content|safe }}
             </div>
+            
+            {% if program and courses %}
+            <div class="program-courses-section">
+                <h2 class="courses-section-title">Curriculum & Course Outcomes</h2>
+                <p class="courses-section-subtitle">Complete list of courses for {{ program.name }}</p>
+                
+                <div class="semester-filter-pills">
+                    <button class="semester-pill active" data-semester="all">All Semesters</button>
+                    <button class="semester-pill" data-semester="1-1">1-1</button>
+                    <button class="semester-pill" data-semester="1-2">1-2</button>
+                    <button class="semester-pill" data-semester="2-1">2-1</button>
+                    <button class="semester-pill" data-semester="2-2">2-2</button>
+                    <button class="semester-pill" data-semester="3-1">3-1</button>
+                    <button class="semester-pill" data-semester="3-2">3-2</button>
+                    <button class="semester-pill" data-semester="4-1">4-1</button>
+                    <button class="semester-pill" data-semester="4-2">4-2</button>
+                    {% if lifetime_stats %}
+                    <button class="you-should-know-btn-pill" id="youShouldKnowBtn" type="button">
+                        <span>You Should Know</span>
+                        <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
+                
+                {% if lifetime_stats %}
+                <div class="you-should-know-content" id="youShouldKnowContent" style="display: none;">
+                    <div class="ys-know-intro">
+                        <h3>Program Outcomes (POs) - Washington Accord</h3>
+                        <p><strong>Program Outcomes (POs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. POs are attained through <strong>Course Outcomes (COs)</strong>, where each CO maps to a specific PO. We measure your progress using <strong>Bloom's Taxonomy (K1-K6)</strong>, <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive skill development throughout your 4-year journey.</p>
+                    </div>
+                    
+                    <div class="definitions-grid">
+                        <div class="definition-card">
+                            <h4>Bloom's Taxonomy (K1-K6)</h4>
+                            <ul class="definition-list">
+                                <li><strong>K1:</strong> Remember - Recall facts and basic concepts</li>
+                                <li><strong>K2:</strong> Understand - Explain ideas and concepts</li>
+                                <li><strong>K3:</strong> Apply - Use information in new situations</li>
+                                <li><strong>K4:</strong> Analyze - Draw connections among ideas</li>
+                                <li><strong>K5:</strong> Evaluate - Justify a stand or decision</li>
+                                <li><strong>K6:</strong> Create - Produce new or original work</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="definition-card">
+                            <h4>Knowledge Profiles (K1-K8)</h4>
+                            <ul class="definition-list">
+                                <li><strong>K1:</strong> Natural Sciences (Physics, Chemistry, Biology)</li>
+                                <li><strong>K2:</strong> Math/Stats (Analytical tools)</li>
+                                <li><strong>K3:</strong> Engineering Fundamentals</li>
+                                <li><strong>K4:</strong> Specialist Knowledge</li>
+                                <li><strong>K5:</strong> Design Support</li>
+                                <li><strong>K6:</strong> Engineering Practice</li>
+                                <li><strong>K7:</strong> Society & Ethics</li>
+                                <li><strong>K8:</strong> Research Literature</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="definition-card">
+                            <h4>Problem Attributes (P1-P7)</h4>
+                            <ul class="definition-list">
+                                <li><strong>P1:</strong> In-Depth Knowledge Required</li>
+                                <li><strong>P2:</strong> Wide-Ranging/Conflicting Requirements</li>
+                                <li><strong>P3:</strong> No Obvious Solution</li>
+                                <li><strong>P4:</strong> Infrequently Encountered</li>
+                                <li><strong>P5:</strong> Outside Standards/Codes</li>
+                                <li><strong>P6:</strong> Diverse Stakeholder Needs</li>
+                                <li><strong>P7:</strong> Many Interdependent Parts</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="definition-card">
+                            <h4>Activity Attributes (A1-A5)</h4>
+                            <ul class="definition-list">
+                                <li><strong>A1:</strong> Diverse Resource Use</li>
+                                <li><strong>A2:</strong> Resolve Significant Conflicts</li>
+                                <li><strong>A3:</strong> Creative Use of Principles</li>
+                                <li><strong>A4:</strong> Significant Consequences</li>
+                                <li><strong>A5:</strong> Beyond Previous Experience</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="lifetime-stats-section">
+                        <h3>Your 4-Year Journey: Credits & Marks Distribution</h3>
+                        
+                        <div class="stats-tables">
+                            <div class="stats-table-wrapper po-table-highlight">
+                                <h4>Program Outcomes (POs) - Washington Accord</h4>
+                                <table class="stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>PO</th>
+                                            <th>Title</th>
+                                            <th>Credits</th>
+                                            <th>Marks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if program_outcomes %}
+                                        {% for po in program_outcomes %}
+                                        {% with data=lifetime_stats.program_outcomes|get_item:po.code %}
+                                        <tr>
+                                            <td><strong>{{ po.code }}</strong></td>
+                                            <td>{{ po.title }}</td>
+                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% endfor %}
+                                        {% else %}
+                                        {% for po_num in "1,2,3,4,5,6,7,8,9,10,11,12"|split_string:"," %}
+                                        {% with po_code="PO"|add:po_num %}
+                                        {% with data=lifetime_stats.program_outcomes|get_item:po_code %}
+                                        <tr>
+                                            <td><strong>{{ po_code }}</strong></td>
+                                            <td>-</td>
+                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% endwith %}
+                                        {% endfor %}
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="stats-table-wrapper">
+                                <h4>Bloom's Taxonomy Levels</h4>
+                                <table class="stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Level</th>
+                                            <th>Credits</th>
+                                            <th>Marks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for level in "K1,K2,K3,K4,K5,K6"|split_string:"," %}
+                                        {% with data=lifetime_stats.blooms|get_item:level %}
+                                        <tr>
+                                            <td>{{ level }}</td>
+                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="stats-table-wrapper">
+                                <h4>Knowledge Profiles</h4>
+                                <table class="stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Profile</th>
+                                            <th>Credits</th>
+                                            <th>Marks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for k in "K1,K2,K3,K4,K5,K6,K7,K8"|split_string:"," %}
+                                        {% with data=lifetime_stats.knowledge|get_item:k %}
+                                        <tr>
+                                            <td>{{ k }}</td>
+                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="stats-table-wrapper">
+                                <h4>Problem Attributes</h4>
+                                <table class="stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Attribute</th>
+                                            <th>Credits</th>
+                                            <th>Marks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in "P1,P2,P3,P4,P5,P6,P7"|split_string:"," %}
+                                        {% with data=lifetime_stats.problem|get_item:p %}
+                                        <tr>
+                                            <td>{{ p }}</td>
+                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="stats-table-wrapper">
+                                <h4>Activity Attributes</h4>
+                                <table class="stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Attribute</th>
+                                            <th>Credits</th>
+                                            <th>Marks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for a in "A1,A2,A3,A4,A5"|split_string:"," %}
+                                        {% with data=lifetime_stats.activity|get_item:a %}
+                                        <tr>
+                                            <td>{{ a }}</td>
+                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% regroup courses by year_semester as courses_by_semester %}
+                {% for semester_group in courses_by_semester %}
+                <div class="course-semester-group" data-semester="{{ semester_group.grouper }}">
+                    <h3 class="course-semester-title">
+                        {{ semester_group.list.0.get_year_semester_display }}
+                    </h3>
+                    
+                    {% regroup semester_group.list by course_type as courses_by_type %}
+                    {% for course_type_group in courses_by_type %}
+                    <div class="course-type-subgroup">
+                        <h4 class="course-type-subtitle">
+                            {% if course_type_group.grouper == 'TH' %}
+                                Theory Courses
+                            {% else %}
+                                Laboratory Courses
+                            {% endif %}
+                        </h4>
+                        
+                        <div class="courses-grid">
+                        {% for course in course_type_group.list %}
+                        <div class="course-tile">
+                            <div class="course-tile-header">
+                                <span class="course-code-badge">{{ course.course_code }}</span>
+                                <span class="course-type-badge {% if course.course_type == 'TH' %}theory{% else %}lab{% endif %}">
+                                    {{ course.get_course_type_display }}
+                                </span>
+                            </div>
+                            
+                            <div class="course-year-semester">
+                                <span class="year-semester-badge">{{ course.get_year_semester_display }}</span>
+                            </div>
+                            
+                            <h4 class="course-tile-title">{{ course.title }}</h4>
+                            
+                            <div class="course-tile-hours">
+                                <span>{{ course.credit_hours }} Cr</span>
+                                <span>•</span>
+                                <span>{{ course.contact_hours }} Hr</span>
+                            </div>
+                            
+                            {% if course.prerequisites.all %}
+                            <div class="course-prerequisites">
+                                <span class="prereq-label">Prerequisites:</span>
+                                <div class="prereq-codes">
+                                    {% for prereq in course.prerequisites.all %}
+                                    <span class="prereq-code">{{ prereq.course_code }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if course.stats %}
+                            <div class="course-tile-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">COs</span>
+                                    <span class="stat-value">{{ course.stats.co_count }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">POs</span>
+                                    <span class="stat-value">{{ course.stats.po_count }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Ks</span>
+                                    <span class="stat-value">{{ course.stats.k_count }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Ps</span>
+                                    <span class="stat-value">{{ course.stats.p_count }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">As</span>
+                                    <span class="stat-value">{{ course.stats.a_count }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Blooms</span>
+                                    <span class="stat-value">{{ course.stats.blooms_count }}</span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="course-tile-stats">
+                                <span class="no-outcomes">No outcomes defined</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if course.course_outline_pdf %}
+                            <a href="{{ course.course_outline_pdf.url }}" target="_blank" class="course-pdf-link-tile">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                PDF
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if element.curriculum_pdf %}
+            <div class="curriculum-download">
+                <h3>Curriculum</h3>
+                <a href="{{ element.curriculum_pdf.url }}" target="_blank" class="download-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Curriculum PDF
+                </a>
+            </div>
+            {% endif %}
         </div>
     </section>
 </div>
@@ -218,6 +566,806 @@
         padding: 1.5rem 1rem;
     }
 }
+
+/* Program Courses Section */
+.program-courses-section {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--border-color);
+    width: 100%;
+    overflow: visible;
+}
+
+.courses-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.courses-section-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem;
+}
+
+.course-semester-group {
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.course-semester-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.course-type-subgroup {
+    margin-bottom: 2rem;
+    width: 100%;
+    overflow: visible;
+    display: block;
+}
+
+.course-type-subgroup:last-child {
+    margin-bottom: 0;
+}
+
+.course-type-subtitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--color-primary);
+}
+
+.courses-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    grid-auto-flow: row !important;
+    align-items: start !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    box-sizing: border-box !important;
+}
+
+.courses-grid .course-tile {
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+}
+
+.course-tile {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.course-tile:hover {
+    box-shadow: 0 4px 12px var(--shadow);
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+}
+
+.course-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 0.4rem;
+}
+
+.course-code-badge {
+    display: inline-block;
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.6rem;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.course-type-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.course-type-badge.theory {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+}
+
+.course-type-badge.lab {
+    background: color-mix(in srgb, #10b981 15%, transparent);
+    color: #10b981;
+}
+
+.course-year-semester {
+    margin-bottom: 0.4rem;
+}
+
+.year-semester-badge {
+    display: inline-block;
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.course-tile-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+.course-tile-hours {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+    font-weight: 500;
+}
+
+.course-prerequisites {
+    margin-bottom: 0.6rem;
+    padding: 0.4rem;
+    background: var(--bg-secondary);
+    border-radius: 5px;
+    font-size: 0.7rem;
+}
+
+.prereq-label {
+    display: block;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+
+.prereq-codes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.prereq-code {
+    display: inline-block;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 0.65rem;
+    border: 1px solid var(--border-color);
+}
+
+.course-tile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.4rem 0.2rem;
+    background: var(--bg-secondary);
+    border-radius: 5px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+
+.stat-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.no-outcomes {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    font-style: italic;
+    grid-column: 1 / -1;
+    padding: 0.5rem;
+}
+
+.course-pdf-link-tile {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.7rem;
+    background: var(--bg-tertiary);
+    color: var(--color-primary);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: auto;
+    width: fit-content;
+}
+
+.course-pdf-link-tile:hover {
+    background: var(--color-primary-light);
+    transform: translateY(-1px);
+}
+
+.course-pdf-link-tile svg {
+    flex-shrink: 0;
+}
+
+.curriculum-download {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.curriculum-download h3 {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.75rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
+.download-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-md);
+    text-decoration: none;
+}
+
+.download-btn svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+    .courses-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .courses-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .courses-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+    }
+    
+    .course-tile {
+        padding: 0.8rem;
+    }
+    
+    .course-tile-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.35rem;
+    }
+    
+    .stat-item {
+        padding: 0.35rem 0.15rem;
+    }
+    
+    .stat-label {
+        font-size: 0.6rem;
+    }
+    
+    .stat-value {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .courses-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Semester Filter Pills */
+.semester-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    justify-content: center;
+}
+
+.semester-pill {
+    padding: 0.6rem 1.25rem;
+    border-radius: 50px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.semester-pill:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.semester-pill.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
+.semester-pill.active:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+}
+
+.course-semester-group {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.course-semester-group.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .semester-filter-pills {
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    .semester-pill,
+    .you-should-know-btn-pill {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+}
 </style>
+
+/* You Should Know Button (Pill Style) */
+.you-should-know-btn-pill {
+    padding: 0.6rem 1.25rem;
+    border-radius: 50px;
+    border: 2px solid transparent;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: visible;
+}
+
+.you-should-know-btn-pill::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50px;
+    background: linear-gradient(45deg, var(--color-primary), #00d4ff, #7c3aed, #00d4ff, var(--color-primary));
+    background-size: 400% 400%;
+    animation: running-border 3s linear infinite;
+    z-index: -1;
+}
+
+.you-should-know-btn-pill::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: 50px;
+    background: var(--color-primary);
+    z-index: -1;
+}
+
+@keyframes running-border {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.you-should-know-btn-pill:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.you-should-know-btn-pill .toggle-icon {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 16px;
+    height: 16px;
+}
+
+.you-should-know-btn-pill.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* You Should Know Content */
+.you-should-know-content {
+    margin-top: 1.5rem;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+        margin-top: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 5000px;
+        margin-top: 1.5rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 5000px;
+        margin-top: 1.5rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+        margin-top: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+.ys-know-intro {
+    margin-bottom: 2rem;
+}
+
+.ys-know-intro h3 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.ys-know-intro p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+}
+
+.definitions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.definition-card {
+    background: var(--bg-primary);
+    padding: 1.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.definition-card h4 {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.definition-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.definition-list li {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.definition-list li strong {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.lifetime-stats-section {
+    margin-top: 2rem;
+}
+
+.lifetime-stats-section h3 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.stats-tables {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+.stats-table-wrapper {
+    background: var(--bg-primary);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stats-table-wrapper.po-table-highlight {
+    border: 2px solid var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stats-table-wrapper.po-table-highlight h4 {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.stats-table-wrapper h4 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.stats-table thead {
+    background: var(--bg-tertiary);
+}
+
+.stats-table th {
+    padding: 0.75rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    border-bottom: 2px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.stats-table th:last-child {
+    border-right: none;
+}
+
+.stats-table td {
+    padding: 0.75rem 0.75rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.stats-table td:last-child {
+    border-right: none;
+}
+
+.stats-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.stats-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+@media (max-width: 768px) {
+    .definitions-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stats-tables {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .you-should-know-content {
+        padding: 1.5rem;
+    }
+    
+    .stats-table {
+        font-size: 0.85rem;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 0.4rem 0.3rem;
+    }
+}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pills = document.querySelectorAll('.semester-pill');
+    const semesterGroups = document.querySelectorAll('.course-semester-group');
+    
+    pills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            const selectedSemester = this.getAttribute('data-semester');
+            
+            // Update active state
+            pills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter courses
+            semesterGroups.forEach(group => {
+                const groupSemester = group.getAttribute('data-semester');
+                
+                if (selectedSemester === 'all') {
+                    group.classList.remove('hidden');
+                } else if (groupSemester === selectedSemester) {
+                    group.classList.remove('hidden');
+                } else {
+                    group.classList.add('hidden');
+                }
+            });
+        });
+    });
+    
+    // Add event listener for "You Should Know" button
+    const youShouldKnowBtn = document.getElementById('youShouldKnowBtn');
+    const youShouldKnowContent = document.getElementById('youShouldKnowContent');
+    
+    if (youShouldKnowBtn && youShouldKnowContent) {
+        youShouldKnowBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isHidden = youShouldKnowContent.style.display === 'none' || 
+                           youShouldKnowContent.style.display === '' ||
+                           window.getComputedStyle(youShouldKnowContent).display === 'none';
+            
+            if (isHidden) {
+                youShouldKnowContent.style.display = 'block';
+                youShouldKnowBtn.classList.add('active');
+            } else {
+                youShouldKnowContent.style.display = 'none';
+                youShouldKnowBtn.classList.remove('active');
+            }
+        });
+    }
+});
+
+// Make function globally accessible
+window.toggleYouShouldKnow = function() {
+    const content = document.getElementById('youShouldKnowContent');
+    const btn = document.querySelector('.you-should-know-btn-pill');
+    
+    if (!content) {
+        console.error('Could not find content element with ID: youShouldKnowContent');
+        return;
+    }
+    
+    if (!btn) {
+        console.error('Could not find button element with class: you-should-know-btn-pill');
+        return;
+    }
+    
+    const currentDisplay = window.getComputedStyle(content).display;
+    const isHidden = currentDisplay === 'none' || content.style.display === 'none' || content.style.display === '';
+    
+    if (isHidden) {
+        content.style.display = 'block';
+        btn.classList.add('active');
+    } else {
+        content.style.display = 'none';
+        btn.classList.remove('active');
+    }
+};
+</script>
 {% endblock %}
 

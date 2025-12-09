@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'image_cropping',
     'designs',
     'people',
+    'academics',
 ]
 
 # Custom User Model

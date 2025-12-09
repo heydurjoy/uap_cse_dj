@@ -32,6 +32,7 @@ urlpatterns = [
     path('reset-password/<str:token>/', views.reset_password, name='reset_password'),
     path('designs/', include('designs.urls')),
     path('people/', include('people.urls')),
+    path('academics/', include('academics.urls')),
 ]
 
 # Serve media files in development
