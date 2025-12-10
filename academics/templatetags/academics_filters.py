@@ -80,6 +80,27 @@ def get_a_display(value):
 
 
 @register.filter
+def blooms_short(value):
+    """Extract short blooms display like 'K2: Understand' from full display"""
+    if not value:
+        return value
+    # Split by '(' to get the part before the parenthesis
+    if '(' in value:
+        return value.split('(')[0].strip()
+    return value
+
+
+@register.filter
+def po_to_plo(value):
+    """Convert PO codes to PLO codes (e.g., PO1 -> PLO1)"""
+    if not value:
+        return value
+    if isinstance(value, str):
+        return value.replace('PO', 'PLO')
+    return value
+
+
+@register.filter
 def add(value, arg):
     """Add arg to value"""
     try:

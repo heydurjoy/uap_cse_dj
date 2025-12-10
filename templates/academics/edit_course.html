@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load academics_filters %}
 
 {% block title %}Edit Course - CSE UAP{% endblock %}
 
@@ -106,8 +107,8 @@
                 
                 <div class="form-section">
                     <div class="section-header-with-action">
-                        <h3>Course Outcomes (COs)</h3>
-                        <button type="button" id="addCOBtn" class="add-co-btn">+ Add CO</button>
+                        <h3>Course Learning Outcomes (CLOs)</h3>
+                        <button type="button" id="addCOBtn" class="add-co-btn">+ Add CLO</button>
                     </div>
                     <p class="section-note">Total Marks: <strong id="totalMarksDisplay">{{ total_marks }}</strong>/100 
                         <span id="marksIndicator" class="{% if total_marks != 100 %}marks-warning{% else %}marks-ok{% endif %}">
@@ -119,8 +120,8 @@
                         <table class="co-table">
                             <thead>
                                 <tr>
-                                    <th>CO#</th>
-                                    <th>PO</th>
+                                    <th>CLO#</th>
+                                    <th>PLO</th>
                                     <th>Statement</th>
                                     <th>Blooms</th>
                                     <th>K</th>
@@ -139,10 +140,10 @@
                                         <input type="number" name="co_{{ co.id }}_sequence" value="{{ co.sequence_number }}" min="1" required class="co-input-small">
                                     </td>
                                     <td>
-                                        <select name="co_{{ co.id }}_po" required class="co-select co-select-detailed" title="{% if co.program_outcome %}{{ co.program_outcome.code }}: {{ co.program_outcome.title }}{% endif %}">
+                                        <select name="co_{{ co.id }}_po" required class="co-select co-select-detailed" title="{% if co.program_outcome %}{{ co.program_outcome.code|po_to_plo }}: {{ co.program_outcome.title }}{% endif %}">
                                             {% for po in program_outcomes %}
-                                            <option value="{{ po.id }}" {% if co.program_outcome.id == po.id %}selected{% endif %} data-code="{{ po.code }}" data-title="{{ po.title }}">
-                                                {{ po.code }}: {{ po.title }}
+                                            <option value="{{ po.id }}" {% if co.program_outcome.id == po.id %}selected{% endif %} data-code="{{ po.code|po_to_plo }}" data-title="{{ po.title }}">
+                                                {{ po.code|po_to_plo }}: {{ po.title }}
                                             </option>
                                             {% endfor %}
                                         </select>
@@ -619,7 +620,8 @@ function addNewCO() {
     
     let poOptions = '';
     programOutcomes.forEach(po => {
-        poOptions += `<option value="${po.id}" data-code="${po.code}" data-title="${po.title}">${po.code}: ${po.title}</option>`;
+        const ploCode = po.code.replace('PO', 'PLO');
+        poOptions += `<option value="${po.id}" data-code="${ploCode}" data-title="${po.title}">${ploCode}: ${po.title}</option>`;
     });
     
     coRow.innerHTML = `
@@ -694,7 +696,7 @@ function addNewCO() {
 }
 
 function removeCO(btn) {
-    if (confirm('Are you sure you want to remove this Course Outcome?')) {
+    if (confirm('Are you sure you want to remove this Course Learning Outcome?')) {
         const coRow = btn.closest('.co-row');
         coRow.remove();
         updateTotalMarks();

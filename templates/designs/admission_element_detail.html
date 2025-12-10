@@ -35,7 +35,7 @@
 
             {% if program and courses %}
             <div class="program-courses-section">
-                <h2 class="courses-section-title">Curriculum & Course Outcomes</h2>
+                <h2 class="courses-section-title">Curriculum & Course Learning Outcomes</h2>
                 <p class="courses-section-subtitle">Complete list of courses for {{ program.name }}</p>
 
                 <div class="semester-filter-pills">
@@ -61,8 +61,8 @@
                 {% if lifetime_stats %}
                 <div class="you-should-know-content" id="youShouldKnowContent" style="display: none;">
                     <div class="ys-know-intro">
-                        <h3>Program Outcomes (POs) - Washington Accord</h3>
-                        <p><strong>Program Outcomes (POs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. POs are attained through <strong>Course Outcomes (COs)</strong>, where each CO maps to a specific PO. We measure your progress using <strong>Bloom's Taxonomy (K1-K6)</strong>, <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive skill development throughout your 4-year journey.</p>
+                        <h3>Program Learning Outcomes (PLOs) - Washington Accord</h3>
+                        <p><strong>Program Learning Outcomes (PLOs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. PLOs are attained through <strong>Course Learning Outcomes (CLOs)</strong>, where each CLO maps to a specific PLO. We measure your progress using <strong>Bloom's Taxonomy (K1-K6)</strong>, <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive skill development throughout your 4-year journey.</p>
                     </div>
 
                     <div class="definitions-grid">
@@ -122,11 +122,11 @@
 
                         <div class="stats-tables">
                             <div class="stats-table-wrapper po-table-highlight">
-                                <h4>Program Outcomes (POs) - Washington Accord</h4>
+                                <h4>Program Learning Outcomes (PLOs) - Washington Accord</h4>
                                 <table class="stats-table">
                                     <thead>
                                         <tr>
-                                            <th>PO & Title</th>
+                                            <th>PLO & Title</th>
                                             <th>Credits</th>
                                             <th>Marks</th>
                                             <th>% of Marks</th>
@@ -138,7 +138,7 @@
                                         {% with data=lifetime_stats.program_outcomes|get_item:po.code %}
                                         {% with total=lifetime_stats.totals.program_outcomes %}
                                         <tr>
-                                            <td><strong>{{ po.code }}:</strong> {{ po.title }}</td>
+                                            <td><strong>{{ po.code|po_to_plo }}:</strong> {{ po.title }}</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
                                             <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
@@ -152,7 +152,7 @@
                                         {% with data=lifetime_stats.program_outcomes|get_item:po_code %}
                                         {% with total=lifetime_stats.totals.program_outcomes %}
                                         <tr>
-                                            <td><strong>{{ po_code }}:</strong> -</td>
+                                            <td><strong>{{ po_code|po_to_plo }}:</strong> -</td>
                                             <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
                                             <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
                                             <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
@@ -345,8 +345,8 @@
 
                     {% if course.stats %}
                     <div class="course-tile-stats">
-                        <div class="stat-item"><span class="stat-label">COs</span><span class="stat-value">{{ course.stats.co_count }}</span></div>
-                        <div class="stat-item"><span class="stat-label">POs</span><span class="stat-value">{{ course.stats.po_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">CLOs</span><span class="stat-value">{{ course.stats.co_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">PLOs</span><span class="stat-value">{{ course.stats.po_count }}</span></div>
                         <div class="stat-item"><span class="stat-label">Ks</span><span class="stat-value">{{ course.stats.k_count }}</span></div>
                         <div class="stat-item"><span class="stat-label">Ps</span><span class="stat-value">{{ course.stats.p_count }}</span></div>
                         <div class="stat-item"><span class="stat-label">As</span><span class="stat-value">{{ course.stats.a_count }}</span></div>

@@ -59,7 +59,7 @@ class CourseOutcomeAdmin(admin.ModelAdmin):
         ('Course Information', {
             'fields': ('course', 'sequence_number', 'statement')
         }),
-        ('Program Outcome Mapping', {
+        ('Program Learning Outcome Mapping', {
             'fields': ('program_outcome',)
         }),
         ('KPA Attributes', {

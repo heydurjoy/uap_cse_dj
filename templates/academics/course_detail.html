@@ -1,0 +1,866 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load academics_filters %}
+
+{% block title %}{{ course.course_code }} - {{ course.title }} - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="course-detail-page">
+        <div class="page-header">
+            <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+        </div>
+
+        <!-- Course Basic Information -->
+        <div class="course-info-card">
+            <div class="course-header">
+                <div class="course-code-section">
+                    <h1 class="course-code">{{ course.course_code }}</h1>
+                    <span class="course-type-badge {% if course.course_type == 'TH' %}theory{% else %}lab{% endif %}">
+                        {{ course.get_course_type_display }}
+                    </span>
+                </div>
+                <div class="course-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Program:</span>
+                        <span class="meta-value">{{ course.program.name }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Year-Semester:</span>
+                        <span class="meta-value">{{ course.get_year_semester_display }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Credit Hours:</span>
+                        <span class="meta-value">{{ course.credit_hours }} Cr</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Contact Hours:</span>
+                        <span class="meta-value">{{ course.contact_hours }} Hr</span>
+                    </div>
+                </div>
+            </div>
+            <h2 class="course-title">{{ course.title }}</h2>
+            
+            {% if course.prerequisites.all %}
+            <div class="prerequisites-section">
+                <h3>Prerequisites</h3>
+                <div class="prerequisites-list">
+                    {% for prereq in course.prerequisites.all %}
+                    <span class="prereq-badge">{{ prereq.course_code }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Mapping Elements Section (Collapsible) -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">Mapping Elements</h2>
+                <button class="mapping-toggle" onclick="toggleMappingElements()">
+                    <span class="toggle-text">Show Mapping Elements</span>
+                    <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="mapping-elements-content" id="mappingContent" style="display: none;">
+                <!-- Program Outcomes -->
+                <div class="mapping-subsection">
+                    <h3 class="subsection-title">Program Learning Outcomes (PLOs)</h3>
+                    <div class="program-outcomes-grid">
+                        {% for po in program_outcomes %}
+                        <div class="po-card">
+                            <div class="po-header">
+                                <span class="po-code">{{ po.code|po_to_plo }}</span>
+                                <span class="po-title">{{ po.title }}</span>
+                            </div>
+                            {% if po.description %}
+                            <p class="po-description">{{ po.description }}</p>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="no-data">No Program Learning Outcomes defined for this program.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Definitions -->
+                <div class="mapping-subsection">
+                    <h3 class="subsection-title">Definitions</h3>
+                    <div class="definitions-grid">
+                        <div class="definition-item">
+                            <strong>PLO:</strong> Program Learning Outcome - High-level goals achieved by students upon graduation
+                        </div>
+                        <div class="definition-item">
+                            <strong>Blooms (K):</strong> Cognitive level - K1:Remember, K2:Understand, K3:Apply, K4:Analyze, K5:Evaluate, K6:Create
+                        </div>
+                        <div class="definition-item">
+                            <strong>KP:</strong> Knowledge Profile - K1:Natural Sciences, K2:Math/Stats, K3:Engineering Fundamentals, K4:Specialist, K5:Design Support, K6:Practice, K7:Society/Ethics, K8:Research
+                        </div>
+                        <div class="definition-item">
+                            <strong>P:</strong> Problem Attribute - P1:In-Depth Knowledge, P2:Wide-Ranging, P3:No Obvious Solution, P4:Infrequent, P5:Outside Standards, P6:Diverse Stakeholders, P7:Interdependent
+                        </div>
+                        <div class="definition-item">
+                            <strong>A:</strong> Activity Attribute - A1:Diverse Resources, A2:Resolve Conflicts, A3:Creative Principles, A4:Significant Consequences, A5:Beyond Experience
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Outcomes Table -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">Course Learning Outcomes (CLOs)</h2>
+                <div class="marks-summary">
+                    <span class="marks-label">Total Marks:</span>
+                    <span class="marks-value {% if total_marks == 100 %}correct{% else %}warning{% endif %}">
+                        {{ total_marks }}/100
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Course Outcome Statements (Collapsible) -->
+            {% if course_outcomes %}
+            <div class="co-statements-section">
+                <button class="co-statements-toggle" onclick="toggleCOStatements()">
+                    <span class="toggle-text">Show Course Learning Outcome Statements</span>
+                    <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="co-statements-content" id="coStatementsContent" style="display: none;">
+                    {% for co in course_outcomes %}
+                    <div class="co-statement-item">
+                        <span class="co-statement-number">CLO{{ co.sequence_number }}:</span>
+                        <span class="co-statement-text">{{ co.statement }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if course_outcomes %}
+            <div class="table-container">
+                <table class="course-outcomes-table">
+                    <thead>
+                        <tr>
+                            <th>CLO</th>
+                            <th>PLO</th>
+                            <th>Blooms</th>
+                            <th>K</th>
+                            <th>P</th>
+                            <th>A</th>
+                            <th>Activity</th>
+                            <th>Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for co in course_outcomes %}
+                        <tr>
+                            <td class="co-number">
+                                <strong>CLO{{ co.sequence_number }}</strong>
+                            </td>
+                            <td class="po-code-cell">
+                                <span class="po-badge">{{ co.program_outcome.code|po_to_plo }}</span>
+                            </td>
+                            <td class="attribute-cell">
+                                <span class="attribute-badge blooms" title="{{ co.get_blooms_level_display }}">{{ co.get_blooms_level_display|blooms_short }}</span>
+                            </td>
+                            <td class="attribute-cell">
+                                <span class="attribute-badge kp">{{ co.get_knowledge_profile_display|slice:":2" }}</span>
+                            </td>
+                            <td class="attribute-cell">
+                                <span class="attribute-badge pa">{{ co.get_problem_attribute_display|slice:":2" }}</span>
+                            </td>
+                            <td class="attribute-cell">
+                                {% if co.activity_attribute %}
+                                <span class="attribute-badge aa">{{ co.get_activity_attribute_display|slice:":2" }}</span>
+                                {% else %}
+                                <span class="attribute-badge empty">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="activity-cell" title="{{ co.activity }}">{{ co.activity|truncatewords:3 }}</td>
+                            <td class="marks-cell">
+                                <strong>{{ co.total_assessment_marks }}</strong>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No Course Learning Outcomes defined for this course.</p>
+            {% endif %}
+        </div>
+
+        <!-- Course Outline PDF -->
+        {% if course.course_outline_pdf %}
+        <div class="section-card">
+            <h2 class="section-title">Course Outline</h2>
+            <div class="pdf-container">
+                <iframe 
+                    src="{{ course.course_outline_pdf.url }}#toolbar=1" 
+                    class="pdf-viewer"
+                    title="Course Outline PDF">
+                </iframe>
+                <div class="pdf-actions">
+                    <a href="{{ course.course_outline_pdf.url }}" target="_blank" class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.course-detail-page {
+    padding: 2rem 0;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+
+.course-info-card {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.course-code-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.course-code {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.course-type-badge {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.course-type-badge.theory {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+}
+
+.course-type-badge.lab {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+}
+
+.course-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.meta-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.meta-value {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.course-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.4;
+}
+
+.prerequisites-section {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.prerequisites-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.75rem 0;
+}
+
+.prerequisites-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.prereq-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+}
+
+.section-card {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.mapping-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.mapping-toggle:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--color-primary);
+}
+
+.mapping-toggle.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.mapping-elements-content {
+    margin-top: 1rem;
+}
+
+.mapping-subsection {
+    margin-bottom: 2rem;
+}
+
+.mapping-subsection:last-child {
+    margin-bottom: 0;
+}
+
+.subsection-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.definitions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.marks-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.marks-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.marks-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+}
+
+.marks-value.correct {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+}
+
+.marks-value.warning {
+    background: color-mix(in srgb, #dc3545 15%, transparent);
+    color: #dc3545;
+}
+
+.program-outcomes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.po-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.po-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.po-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.po-code {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;
+    height: 30px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 11px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.po-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.po-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    padding-left: 0rem;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.definition-item {
+    color: var(--text-primary);
+}
+
+.definition-item strong {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.course-outcomes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    table-layout: fixed;
+}
+
+.course-outcomes-table thead {
+    background: var(--bg-tertiary);
+}
+
+.course-outcomes-table th {
+    padding: 0.5rem 0.4rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+    font-size: 0.7rem;
+}
+
+.course-outcomes-table th:nth-child(1) { width: 8%; }  /* CLO */
+.course-outcomes-table th:nth-child(2) { width: 8%; }  /* PLO */
+.course-outcomes-table th:nth-child(3) { width: 10%; } /* Blooms */
+.course-outcomes-table th:nth-child(4) { width: 8%; }  /* K */
+.course-outcomes-table th:nth-child(5) { width: 8%; }  /* P */
+.course-outcomes-table th:nth-child(6) { width: 8%; }  /* A */
+.course-outcomes-table th:nth-child(7) { width: 25%; } /* Activity */
+.course-outcomes-table th:nth-child(8) { width: 8%; }  /* Marks */
+
+.course-outcomes-table td {
+    padding: 0.6rem 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    vertical-align: middle;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.course-outcomes-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.co-number {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+
+
+.po-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+
+.attribute-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.attribute-badge.blooms {
+    background: color-mix(in srgb, #3b82f6 15%, transparent);
+    color: #3b82f6;
+}
+
+.attribute-badge.kp {
+    background: color-mix(in srgb, #8b5cf6 15%, transparent);
+    color: #8b5cf6;
+}
+
+.attribute-badge.pa {
+    background: color-mix(in srgb, #f59e0b 15%, transparent);
+    color: #f59e0b;
+}
+
+.attribute-badge.aa {
+    background: color-mix(in srgb, #10b981 15%, transparent);
+    color: #10b981;
+}
+
+.attribute-badge.empty {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.activity-cell {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+.marks-cell {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.co-statements-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.co-statements-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.co-statements-toggle:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--color-primary);
+}
+
+.co-statements-toggle.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.co-statements-content {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.75rem;
+}
+
+.co-statement-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.co-statement-header {
+    margin-bottom: 0.4rem;
+    display: inline-block;
+}
+
+.co-statement-number {
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.co-statement-text {
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin: 0;
+    font-size: 0.8rem;
+    display: inline;
+}
+
+.pdf-container {
+    margin-top: 1rem;
+}
+
+.pdf-viewer {
+    width: 100%;
+    height: 800px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.pdf-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .course-header {
+        flex-direction: column;
+    }
+    
+    .course-code {
+        font-size: 2rem;
+    }
+    
+    .course-meta {
+        width: 100%;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .program-outcomes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .definitions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .course-outcomes-table {
+        font-size: 0.7rem;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .course-outcomes-table thead,
+    .course-outcomes-table tbody,
+    .course-outcomes-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+    
+    .course-outcomes-table th {
+        font-size: 0.65rem;
+        padding: 0.4rem 0.25rem;
+    }
+    
+    .course-outcomes-table td {
+        padding: 0.4rem 0.25rem;
+        font-size: 0.7rem;
+    }
+    
+    .activity-cell {
+        font-size: 0.7rem;
+    }
+    
+    .co-statements-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .co-statement-item {
+        padding: 0.6rem;
+    }
+    
+    .co-statement-number {
+        font-size: 0.8rem;
+    }
+    
+    .co-statement-text {
+        font-size: 0.75rem;
+    }
+    
+    .pdf-viewer {
+        height: 600px;
+    }
+}
+</style>
+
+<script>
+function toggleMappingElements() {
+    const content = document.getElementById('mappingContent');
+    const toggle = document.querySelector('.mapping-toggle');
+    const toggleText = toggle.querySelector('.toggle-text');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        toggle.classList.add('active');
+        toggleText.textContent = 'Hide Mapping Elements';
+    } else {
+        content.style.display = 'none';
+        toggle.classList.remove('active');
+        toggleText.textContent = 'Show Mapping Elements';
+    }
+}
+
+function toggleCOStatements() {
+    const content = document.getElementById('coStatementsContent');
+    const toggle = document.querySelector('.co-statements-toggle');
+    const toggleText = toggle.querySelector('.toggle-text');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'flex';
+        toggle.classList.add('active');
+        toggleText.textContent = 'Hide Course Learning Outcome Statements';
+    } else {
+        content.style.display = 'none';
+        toggle.classList.remove('active');
+        toggleText.textContent = 'Show Course Learning Outcome Statements';
+    }
+}
+</script>
+{% endblock %}
+

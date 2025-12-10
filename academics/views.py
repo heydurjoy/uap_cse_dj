@@ -97,7 +97,7 @@ def edit_course(request, pk):
             
             course.save()
             
-            # Handle Course Outcomes (COs) - create/update/delete
+            # Handle Course Learning Outcomes (CLOs) - create/update/delete
             # Process CO data from form - find all CO prefixes
             co_prefixes = set()
             for key in request.POST.keys():
@@ -169,10 +169,10 @@ def edit_course(request, pk):
     # Get all courses for prerequisites (excluding current course)
     all_courses = Course.objects.exclude(pk=course.pk).order_by('course_code')
     
-    # Get all Course Outcomes for this course
+    # Get all Course Learning Outcomes for this course
     course_outcomes = CourseOutcome.objects.filter(course=course).select_related('program_outcome').order_by('sequence_number')
     
-    # Get Program Outcomes for the course's program
+    # Get Program Learning Outcomes for the course's program
     program_outcomes = ProgramOutcome.objects.filter(program=course.program).order_by('code')
     
     # Calculate total marks
@@ -188,6 +188,184 @@ def edit_course(request, pk):
     }
     
     return render(request, 'academics/edit_course.html', context)
+
+
+def courses_list(request):
+    """View all courses organized by program, year-semester - publicly accessible"""
+    # Get all programs
+    programs = Program.objects.all().order_by('name')
+    
+    # Get all courses with related data
+    courses_queryset = Course.objects.select_related('program')\
+        .prefetch_related('outcomes__program_outcome', 'prerequisites')\
+        .order_by('program', 'year_semester', 'course_code')
+    
+    # Filter by program if specified
+    program_id = request.GET.get('program')
+    selected_program = None
+    if program_id:
+        try:
+            selected_program = Program.objects.get(pk=program_id)
+            courses_queryset = courses_queryset.filter(program=selected_program)
+        except Program.DoesNotExist:
+            selected_program = None
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        courses_queryset = courses_queryset.filter(
+            Q(course_code__icontains=search_query) |
+            Q(title__icontains=search_query)
+        )
+    
+    # Calculate stats for each course
+    courses_list = []
+    for course in courses_queryset:
+        outcomes = course.outcomes.all()
+        
+        # Calculate unique counts
+        unique_pos = set(outcome.program_outcome.code for outcome in outcomes if outcome.program_outcome)
+        unique_ks = set(outcome.knowledge_profile for outcome in outcomes if outcome.knowledge_profile)
+        unique_ps = set(outcome.problem_attribute for outcome in outcomes if outcome.problem_attribute)
+        unique_as = set(outcome.activity_attribute for outcome in outcomes if outcome.activity_attribute)
+        unique_blooms = set(outcome.blooms_level for outcome in outcomes if outcome.blooms_level)
+        
+        # Add computed stats to course object
+        course.stats = {
+            'co_count': len(outcomes),
+            'po_count': len(unique_pos),
+            'k_count': len(unique_ks),
+            'p_count': len(unique_ps),
+            'a_count': len(unique_as),
+            'blooms_count': len(unique_blooms),
+        }
+        
+        courses_list.append(course)
+    
+    # Organize courses by program and calculate lifetime stats
+    programs_with_courses = []
+    for program in programs:
+        program_courses = [c for c in courses_list if c.program == program]
+        if program_courses or not selected_program:  # Show program if it has courses or if no filter is applied
+            # Calculate lifetime statistics for this program
+            lifetime_stats = {
+                'program_outcomes': {},  # PO1-PO12: {credits, marks}
+                'blooms': {},  # K1-K6: {credits, marks}
+                'knowledge': {},  # K1-K8: {credits, marks}
+                'problem': {},  # P1-P7: {credits, marks}
+                'activity': {},  # A1-A5: {credits, marks}
+            }
+            
+            for course in program_courses:
+                outcomes = course.outcomes.all()
+                course_credit = float(course.credit_hours)
+                
+                for outcome in outcomes:
+                    # Program Outcomes
+                    if outcome.program_outcome and outcome.program_outcome.code:
+                        po_code = outcome.program_outcome.code
+                        if po_code not in lifetime_stats['program_outcomes']:
+                            lifetime_stats['program_outcomes'][po_code] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['program_outcomes'][po_code]['credits'] += course_credit
+                        lifetime_stats['program_outcomes'][po_code]['marks'] += outcome.total_assessment_marks
+                    
+                    # Bloom's levels
+                    if outcome.blooms_level:
+                        bloom = outcome.blooms_level
+                        if bloom not in lifetime_stats['blooms']:
+                            lifetime_stats['blooms'][bloom] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['blooms'][bloom]['credits'] += course_credit
+                        lifetime_stats['blooms'][bloom]['marks'] += outcome.total_assessment_marks
+                    
+                    # Knowledge profiles
+                    if outcome.knowledge_profile:
+                        kp = outcome.knowledge_profile
+                        if kp not in lifetime_stats['knowledge']:
+                            lifetime_stats['knowledge'][kp] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['knowledge'][kp]['credits'] += course_credit
+                        lifetime_stats['knowledge'][kp]['marks'] += outcome.total_assessment_marks
+                    
+                    # Problem attributes
+                    if outcome.problem_attribute:
+                        pa = outcome.problem_attribute
+                        if pa not in lifetime_stats['problem']:
+                            lifetime_stats['problem'][pa] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['problem'][pa]['credits'] += course_credit
+                        lifetime_stats['problem'][pa]['marks'] += outcome.total_assessment_marks
+                    
+                    # Activity attributes
+                    if outcome.activity_attribute:
+                        aa = outcome.activity_attribute
+                        if aa not in lifetime_stats['activity']:
+                            lifetime_stats['activity'][aa] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['activity'][aa]['credits'] += course_credit
+                        lifetime_stats['activity'][aa]['marks'] += outcome.total_assessment_marks
+            
+            # Calculate total marks for each category
+            lifetime_stats['totals'] = {
+                'program_outcomes': sum(data['marks'] for data in lifetime_stats['program_outcomes'].values()),
+                'blooms': sum(data['marks'] for data in lifetime_stats['blooms'].values()),
+                'knowledge': sum(data['marks'] for data in lifetime_stats['knowledge'].values()),
+                'problem': sum(data['marks'] for data in lifetime_stats['problem'].values()),
+                'activity': sum(data['marks'] for data in lifetime_stats['activity'].values()),
+            }
+            
+            # Get Program Outcomes for this program
+            import re
+            program_outcomes_list = list(ProgramOutcome.objects.filter(program=program))
+            program_outcomes_list = sorted(
+                program_outcomes_list,
+                key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0
+            )
+            
+            programs_with_courses.append({
+                'program': program,
+                'courses': program_courses,
+                'lifetime_stats': lifetime_stats,
+                'program_outcomes': program_outcomes_list,
+            })
+    
+    context = {
+        'programs': programs,
+        'programs_with_courses': programs_with_courses,
+        'selected_program': selected_program,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'academics/courses_list.html', context)
+
+
+def course_detail(request, pk):
+    """View course details - publicly accessible"""
+    course = get_object_or_404(
+        Course.objects.select_related('program')
+        .prefetch_related('prerequisites', 'outcomes__program_outcome'),
+        pk=pk
+    )
+    
+    # Get all Course Learning Outcomes for this course
+    course_outcomes = CourseOutcome.objects.filter(course=course)\
+        .select_related('program_outcome')\
+        .order_by('sequence_number')
+    
+    # Get all Program Outcomes for the course's program
+    # Sort numerically by extracting the number from the code (e.g., "PO1", "PO2", "PO10")
+    import re
+    program_outcomes = list(ProgramOutcome.objects.filter(program=course.program).all())
+    # Sort by extracting numeric part from code
+    program_outcomes = sorted(program_outcomes, key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0)
+    
+    # Calculate total marks
+    total_marks = sum(co.total_assessment_marks for co in course_outcomes)
+    
+    context = {
+        'course': course,
+        'course_outcomes': course_outcomes,
+        'program_outcomes': program_outcomes,
+        'total_marks': total_marks,
+    }
+    
+    return render(request, 'academics/course_detail.html', context)
 
 
 @login_required

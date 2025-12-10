@@ -82,17 +82,17 @@ class Program(models.Model):
         return self.name
 
 
-## 2. Program Outcome (PO) Model
+## 2. Program Learning Outcome (PLO) Model
 class ProgramOutcome(models.Model):
     """High-level goals achieved by students upon graduation."""
-    code = models.CharField(max_length=10, unique=True, help_text="e.g., PO1, PO2, PO3")
+    code = models.CharField(max_length=10, unique=True, help_text="e.g., PLO1, PLO2, PLO3")
     title = models.CharField(max_length=255)
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='program_outcomes')
-    description = models.TextField(blank=True, help_text="The full statement for the Program Outcome.")
+    description = models.TextField(blank=True, help_text="The full statement for the Program Learning Outcome.")
     
     class Meta:
-        verbose_name = 'Program Outcome'
-        verbose_name_plural = 'Program Outcomes'
+        verbose_name = 'Program Learning Outcome'
+        verbose_name_plural = 'Program Learning Outcomes'
         ordering = ['program', 'code']
         unique_together = ['code', 'program']
     
@@ -152,28 +152,28 @@ class Course(models.Model):
         return f"[{self.course_type}] {self.course_code} - {self.title}"
 
 
-## 4. Course Outcome (CO) and Mapping Model
+## 4. Course Learning Outcome (CLO) and Mapping Model
 class CourseOutcome(models.Model):
     """Defines what a student should be able to do at the end of a course, 
-       and maps it to a single Program Outcome and fixed KPA attributes."""
+       and maps it to a single Program Learning Outcome and fixed KPA attributes."""
     
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='outcomes')
     
     # Sequence number replaces the CharField code for sorting and uniqueness per course
     sequence_number = models.PositiveSmallIntegerField(
-        help_text="The unique sequence number (1, 2, 3...) for this CO within the course.",
-        verbose_name="CO Sequence Number"
+        help_text="The unique sequence number (1, 2, 3...) for this CLO within the course.",
+        verbose_name="CLO Sequence Number"
     )
     
-    statement = models.TextField(verbose_name="Course Outcome Statement") 
+    statement = models.TextField(verbose_name="Course Learning Outcome Statement") 
 
     # CO to PO Mapping (One-to-One)
     program_outcome = models.ForeignKey(
         ProgramOutcome,
         on_delete=models.RESTRICT, 
         related_name='contributing_outcomes',
-        verbose_name="Mapped Program Outcome",
-        help_text="A Course Outcome must map to exactly one Program Outcome."
+        verbose_name="Mapped Program Learning Outcome",
+        help_text="A Course Learning Outcome must map to exactly one Program Learning Outcome."
     )
     
     # Detailed Attributes from Fixed Choices
@@ -193,11 +193,11 @@ class CourseOutcome(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Course Outcome'
-        verbose_name_plural = 'Course Outcomes'
+        verbose_name = 'Course Learning Outcome'
+        verbose_name_plural = 'Course Learning Outcomes'
         # Enforce that the sequence_number must be unique FOR EACH course
         unique_together = ('course', 'sequence_number')
         ordering = ['course', 'sequence_number']
 
     def __str__(self):
-        return f"{self.course.course_code} - CO{self.sequence_number}"
+        return f"{self.course.course_code} - CLO{self.sequence_number}"

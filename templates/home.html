@@ -121,6 +121,86 @@
     </div>
 </section>
 
+<!-- Easy Access Section -->
+<section class="easy-access-section">
+    <div class="container easy-access-container">
+        <div class="easy-access-header">
+            <p class="eyebrow">Quick Links</p>
+            <h2>Easy Access</h2>
+            <p class="subtitle">Quick access to important pages and resources.</p>
+        </div>
+        <div class="easy-access-grid">
+            <a href="{% url 'designs:feature_cards_list' %}" class="easy-access-tile">
+                <div class="tile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h3>Why CSE?</h3>
+            </a>
+            <a href="{% url 'academics:courses_list' %}" class="easy-access-tile">
+                <div class="tile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5Z"></path>
+                        <path d="M8 10h8"></path>
+                        <path d="M8 14h6"></path>
+                        <path d="M8 6h8"></path>
+                    </svg>
+                </div>
+                <h3>Courses</h3>
+            </a>
+            <a href="#" class="easy-access-tile">
+                <div class="tile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="M8 14h.01"></path>
+                        <path d="M12 14h.01"></path>
+                        <path d="M16 14h.01"></path>
+                        <path d="M8 18h.01"></path>
+                        <path d="M12 18h.01"></path>
+                        <path d="M16 18h.01"></path>
+                    </svg>
+                </div>
+                <h3>Routine</h3>
+            </a>
+            <a href="{% url 'people:faculty_list' %}" class="easy-access-tile">
+                <div class="tile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <h3>Faculties</h3>
+            </a>
+            <a href="#" class="easy-access-tile">
+                <div class="tile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11H1l9-9 9 9h-8z"></path>
+                        <path d="M9 11v10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V11"></path>
+                    </svg>
+                </div>
+                <h3>Waivers</h3>
+            </a>
+            <a href="#" class="easy-access-tile">
+                <div class="tile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                    </svg>
+                </div>
+                <h3>Clubs</h3>
+            </a>
+        </div>
+    </div>
+</section>
+
 <!-- Head Message Section -->
 <section class="hod-section">
     <div class="container hod-container">
@@ -1201,6 +1281,175 @@ document.addEventListener("DOMContentLoaded", () => {
     100% { transform: translate(-20%, -10%) rotate(8deg); opacity: 0.35; }
 }
 
+/* Easy Access Section */
+.easy-access-section {
+    padding: 2.5rem 0;
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--color-primary) 5%, transparent) 0%,
+        transparent 100%);
+}
+
+.easy-access-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.easy-access-header {
+    text-align: center;
+}
+
+.easy-access-header h2 {
+    font-size: 2rem;
+    margin: 0.35rem 0;
+    color: var(--text-primary);
+}
+
+.easy-access-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.easy-access-tile {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.easy-access-tile {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* Glowing animated outline */
+.easy-access-tile::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 18px;
+    padding: 3px;
+    background: linear-gradient(45deg, 
+        var(--color-primary), 
+        var(--color-primary-hover), 
+        #00d4ff, 
+        var(--color-primary-hover), 
+        var(--color-primary));
+    background-size: 400% 400%;
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    animation: glow-border 3s linear infinite;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
+.easy-access-tile:hover::before {
+    opacity: 1;
+}
+
+@keyframes glow-border {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.easy-access-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.easy-access-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 32px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 50%, var(--border-color));
+}
+
+.easy-access-tile:hover::after {
+    opacity: 1;
+}
+
+.easy-access-tile > * {
+    position: relative;
+    z-index: 1;
+}
+
+.tile-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), color-mix(in srgb, var(--color-primary-hover) 12%, transparent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    color: var(--color-primary);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.easy-access-tile:hover .tile-icon {
+    transform: scale(1.15) rotate(5deg);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.easy-access-tile h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.easy-access-tile:hover h3 {
+    color: var(--color-primary);
+}
+
 @media (max-width: 900px) {
     .hod-content {
         grid-template-columns: 1fr;
@@ -1211,6 +1460,124 @@ document.addEventListener("DOMContentLoaded", () => {
     .uapnow-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+    .easy-access-section {
+        padding: 2rem 0;
+    }
+    .easy-access-container {
+        gap: 1.5rem;
+    }
+    .easy-access-header h2 {
+        font-size: 1.75rem;
+    }
+    .easy-access-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+    
+    .easy-access-tile {
+        padding: 1.25rem 0.75rem;
+    }
+    
+    .tile-icon {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 0.6rem;
+    }
+    
+    .easy-access-tile h3 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .easy-access-section {
+        padding: 1.5rem 0;
+    }
+    .easy-access-container {
+        gap: 1.25rem;
+    }
+    .easy-access-header h2 {
+        font-size: 1.5rem;
+    }
+    .easy-access-header .subtitle {
+        font-size: 0.9rem;
+    }
+    .easy-access-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem;
+        max-width: 100%;
+    }
+    
+    .easy-access-tile {
+        padding: 1rem 0.5rem;
+        min-height: 100px;
+    }
+    
+    .tile-icon {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tile-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .easy-access-tile h3 {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+}
+
+@media (max-width: 480px) {
+    .easy-access-section {
+        padding: 1.25rem 0;
+    }
+    .easy-access-container {
+        gap: 1rem;
+    }
+    .easy-access-header {
+        padding: 0 0.5rem;
+    }
+    .easy-access-header h2 {
+        font-size: 1.35rem;
+    }
+    .easy-access-header .eyebrow {
+        font-size: 0.75rem;
+    }
+    .easy-access-header .subtitle {
+        font-size: 0.85rem;
+        padding: 0 0.5rem;
+    }
+    .easy-access-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0 0.5rem;
+    }
+    
+    .easy-access-tile {
+        padding: 0.875rem 0.4rem;
+        min-height: 90px;
+        border-radius: 12px;
+    }
+    
+    .tile-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        margin-bottom: 0.4rem;
+    }
+    
+    .tile-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .easy-access-tile h3 {
+        font-size: 0.8rem;
+        line-height: 1.2;
     }
 }
 
