@@ -901,52 +901,81 @@
     flex-shrink: 0;
 }
 
-@media (max-width: 1200px) {
+/* =======================================
+   🔹 TABLET — max-width: 1024px
+   → 3 columns
+======================================= */
+
+@media (max-width: 1024px) {
     .courses-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .course-semester-title {
+        font-size: 1.35rem;
     }
 }
 
-@media (max-width: 900px) {
-    .courses-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
+/* =======================================
+   🔹 MOBILE LANDSCAPE — max-width: 768px
+   → 2 columns
+======================================= */
 
 @media (max-width: 768px) {
     .courses-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.8rem;
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .program-courses-section {
+        padding-top: 2rem;
+        margin-top: 2rem;
+    }
+}
+
+/* =======================================
+   🔹 MOBILE PORTRAIT — max-width: 600px
+   → KEEP 2 columns (your request)
+======================================= */
+
+@media (max-width: 600px) {
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
     }
 
     .course-tile {
-        padding: 0.8rem;
+        min-height: 300px;
+        padding: 0.75rem;
     }
 
-    .course-tile-stats {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.35rem;
+    .course-tile-title {
+        font-size: 0.85rem;
+        -webkit-line-clamp: 3;
     }
 
-    .stat-item {
-        padding: 0.35rem 0.15rem;
-    }
-
-    .stat-label {
-        font-size: 0.6rem;
-    }
-
-    .stat-value {
-        font-size: 0.9rem;
+    .course-semester-title {
+        font-size: 1.25rem;
     }
 }
 
-@media (max-width: 480px) {
+/* =======================================
+   🔹 SMALL PHONES — max-width: 420px
+   → Switch to 1 column
+======================================= */
+
+@media (max-width: 420px) {
     .courses-grid {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr !important;
+    }
+
+    .course-tile {
+        min-height: 280px;
+    }
+
+    .course-type-subtitle {
+        font-size: 1rem;
     }
 }
-
 /* Semester Filter Pills */
 .semester-filter-pills {
     display: flex;
@@ -1211,19 +1240,26 @@
     font-weight: 700;
 }
 
+/* ---------------------------------------- */
+/* 🔥 FIXED RESPONSIVE STATS TABLE SECTION  */
+/* ---------------------------------------- */
+
 .stats-tables {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
+    border-collapse: collapse;
 }
 
+/* make wrapper scrollable when needed */
 .stats-table-wrapper {
     background: var(--bg-primary);
     padding: 1.5rem;
     border-radius: 12px;
-    border: 2px solid var(--border-color);
+    border: 0;
     margin-bottom: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow-x: visible;
 }
 
 .stats-table-wrapper.po-table-highlight {
@@ -1233,13 +1269,6 @@
     padding: 1rem;
 }
 
-.stats-table-wrapper.po-table-highlight h4 {
-    color: var(--color-primary);
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
-}
-
 .stats-table-wrapper h4 {
     font-size: 0.9rem;
     color: var(--text-primary);
@@ -1247,40 +1276,25 @@
     font-weight: 600;
 }
 
+
 .stats-table {
     width: 100%;
+    min-width: 100%;
     border-collapse: separate;
     border-spacing: 0;
     font-size: 0.8rem;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    overflow: hidden;
 }
 
 .stats-table thead {
     background: var(--bg-tertiary);
 }
 
-.stats-table th {
-    padding: 0.5rem 0.6rem;
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    border-bottom: 2px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-}
-
-.stats-table th:last-child {
-    border-right: none;
-}
-
+.stats-table th,
 .stats-table td {
     padding: 0.5rem 0.6rem;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-    line-height: 1.4;
+    border-right: 0;
 }
 
 .stats-table td:first-child {
@@ -1289,47 +1303,214 @@
     font-size: 0.75rem;
 }
 
-.stats-table td:first-child strong {
-    color: var(--color-primary);
-    font-weight: 600;
-}
-
-.stats-table td:last-child {
-    border-right: none;
-}
-
-.stats-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
 .stats-table tbody tr:hover {
     background: var(--bg-secondary);
 }
 
-@media (max-width: 768px) {
-    .definitions-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
+/* ---------------------------------------- */
+/* 📱 RESPONSIVE BREAKPOINTS                */
+/* ---------------------------------------- */
 
+/* Tablets and medium screens */
+@media (max-width: 900px) {
     .stats-tables {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: 1fr; /* 🔥 stacks tables vertically */
+        gap: 1.5rem;
+        overflow-x: auto !important; /* horizontal scroll */
+        -webkit-overflow-scrolling: touch;
     }
+}
 
-    .you-should-know-content {
-        padding: 1.5rem;
+/* Mobile screens */
+@media (max-width: 600px) {
+
+    .stats-table-wrapper {
+        padding: 1rem;
     }
 
     .stats-table {
-        font-size: 0.85rem;
+        min-width: 480px; /* tighter but readable */
+        font-size: 0.75rem;
     }
 
     .stats-table th,
     .stats-table td {
-        padding: 0.4rem 0.3rem;
+        padding: 0.4rem 0.45rem;
+    }
+
+    .stats-table td:first-child {
+        min-width: 140px;
+        max-width: 200px;
     }
 }
+
+/* Extra small screens */
+@media (max-width: 420px) {
+
+    .stats-table {
+        min-width: 420px; /* smallest usable width */
+    }
+
+    .stats-table th,
+    .stats-table td {
+        padding: 0.35rem;
+    }
+}
+
+/* =====================================================
+   RESPONSIVE — SEMESTER FILTER + YOU SHOULD KNOW
+===================================================== */
+
+/* Tablet (≤1024px) */
+@media (max-width: 1024px) {
+    .semester-filter-pills {
+        gap: 0.6rem;
+        padding: 0.85rem;
+    }
+
+    .semester-pill,
+    .you-should-know-btn-pill {
+        padding: 0.55rem 1.1rem;
+        font-size: 0.85rem;
+    }
+
+    .ys-know-intro h3 {
+        font-size: 1.35rem;
+    }
+
+    .ys-know-intro p {
+        font-size: 0.95rem;
+    }
+}
+
+/* Mobile landscape (≤768px) */
+@media (max-width: 768px) {
+    .semester-filter-pills {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .semester-pill,
+    .you-should-know-btn-pill {
+        padding: 0.5rem 1rem;
+        font-size: 0.83rem;
+        margin: 0;
+    }
+
+    .you-should-know-content {
+        padding: 1.25rem;
+    }
+
+    .ys-know-intro h3 {
+        font-size: 1.25rem;
+    }
+
+    .definition-card {
+        padding: 1rem;
+    }
+
+    .definition-list li {
+        font-size: 0.85rem;
+    }
+}
+
+/* Mobile portrait (≤600px) */
+@media (max-width: 600px) {
+
+    /* Pills stack nicer */
+    .semester-filter-pills {
+        gap: 0.45rem;
+        padding: 0.6rem;
+    }
+
+    .semester-pill,
+    .you-should-know-btn-pill {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.8rem;
+    }
+
+    .you-should-know-btn-pill .toggle-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Definitions become 1-column */
+    .definitions-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    /* Stats tables become 1-column */
+    .stats-tables {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .stats-table-wrapper {
+        padding: 1rem;
+    }
+
+    .stats-table th,
+    .stats-table td {
+        font-size: 0.7rem;
+        padding: 0.45rem;
+    }
+}
+
+/* Small devices (≤420px) */
+@media (max-width: 420px) {
+
+    /* Pills even smaller */
+    .semester-pill,
+    .you-should-know-btn-pill {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .you-should-know-btn-pill::before {
+        opacity: 0.7;
+    }
+
+    .definition-card h4 {
+        font-size: 0.95rem;
+    }
+
+    .definition-list li {
+        font-size: 0.8rem;
+    }
+
+    .stats-table-wrapper {
+        padding: 0.75rem;
+    }
+
+    .stats-table {
+        font-size: 0.65rem;
+    }
+
+    .stats-table td,
+    .stats-table th {
+        padding: 0.35rem;
+    }
+}
+
+/* Ultra small (≤350px) */
+@media (max-width: 350px) {
+    .semester-filter-pills {
+        gap: 0.3rem;
+    }
+
+    .semester-pill,
+    .you-should-know-btn-pill {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.72rem;
+    }
+
+    .stats-table td:first-child {
+        min-width: auto;
+    }
+}
+
 </style>
 
 <script>
