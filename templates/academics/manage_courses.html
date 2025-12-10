@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Courses - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-courses-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Courses</h1>
+        </div>
+        
+        <!-- Hidden CSRF token for JavaScript -->
+        {% csrf_token %}
+        
+        <!-- Filters and Actions -->
+        <div class="courses-toolbar">
+            <div class="toolbar-left">
+                <form method="get" class="filter-form">
+                    <select name="program" class="filter-select">
+                        <option value="">All Programs</option>
+                        {% for program in programs %}
+                        <option value="{{ program.id }}" {% if selected_program and selected_program.id == program.id %}selected{% endif %}>
+                            {{ program.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="search" placeholder="Search courses..." value="{{ search_query }}" class="search-input">
+                    <button type="submit" class="filter-btn">Filter</button>
+                    <a href="{% url 'academics:manage_courses' %}" class="clear-btn">Clear</a>
+                </form>
+            </div>
+            <div class="toolbar-right">
+                <button id="selectAllBtn" class="action-btn">Select All</button>
+                <button id="deleteSelectedBtn" class="action-btn danger" disabled>Delete Selected</button>
+            </div>
+        </div>
+        
+        <!-- Courses Table -->
+        <div class="courses-table-container">
+            <table class="courses-table">
+                <thead>
+                    <tr>
+                        <th class="checkbox-col">
+                            <input type="checkbox" id="selectAllCheckbox">
+                        </th>
+                        <th>Course Code</th>
+                        <th>Title</th>
+                        <th>Program</th>
+                        <th>Type</th>
+                        <th>Semester</th>
+                        <th>Credits</th>
+                        <th>Contact Hrs</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if courses %}
+                    {% for course in courses %}
+                    <tr class="{% if course.has_warnings %}course-warning{% endif %}">
+                        <td class="checkbox-col">
+                            <input type="checkbox" class="course-checkbox" value="{{ course.id }}">
+                        </td>
+                        <td>
+                            <strong>{{ course.course_code }}</strong>
+                            {% if course.has_warnings %}
+                            <div class="warning-tags">
+                                {% if course.total_marks != 100 %}
+                                <span class="warning-tag">Marks: {{ course.total_marks }}/100</span>
+                                {% endif %}
+                                {% if not course.course_outline_pdf %}
+                                <span class="warning-tag">No PDF</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ course.title }}</td>
+                        <td>{{ course.program.name }}</td>
+                        <td>
+                            <span class="course-type-badge {% if course.course_type == 'TH' %}theory{% else %}lab{% endif %}">
+                                {{ course.get_course_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ course.get_year_semester_display }}</td>
+                        <td>{{ course.credit_hours }}</td>
+                        <td>{{ course.contact_hours }}</td>
+                        <td class="actions-col">
+                            <a href="{% url 'academics:edit_course' course.pk %}" class="edit-btn">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="no-courses">No courses found.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-courses-page {
+    padding: 2rem 0;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+    font-weight: 700;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.courses-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.filter-form {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-select,
+.search-input {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.filter-select {
+    min-width: 200px;
+}
+
+.search-input {
+    min-width: 250px;
+    flex: 1;
+}
+
+.filter-btn,
+.clear-btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.filter-btn {
+    background: var(--color-primary);
+    color: white;
+}
+
+.filter-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+.clear-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.clear-btn:hover {
+    background: var(--border-color);
+}
+
+.toolbar-right {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.action-btn:hover:not(:disabled) {
+    background: var(--border-color);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btn.danger {
+    background: #dc3545;
+    color: white;
+}
+
+.action-btn.danger:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.courses-table-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.courses-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.courses-table thead {
+    background: var(--bg-tertiary);
+}
+
+.courses-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.courses-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.courses-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.courses-table tbody tr.course-warning {
+    border-left: 4px solid #dc3545;
+}
+
+.warning-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.warning-tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    background: #dc3545;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.checkbox-col {
+    width: 50px;
+    text-align: center;
+}
+
+.course-type-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.course-type-badge.theory {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+}
+
+.course-type-badge.lab {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+}
+
+.actions-col {
+    white-space: nowrap;
+}
+
+.edit-btn {
+    padding: 0.4rem 1rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+.no-courses {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .courses-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-left,
+    .toolbar-right {
+        width: 100%;
+    }
+    
+    .filter-form {
+        width: 100%;
+    }
+    
+    .filter-select,
+    .search-input {
+        width: 100%;
+    }
+    
+    .courses-table {
+        font-size: 0.85rem;
+    }
+    
+    .courses-table th,
+    .courses-table td {
+        padding: 0.6rem 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const courseCheckboxes = document.querySelectorAll('.course-checkbox');
+    
+    // Select all checkbox
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            courseCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateDeleteButton();
+        });
+    }
+    
+    // Select all button
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            const allChecked = Array.from(courseCheckboxes).every(cb => cb.checked);
+            courseCheckboxes.forEach(cb => {
+                cb.checked = !allChecked;
+            });
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = !allChecked;
+            }
+            updateDeleteButton();
+        });
+    }
+    
+    // Individual checkbox change
+    courseCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            updateDeleteButton();
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = Array.from(courseCheckboxes).every(c => c.checked);
+            }
+        });
+    });
+    
+    function updateDeleteButton() {
+        const selectedCount = Array.from(courseCheckboxes).filter(cb => cb.checked).length;
+        deleteSelectedBtn.disabled = selectedCount === 0;
+        if (selectedCount > 0) {
+            deleteSelectedBtn.textContent = `Delete Selected (${selectedCount})`;
+        } else {
+            deleteSelectedBtn.textContent = 'Delete Selected';
+        }
+    }
+    
+    // Delete selected courses
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', function() {
+            const selectedIds = Array.from(courseCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one course to delete.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete ${selectedIds.length} course(s)? This action cannot be undone.`)) {
+                return;
+            }
+            
+            // Create form data
+            const formData = new FormData();
+            selectedIds.forEach(id => {
+                formData.append('course_ids[]', id);
+            });
+            
+            // Send delete request
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+            fetch('{% url "academics:delete_courses" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete courses'));
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
+

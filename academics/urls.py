@@ -4,6 +4,8 @@ from . import views
 app_name = 'academics'
 
 urlpatterns = [
-    # Add your URL patterns here
+    path('courses/manage/', views.manage_courses, name='manage_courses'),
+    path('courses/<int:pk>/edit/', views.edit_course, name='edit_course'),
+    path('courses/delete/', views.delete_courses, name='delete_courses'),
 ]
 

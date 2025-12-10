@@ -160,6 +160,14 @@
                         <p class="action-desc">See how your profile appears to others</p>
                     </div>
                 </a>
+                {% elif profile_type == 'officer' %}
+                <a href="{% url 'people:officer_detail' profile.pk %}" class="action-card">
+                    <div class="action-icon">👁️</div>
+                    <div class="action-content">
+                        <h3 class="action-title">View Public Profile</h3>
+                        <p class="action-desc">See how your profile appears to others</p>
+                    </div>
+                </a>
                 {% endif %}
                 
                 <!-- Post Notices - Officers -->
@@ -173,15 +181,26 @@
                 </div>
                 {% endif %}
                 
+                <!-- Manage Posts - Level 3+ -->
+                {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                    <div class="action-icon">📢</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Posts</h3>
+                        <p class="action-desc">Create, edit, and manage posts and notices</p>
+                    </div>
+                </a>
+                {% endif %}
+                
                 <!-- Manage Courses - Level 3+ -->
                 {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
-                <div class="action-card action-disabled">
+                <a href="{% url 'academics:manage_courses' %}" class="action-card">
                     <div class="action-icon">📚</div>
                     <div class="action-content">
                         <h3 class="action-title">Manage Courses</h3>
-                        <p class="action-desc">Coming soon - Manage course content</p>
+                        <p class="action-desc">Edit, add, and manage course content</p>
                     </div>
-                </div>
+                </a>
                 {% endif %}
                 
                 <!-- Publish Admission Test Results - Level 3+ (Faculty and Officers) -->

@@ -78,58 +78,45 @@
             </div>
         </div>
         <div class="uapnow-grid">
-            <div class="uapnow-card">
-                <div class="uapnow-top">
-                    <div class="uapnow-badge">Notice</div>
-                    <div class="uapnow-date">Mar 12, 2026</div>
+            {% if uap_now_posts %}
+                {% for post in uap_now_posts %}
+                <div class="uapnow-card {% if post.is_pinned %}uapnow-pinned{% endif %}">
+                    <div class="uapnow-top">
+                        <div class="uapnow-badge uapnow-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
+                            {% if post.is_pinned %}
+                            <span class="pin-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 17v5M9 10V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v4M5 10h14l-1 7H6l-1-7z"></path>
+                                </svg>
+                            </span>
+                            {% endif %}
+                            {{ post.get_post_type_display }}
+                        </div>
+                        <div class="uapnow-date">{{ post.publish_date|date:"M d, Y" }}</div>
+                    </div>
+                    <h3>{{ post.short_title }}</h3>
+                    <p>{{ post.long_title|truncatewords:15 }}</p>
+                    {% if post.tags %}
+                    <div class="uapnow-tags">
+                        {% for tag in post.get_tags_list|slice:":3" %}
+                        <span class="tag soft">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'office:post_detail' post.pk %}" class="uapnow-link">View details →</a>
                 </div>
-                <h3>Semester Registration Window</h3>
-                <p>Complete registration by next week. Late fees apply afterward.</p>
-                <div class="uapnow-tags">
-                    <span class="tag soft">Academic</span>
-                    <span class="tag soft">Deadline</span>
+                {% endfor %}
+            {% else %}
+                <!-- Fallback if no posts available -->
+                <div class="uapnow-card">
+                    <div class="uapnow-top">
+                        <div class="uapnow-badge">Notice</div>
+                        <div class="uapnow-date">No posts</div>
+                    </div>
+                    <h3>No posts available</h3>
+                    <p>Check back later for updates.</p>
                 </div>
-                <a href="#" class="uapnow-link">View details →</a>
-            </div>
-            <div class="uapnow-card">
-                <div class="uapnow-top">
-                    <div class="uapnow-badge">Event</div>
-                    <div class="uapnow-date">Mar 15, 2026</div>
-                </div>
-                <h3>Spring Tech Fest 2026</h3>
-                <p>Showcase projects, join hackathons, and meet industry guests. Teams can still register.</p>
-                <div class="uapnow-tags">
-                    <span class="tag soft">Hackathon</span>
-                    <span class="tag soft">Showcase</span>
-                </div>
-                <a href="#" class="uapnow-link">View details →</a>
-            </div>
-            <div class="uapnow-card">
-                <div class="uapnow-top">
-                    <div class="uapnow-badge">Seminar</div>
-                    <div class="uapnow-date">Mar 18, 2026</div>
-                </div>
-                <h3>AI Safety & Ethics</h3>
-                <p>Responsible AI, current research directions. Open to all batches.</p>
-                <div class="uapnow-tags">
-                    <span class="tag soft">AI</span>
-                    <span class="tag soft">Ethics</span>
-                </div>
-                <a href="#" class="uapnow-link">View details →</a>
-            </div>
-            <div class="uapnow-card">
-                <div class="uapnow-top">
-                    <div class="uapnow-badge">Workshop</div>
-                    <div class="uapnow-date">Mar 22, 2026</div>
-                </div>
-                <h3>Hands-on with Docker</h3>
-                <p>Container basics, image building, and deployment best practices. Seats are limited.</p>
-                <div class="uapnow-tags">
-                    <span class="tag soft">DevOps</span>
-                    <span class="tag soft">Practical</span>
-                </div>
-                <a href="#" class="uapnow-link">View details →</a>
-            </div>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -1031,9 +1018,34 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 .uapnow-badge.notice { background: color-mix(in srgb, var(--color-primary) 14%, var(--bg-tertiary)); }
-.uapnow-badge.event { background: color-mix(in srgb, var(--color-primary-hover) 14%, var(--bg-tertiary)); }
-.uapnow-badge.seminar { background: color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)); }
+.uapnow-badge.events { background: color-mix(in srgb, var(--color-primary-hover) 14%, var(--bg-tertiary)); }
+.uapnow-badge.seminars { background: color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)); }
 .uapnow-badge.workshop { background: color-mix(in srgb, var(--color-primary-dark) 12%, var(--bg-secondary)); }
+.uapnow-badge.others { background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary)); }
+
+/* Pinned post styling */
+.uapnow-card.uapnow-pinned {
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+    box-shadow: 0 14px 30px rgba(0,0,0,0.1), 0 0 24px var(--shadow), 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.uapnow-badge.pinned {
+    background: color-mix(in srgb, var(--color-primary) 20%, var(--bg-tertiary));
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+}
+
+.pin-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.25rem;
+    vertical-align: middle;
+}
+
+.pin-icon svg {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2.5;
+}
 
 .uapnow-tags {
     display: flex;

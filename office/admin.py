@@ -1,0 +1,85 @@
+from django.contrib import admin
+from .models import AdmissionResult, Post, PostAttachment
+
+
+@admin.register(AdmissionResult)
+class AdmissionResultAdmin(admin.ModelAdmin):
+    list_display = ['academic_year', 'semester', 'slot', 'publish_date', 'created_by']
+    list_filter = ['academic_year', 'semester', 'publish_date']
+    search_fields = ['academic_year', 'semester', 'slot', 'result_content']
+    ordering = ['-publish_date', '-academic_year', 'semester', 'slot']
+    readonly_fields = ['publish_date']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('academic_year', 'semester', 'slot', 'publish_date')
+        }),
+        ('Content', {
+            'fields': ('result_content', 'official_pdf')
+        }),
+        ('Metadata', {
+            'fields': ('created_by',)
+        }),
+    )
+
+
+class PostAttachmentInline(admin.TabularInline):
+    """Inline admin for Post Attachments"""
+    model = PostAttachment
+    extra = 1
+    max_num = 10  # Enforce max 10 attachments in admin
+    fields = ('file', 'uploaded_at')
+    readonly_fields = ('uploaded_at',)
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ['short_title', 'post_type', 'long_title', 'is_pinned', 'publish_date', 'created_by']
+    list_filter = ['post_type', 'is_pinned', 'publish_date', 'created_by']
+    search_fields = ['short_title', 'long_title', 'tags', 'description']
+    ordering = ['-is_pinned', '-publish_date']
+    readonly_fields = ['publish_date']
+    list_editable = ['is_pinned']  # Allow quick editing of pin status
+    inlines = [PostAttachmentInline]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('post_type', 'short_title', 'long_title', 'publish_date', 'is_pinned')
+        }),
+        ('Content', {
+            'fields': ('tags', 'description')
+        }),
+        ('Metadata', {
+            'fields': ('created_by',)
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        """Override save to validate max 3 pinned posts"""
+        if obj.is_pinned:
+            # Count other pinned posts (excluding current instance if updating)
+            other_pinned = Post.objects.filter(is_pinned=True)
+            if obj.pk:
+                other_pinned = other_pinned.exclude(pk=obj.pk)
+            
+            if other_pinned.count() >= 3:
+                from django.contrib import messages
+                messages.error(request, 'Maximum 3 posts can be pinned at a time. Please unpin another post first.')
+                return
+        
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(PostAttachment)
+class PostAttachmentAdmin(admin.ModelAdmin):
+    list_display = ['post', 'file', 'uploaded_at']
+    list_filter = ['uploaded_at', 'post__post_type', 'post']
+    search_fields = ['post__short_title', 'post__long_title', 'file']
+    ordering = ['-uploaded_at']
+    readonly_fields = ['uploaded_at']
+    
+    fieldsets = (
+        ('File Information', {
+            'fields': ('post', 'file', 'uploaded_at')
+        }),
+    )

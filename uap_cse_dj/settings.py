@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'designs',
     'people',
     'academics',
+    'office',
 ]
 
 # Custom User Model
@@ -73,6 +74,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'designs.context_processors.admission_elements',
+                'office.context_processors.uap_now_posts',
             ],
         },
     },

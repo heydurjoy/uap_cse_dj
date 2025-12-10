@@ -36,19 +36,30 @@ def design_guidelines(request):
 
 def login(request):
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
+        username_or_email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
         remember = request.POST.get('remember', False)
         
-        if not email or not password:
-            messages.error(request, 'Please provide both email and password.')
+        if not username_or_email or not password:
+            messages.error(request, 'Please provide both email/username and password.')
             return render(request, 'login.html')
         
-        # Authenticate user (Django uses username, but we use email as username)
-        user = authenticate(request, username=email, password=password)
+        # Try to authenticate with username first
+        user = authenticate(request, username=username_or_email, password=password)
+        
+        # If authentication fails, try with email
+        if user is None:
+            try:
+                # Try to find user by email
+                from people.models import BaseUser
+                user_by_email = BaseUser.objects.get(email=username_or_email.lower())
+                # Authenticate with the username (since Django authenticate uses username field)
+                user = authenticate(request, username=user_by_email.username, password=password)
+            except BaseUser.DoesNotExist:
+                user = None
         
         if user is None:
-            messages.error(request, 'Invalid email or password.')
+            messages.error(request, 'Invalid email/username or password.')
             return render(request, 'login.html')
         
         # Check if user is blocked via AllowedEmail

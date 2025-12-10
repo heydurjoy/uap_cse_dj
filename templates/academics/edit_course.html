@@ -1,0 +1,781 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Course - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-course-page">
+        <div class="page-header">
+            <a href="{% url 'academics:manage_courses' %}" class="back-link">← Back to Courses</a>
+            <h1>Edit Course: {{ course.course_code }}</h1>
+        </div>
+        
+        <div class="edit-course-form-container">
+            <form method="post" enctype="multipart/form-data" class="edit-course-form">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="program">Program *</label>
+                            <select name="program" id="program" required>
+                                {% for program in programs %}
+                                <option value="{{ program.id }}" {% if course.program.id == program.id %}selected{% endif %}>
+                                    {{ program.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="course_code">Course Code *</label>
+                            <input type="text" name="course_code" id="course_code" value="{{ course.course_code }}" required>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="title">Course Title *</label>
+                            <input type="text" name="title" id="title" value="{{ course.title }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="course_type">Course Type *</label>
+                            <select name="course_type" id="course_type" required>
+                                <option value="TH" {% if course.course_type == 'TH' %}selected{% endif %}>Theory</option>
+                                <option value="LB" {% if course.course_type == 'LB' %}selected{% endif %}>Laboratory</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="year_semester">Year-Semester *</label>
+                            <select name="year_semester" id="year_semester" required>
+                                <option value="1-1" {% if course.year_semester == '1-1' %}selected{% endif %}>Year 1, Semester 1</option>
+                                <option value="1-2" {% if course.year_semester == '1-2' %}selected{% endif %}>Year 1, Semester 2</option>
+                                <option value="2-1" {% if course.year_semester == '2-1' %}selected{% endif %}>Year 2, Semester 1</option>
+                                <option value="2-2" {% if course.year_semester == '2-2' %}selected{% endif %}>Year 2, Semester 2</option>
+                                <option value="3-1" {% if course.year_semester == '3-1' %}selected{% endif %}>Year 3, Semester 1</option>
+                                <option value="3-2" {% if course.year_semester == '3-2' %}selected{% endif %}>Year 3, Semester 2</option>
+                                <option value="4-1" {% if course.year_semester == '4-1' %}selected{% endif %}>Year 4, Semester 1</option>
+                                <option value="4-2" {% if course.year_semester == '4-2' %}selected{% endif %}>Year 4, Semester 2</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="credit_hours">Credit Hours *</label>
+                            <input type="number" name="credit_hours" id="credit_hours" step="0.5" min="0" value="{{ course.credit_hours }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact_hours">Contact Hours *</label>
+                            <input type="number" name="contact_hours" id="contact_hours" min="0" value="{{ course.contact_hours }}" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Prerequisites</h3>
+                    <div class="form-group">
+                        <label>Select Prerequisite Courses</label>
+                        <div class="prerequisites-list">
+                            {% for other_course in all_courses %}
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="prerequisites" value="{{ other_course.id }}" 
+                                       {% if other_course in course.prerequisites.all %}checked{% endif %}>
+                                <span>{{ other_course.course_code }} - {{ other_course.title }}</span>
+                            </label>
+                            {% empty %}
+                            <p class="no-prereqs">No other courses available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Course Outline PDF</h3>
+                    <div class="form-group">
+                        <label for="course_outline_pdf">Upload/Update Course Outline PDF</label>
+                        <input type="file" name="course_outline_pdf" id="course_outline_pdf" accept=".pdf">
+                        {% if course.course_outline_pdf %}
+                        <p class="current-file">Current file: <a href="{{ course.course_outline_pdf.url }}" target="_blank">{{ course.course_outline_pdf.name|slice:"20:" }}</a></p>
+                        {% else %}
+                        <p class="no-file">No PDF uploaded yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-header-with-action">
+                        <h3>Course Outcomes (COs)</h3>
+                        <button type="button" id="addCOBtn" class="add-co-btn">+ Add CO</button>
+                    </div>
+                    <p class="section-note">Total Marks: <strong id="totalMarksDisplay">{{ total_marks }}</strong>/100 
+                        <span id="marksIndicator" class="{% if total_marks != 100 %}marks-warning{% else %}marks-ok{% endif %}">
+                            {% if total_marks != 100 %}⚠ Marks should total 100{% else %}✓{% endif %}
+                        </span>
+                    </p>
+                    
+                    <div class="co-table-container">
+                        <table class="co-table">
+                            <thead>
+                                <tr>
+                                    <th>CO#</th>
+                                    <th>PO</th>
+                                    <th>Statement</th>
+                                    <th>Blooms</th>
+                                    <th>K</th>
+                                    <th>P</th>
+                                    <th>A</th>
+                                    <th>Marks</th>
+                                    <th>Activity</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coList">
+                                {% for co in course_outcomes %}
+                                <tr class="co-row" data-co-id="{{ co.id }}">
+                                    <td>
+                                        <input type="hidden" name="co_{{ co.id }}_id" value="{{ co.id }}">
+                                        <input type="number" name="co_{{ co.id }}_sequence" value="{{ co.sequence_number }}" min="1" required class="co-input-small">
+                                    </td>
+                                    <td>
+                                        <select name="co_{{ co.id }}_po" required class="co-select co-select-detailed" title="{% if co.program_outcome %}{{ co.program_outcome.code }}: {{ co.program_outcome.title }}{% endif %}">
+                                            {% for po in program_outcomes %}
+                                            <option value="{{ po.id }}" {% if co.program_outcome.id == po.id %}selected{% endif %} data-code="{{ po.code }}" data-title="{{ po.title }}">
+                                                {{ po.code }}: {{ po.title }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <textarea name="co_{{ co.id }}_statement" rows="2" required class="co-textarea">{{ co.statement }}</textarea>
+                                    </td>
+                                    <td>
+                                        <select name="co_{{ co.id }}_blooms" required class="co-select co-select-detailed" title="{% if co.blooms_level == 'K1' %}K1: Remember{% elif co.blooms_level == 'K2' %}K2: Understand{% elif co.blooms_level == 'K3' %}K3: Apply{% elif co.blooms_level == 'K4' %}K4: Analyze{% elif co.blooms_level == 'K5' %}K5: Evaluate{% elif co.blooms_level == 'K6' %}K6: Create{% endif %}">
+                                            <option value="K1" {% if co.blooms_level == 'K1' %}selected{% endif %} data-code="K1">K1: Remember</option>
+                                            <option value="K2" {% if co.blooms_level == 'K2' %}selected{% endif %} data-code="K2">K2: Understand</option>
+                                            <option value="K3" {% if co.blooms_level == 'K3' %}selected{% endif %} data-code="K3">K3: Apply</option>
+                                            <option value="K4" {% if co.blooms_level == 'K4' %}selected{% endif %} data-code="K4">K4: Analyze</option>
+                                            <option value="K5" {% if co.blooms_level == 'K5' %}selected{% endif %} data-code="K5">K5: Evaluate</option>
+                                            <option value="K6" {% if co.blooms_level == 'K6' %}selected{% endif %} data-code="K6">K6: Create</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="co_{{ co.id }}_kp" required class="co-select co-select-detailed" title="{% if co.knowledge_profile == 'K1' %}K1: Natural Sciences{% elif co.knowledge_profile == 'K2' %}K2: Math/Stats{% elif co.knowledge_profile == 'K3' %}K3: Engineering Fundamentals{% elif co.knowledge_profile == 'K4' %}K4: Specialist Knowledge{% elif co.knowledge_profile == 'K5' %}K5: Design Support{% elif co.knowledge_profile == 'K6' %}K6: Engineering Practice{% elif co.knowledge_profile == 'K7' %}K7: Society & Ethics{% elif co.knowledge_profile == 'K8' %}K8: Research Literature{% endif %}">
+                                            <option value="K1" {% if co.knowledge_profile == 'K1' %}selected{% endif %} data-code="K1">K1: Natural Sciences</option>
+                                            <option value="K2" {% if co.knowledge_profile == 'K2' %}selected{% endif %} data-code="K2">K2: Math/Stats</option>
+                                            <option value="K3" {% if co.knowledge_profile == 'K3' %}selected{% endif %} data-code="K3">K3: Engineering Fundamentals</option>
+                                            <option value="K4" {% if co.knowledge_profile == 'K4' %}selected{% endif %} data-code="K4">K4: Specialist Knowledge</option>
+                                            <option value="K5" {% if co.knowledge_profile == 'K5' %}selected{% endif %} data-code="K5">K5: Design Support</option>
+                                            <option value="K6" {% if co.knowledge_profile == 'K6' %}selected{% endif %} data-code="K6">K6: Engineering Practice</option>
+                                            <option value="K7" {% if co.knowledge_profile == 'K7' %}selected{% endif %} data-code="K7">K7: Society & Ethics</option>
+                                            <option value="K8" {% if co.knowledge_profile == 'K8' %}selected{% endif %} data-code="K8">K8: Research Literature</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="co_{{ co.id }}_pa" required class="co-select co-select-detailed" title="{% if co.problem_attribute == 'P1' %}P1: In-Depth Knowledge{% elif co.problem_attribute == 'P2' %}P2: Wide-Ranging/Conflicting{% elif co.problem_attribute == 'P3' %}P3: No Obvious Solution{% elif co.problem_attribute == 'P4' %}P4: Infrequently Encountered{% elif co.problem_attribute == 'P5' %}P5: Outside Standards{% elif co.problem_attribute == 'P6' %}P6: Diverse Stakeholder Needs{% elif co.problem_attribute == 'P7' %}P7: Many Interdependent Parts{% endif %}">
+                                            <option value="P1" {% if co.problem_attribute == 'P1' %}selected{% endif %} data-code="P1">P1: In-Depth Knowledge</option>
+                                            <option value="P2" {% if co.problem_attribute == 'P2' %}selected{% endif %} data-code="P2">P2: Wide-Ranging/Conflicting</option>
+                                            <option value="P3" {% if co.problem_attribute == 'P3' %}selected{% endif %} data-code="P3">P3: No Obvious Solution</option>
+                                            <option value="P4" {% if co.problem_attribute == 'P4' %}selected{% endif %} data-code="P4">P4: Infrequently Encountered</option>
+                                            <option value="P5" {% if co.problem_attribute == 'P5' %}selected{% endif %} data-code="P5">P5: Outside Standards</option>
+                                            <option value="P6" {% if co.problem_attribute == 'P6' %}selected{% endif %} data-code="P6">P6: Diverse Stakeholder Needs</option>
+                                            <option value="P7" {% if co.problem_attribute == 'P7' %}selected{% endif %} data-code="P7">P7: Many Interdependent Parts</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="co_{{ co.id }}_aa" class="co-select co-select-detailed" title="{% if co.activity_attribute == 'A1' %}A1: Diverse Resource Use{% elif co.activity_attribute == 'A2' %}A2: Resolve Conflicts{% elif co.activity_attribute == 'A3' %}A3: Creative Principles{% elif co.activity_attribute == 'A4' %}A4: Significant Consequences{% elif co.activity_attribute == 'A5' %}A5: Beyond Experience{% endif %}">
+                                            <option value="">-</option>
+                                            <option value="A1" {% if co.activity_attribute == 'A1' %}selected{% endif %} data-code="A1">A1: Diverse Resource Use</option>
+                                            <option value="A2" {% if co.activity_attribute == 'A2' %}selected{% endif %} data-code="A2">A2: Resolve Conflicts</option>
+                                            <option value="A3" {% if co.activity_attribute == 'A3' %}selected{% endif %} data-code="A3">A3: Creative Principles</option>
+                                            <option value="A4" {% if co.activity_attribute == 'A4' %}selected{% endif %} data-code="A4">A4: Significant Consequences</option>
+                                            <option value="A5" {% if co.activity_attribute == 'A5' %}selected{% endif %} data-code="A5">A5: Beyond Experience</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="co_{{ co.id }}_marks" value="{{ co.total_assessment_marks }}" min="0" required onchange="updateTotalMarks()" class="co-input-small">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="co_{{ co.id }}_activity" value="{{ co.activity }}" required class="co-input">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="remove-co-btn" onclick="removeCO(this)">Remove</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                    <a href="{% url 'academics:manage_courses' %}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.edit-course-page {
+    padding: 2rem 0;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+    font-weight: 700;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.edit-course-form-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+}
+
+.form-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group input[type="file"] {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.prerequisites-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--bg-secondary);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.checkbox-label:hover {
+    background: var(--bg-primary);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.no-prereqs,
+.no-file,
+.current-file {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.current-file a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.current-file a:hover {
+    text-decoration: underline;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.submit-btn,
+.cancel-btn {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.submit-btn {
+    background: var(--color-primary);
+    color: white;
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+.cancel-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+}
+
+.section-header-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.add-co-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-co-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+.section-note {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.marks-warning {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.marks-ok {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.co-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.co-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.co-table thead {
+    background: var(--bg-tertiary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.co-table th {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.co-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: top;
+}
+
+.co-table tbody tr:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.co-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.co-input-small {
+    width: 60px;
+    padding: 0.4rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.co-input {
+    width: 100px;
+    padding: 0.4rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.co-select {
+    width: 70px;
+    padding: 0.4rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.co-select-detailed {
+    width: 70px;
+    min-width: 70px;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.co-select-detailed option {
+    padding: 0.5rem;
+    white-space: normal;
+    width: auto;
+    min-width: 300px;
+}
+
+.co-textarea {
+    width: 250px;
+    min-width: 200px;
+    padding: 0.4rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 50px;
+}
+
+.co-input-small:focus,
+.co-input:focus,
+.co-select:focus,
+.co-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.remove-co-btn {
+    padding: 0.3rem 0.6rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.remove-co-btn:hover {
+    background: #c82333;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1;
+    }
+    
+    .edit-course-form-container {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+let coCounter = {{ course_outcomes|length|default:0 }};
+
+function addNewCO() {
+    coCounter++;
+    const coList = document.getElementById('coList');
+    const coRow = document.createElement('tr');
+    coRow.className = 'co-row';
+    coRow.setAttribute('data-co-id', 'new');
+    
+    const programOutcomes = [
+        {% for po in program_outcomes %}
+        {id: {{ po.id }}, code: '{{ po.code }}'}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    let poOptions = '';
+    programOutcomes.forEach(po => {
+        poOptions += `<option value="${po.id}" data-code="${po.code}" data-title="${po.title}">${po.code}: ${po.title}</option>`;
+    });
+    
+    coRow.innerHTML = `
+        <td>
+            <input type="hidden" name="co_new_${coCounter}_id" value="new">
+            <input type="number" name="co_new_${coCounter}_sequence" value="${coCounter}" min="1" required class="co-input-small">
+        </td>
+        <td>
+            <select name="co_new_${coCounter}_po" required class="co-select co-select-detailed">
+                ${poOptions}
+            </select>
+        </td>
+        <td>
+            <textarea name="co_new_${coCounter}_statement" rows="2" required class="co-textarea"></textarea>
+        </td>
+        <td>
+            <select name="co_new_${coCounter}_blooms" required class="co-select co-select-detailed">
+                <option value="K1">K1: Remember</option>
+                <option value="K2">K2: Understand</option>
+                <option value="K3">K3: Apply</option>
+                <option value="K4">K4: Analyze</option>
+                <option value="K5">K5: Evaluate</option>
+                <option value="K6">K6: Create</option>
+            </select>
+        </td>
+        <td>
+            <select name="co_new_${coCounter}_kp" required class="co-select co-select-detailed">
+                <option value="K1">K1: Natural Sciences</option>
+                <option value="K2">K2: Math/Stats</option>
+                <option value="K3">K3: Engineering Fundamentals</option>
+                <option value="K4">K4: Specialist Knowledge</option>
+                <option value="K5">K5: Design Support</option>
+                <option value="K6">K6: Engineering Practice</option>
+                <option value="K7">K7: Society & Ethics</option>
+                <option value="K8">K8: Research Literature</option>
+            </select>
+        </td>
+        <td>
+            <select name="co_new_${coCounter}_pa" required class="co-select co-select-detailed">
+                <option value="P1">P1: In-Depth Knowledge</option>
+                <option value="P2">P2: Wide-Ranging/Conflicting</option>
+                <option value="P3">P3: No Obvious Solution</option>
+                <option value="P4">P4: Infrequently Encountered</option>
+                <option value="P5">P5: Outside Standards</option>
+                <option value="P6">P6: Diverse Stakeholder Needs</option>
+                <option value="P7">P7: Many Interdependent Parts</option>
+            </select>
+        </td>
+        <td>
+            <select name="co_new_${coCounter}_aa" class="co-select co-select-detailed">
+                <option value="">-</option>
+                <option value="A1">A1: Diverse Resource Use</option>
+                <option value="A2">A2: Resolve Conflicts</option>
+                <option value="A3">A3: Creative Principles</option>
+                <option value="A4">A4: Significant Consequences</option>
+                <option value="A5">A5: Beyond Experience</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" name="co_new_${coCounter}_marks" value="0" min="0" required onchange="updateTotalMarks()" class="co-input-small">
+        </td>
+        <td>
+            <input type="text" name="co_new_${coCounter}_activity" value="" required class="co-input">
+        </td>
+        <td>
+            <button type="button" class="remove-co-btn" onclick="removeCO(this)">Remove</button>
+        </td>
+    `;
+    
+    coList.appendChild(coRow);
+    updateTotalMarks();
+}
+
+function removeCO(btn) {
+    if (confirm('Are you sure you want to remove this Course Outcome?')) {
+        const coRow = btn.closest('.co-row');
+        coRow.remove();
+        updateTotalMarks();
+    }
+}
+
+function updateTotalMarks() {
+    const marksInputs = document.querySelectorAll('input[name*="_marks"]');
+    let total = 0;
+    marksInputs.forEach(input => {
+        const value = parseInt(input.value) || 0;
+        total += value;
+    });
+    
+    const display = document.getElementById('totalMarksDisplay');
+    const indicator = document.getElementById('marksIndicator');
+    
+    if (display && indicator) {
+        display.textContent = total;
+        
+        // Update the indicator
+        if (total === 100) {
+            indicator.textContent = '✓';
+            indicator.className = 'marks-ok';
+        } else {
+            indicator.textContent = '⚠ Marks should total 100';
+            indicator.className = 'marks-warning';
+        }
+    }
+}
+
+// Function to update select display tooltip
+function updateSelectDisplay(select) {
+    if (select.selectedOptions.length > 0) {
+        const selectedOption = select.selectedOptions[0];
+        const fullText = selectedOption.textContent;
+        select.setAttribute('title', fullText);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addCOBtn = document.getElementById('addCOBtn');
+    if (addCOBtn) {
+        addCOBtn.addEventListener('click', addNewCO);
+    }
+    
+    // Initialize total marks calculation
+    updateTotalMarks();
+    
+    // Add change listeners to all marks inputs
+    document.querySelectorAll('input[name*="_marks"]').forEach(input => {
+        input.addEventListener('change', updateTotalMarks);
+        input.addEventListener('input', updateTotalMarks);
+    });
+    
+    // Update select displays and add change listeners for detailed selects
+    document.querySelectorAll('.co-select-detailed').forEach(select => {
+        updateSelectDisplay(select);
+        select.addEventListener('change', function() {
+            updateSelectDisplay(this);
+        });
+    });
+    
+    // Override addNewCO to also initialize new selects
+    const originalAddNewCO = window.addNewCO;
+    window.addNewCO = function() {
+        originalAddNewCO();
+        // Update the newly added select displays after a short delay
+        setTimeout(() => {
+            document.querySelectorAll('.co-select-detailed').forEach(select => {
+                if (!select.hasAttribute('data-initialized')) {
+                    updateSelectDisplay(select);
+                    select.setAttribute('data-initialized', 'true');
+                    select.addEventListener('change', function() {
+                        updateSelectDisplay(this);
+                    });
+                }
+            });
+        }, 100);
+    };
+});
+</script>
+{% endblock %}
+

@@ -33,6 +33,7 @@ urlpatterns = [
     path('designs/', include('designs.urls')),
     path('people/', include('people.urls')),
     path('academics/', include('academics.urls')),
+    path('office/', include('office.urls')),
 ]
 
 # Serve media files in development
