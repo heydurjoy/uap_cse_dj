@@ -11,5 +11,6 @@ urlpatterns = [
     path('posts/<int:pk>/edit/', views.edit_post, name='edit_post'),
     path('posts/<int:pk>/delete/', views.delete_post, name='delete_post'),
     path('posts/delete/', views.delete_posts, name='delete_posts'),
+    path('api/notifications/', views.notifications_api, name='notifications_api'),
 ]
 
