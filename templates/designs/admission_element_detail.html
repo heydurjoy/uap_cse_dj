@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load academics_filters %}
+{% load course_extras %}
+
 
 {% block title %}{{ element.title }} - Admission - CSE UAP{% endblock %}
 
@@ -16,7 +18,7 @@
             <div class="admission-rich-content">
                 {{ element.content|safe }}
             </div>
-            
+
             {% if element.curriculum_pdf %}
             <div class="curriculum-download">
                 <h3>Curriculum</h3>
@@ -30,12 +32,12 @@
                 </a>
             </div>
             {% endif %}
-            
+
             {% if program and courses %}
             <div class="program-courses-section">
                 <h2 class="courses-section-title">Curriculum & Course Outcomes</h2>
                 <p class="courses-section-subtitle">Complete list of courses for {{ program.name }}</p>
-                
+
                 <div class="semester-filter-pills">
                     <button class="semester-pill active" data-semester="all">All Semesters</button>
                     <button class="semester-pill" data-semester="1-1">1-1</button>
@@ -55,14 +57,14 @@
                     </button>
                     {% endif %}
                 </div>
-                
+
                 {% if lifetime_stats %}
                 <div class="you-should-know-content" id="youShouldKnowContent" style="display: none;">
                     <div class="ys-know-intro">
                         <h3>Program Outcomes (POs) - Washington Accord</h3>
                         <p><strong>Program Outcomes (POs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. POs are attained through <strong>Course Outcomes (COs)</strong>, where each CO maps to a specific PO. We measure your progress using <strong>Bloom's Taxonomy (K1-K6)</strong>, <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive skill development throughout your 4-year journey.</p>
                     </div>
-                    
+
                     <div class="definitions-grid">
                         <div class="definition-card">
                             <h4>Bloom's Taxonomy (K1-K6)</h4>
@@ -75,7 +77,7 @@
                                 <li><strong>K6:</strong> Create - Produce new or original work</li>
                             </ul>
                         </div>
-                        
+
                         <div class="definition-card">
                             <h4>Knowledge Profiles (K1-K8)</h4>
                             <ul class="definition-list">
@@ -89,7 +91,7 @@
                                 <li><strong>K8:</strong> Research Literature</li>
                             </ul>
                         </div>
-                        
+
                         <div class="definition-card">
                             <h4>Problem Attributes (P1-P7)</h4>
                             <ul class="definition-list">
@@ -102,7 +104,7 @@
                                 <li><strong>P7:</strong> Many Interdependent Parts</li>
                             </ul>
                         </div>
-                        
+
                         <div class="definition-card">
                             <h4>Activity Attributes (A1-A5)</h4>
                             <ul class="definition-list">
@@ -114,10 +116,10 @@
                             </ul>
                         </div>
                     </div>
-                    
+
                     <div class="lifetime-stats-section">
                         <h3>Your 4-Year Journey: Credits & Marks Distribution</h3>
-                        
+
                         <div class="stats-tables">
                             <div class="stats-table-wrapper po-table-highlight">
                                 <h4>Program Outcomes (POs) - Washington Accord</h4>
@@ -163,7 +165,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div class="stats-table-wrapper">
                                 <h4>Bloom's Taxonomy Levels</h4>
                                 <table class="stats-table">
@@ -191,7 +193,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div class="stats-table-wrapper">
                                 <h4>Knowledge Profiles</h4>
                                 <table class="stats-table">
@@ -219,7 +221,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div class="stats-table-wrapper">
                                 <h4>Problem Attributes</h4>
                                 <table class="stats-table">
@@ -247,7 +249,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div class="stats-table-wrapper">
                                 <h4>Activity Attributes</h4>
                                 <table class="stats-table">
@@ -279,108 +281,105 @@
                     </div>
                 </div>
                 {% endif %}
-                
-                {% regroup courses by year_semester as courses_by_semester %}
-                {% for semester_group in courses_by_semester %}
-                <div class="course-semester-group" data-semester="{{ semester_group.grouper }}">
-                    <h3 class="course-semester-title">
-                        {{ semester_group.list.0.get_year_semester_display }}
-                    </h3>
-                    
-                    {% regroup semester_group.list by course_type as courses_by_type %}
-                    {% for course_type_group in courses_by_type %}
-                    <div class="course-type-subgroup">
-                        <h4 class="course-type-subtitle">
-                            {% if course_type_group.grouper == 'TH' %}
-                                Theory Courses
-                            {% else %}
-                                Laboratory Courses
-                            {% endif %}
-                        </h4>
-                        
-                        <div class="courses-grid">
-                        {% for course in course_type_group.list %}
-                        <div class="course-tile">
-                            <div class="course-tile-header">
-                                <span class="course-code-badge">{{ course.course_code }}</span>
-                                <span class="course-type-badge {% if course.course_type == 'TH' %}theory{% else %}lab{% endif %}">
-                                    {{ course.get_course_type_display }}
-                                </span>
-                            </div>
-                            
-                            <div class="course-year-semester">
-                                <span class="year-semester-badge">{{ course.get_year_semester_display }}</span>
-                            </div>
-                            
-                            <h4 class="course-tile-title">{{ course.title }}</h4>
-                            
-                            <div class="course-tile-hours">
-                                <span>{{ course.credit_hours }} Cr</span>
-                                <span>•</span>
-                                <span>{{ course.contact_hours }} Hr</span>
-                            </div>
-                            
-                            {% if course.prerequisites.all %}
-                            <div class="course-prerequisites">
-                                <span class="prereq-label">Prerequisites:</span>
-                                <div class="prereq-codes">
-                                    {% for prereq in course.prerequisites.all %}
-                                    <span class="prereq-code">{{ prereq.course_code }}</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% endif %}
-                            
-                            {% if course.stats %}
-                            <div class="course-tile-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">COs</span>
-                                    <span class="stat-value">{{ course.stats.co_count }}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">POs</span>
-                                    <span class="stat-value">{{ course.stats.po_count }}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Ks</span>
-                                    <span class="stat-value">{{ course.stats.k_count }}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Ps</span>
-                                    <span class="stat-value">{{ course.stats.p_count }}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">As</span>
-                                    <span class="stat-value">{{ course.stats.a_count }}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Blooms</span>
-                                    <span class="stat-value">{{ course.stats.blooms_count }}</span>
-                                </div>
-                            </div>
-                            {% else %}
-                            <div class="course-tile-stats">
-                                <span class="no-outcomes">No outcomes defined</span>
-                            </div>
-                            {% endif %}
-                            
-                            {% if course.course_outline_pdf %}
-                            <a href="{{ course.course_outline_pdf.url }}" target="_blank" class="course-pdf-link-tile">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                PDF
-                            </a>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
+
+              {% regroup courses by year_semester as courses_by_semester %}
+
+{% for semester_group in courses_by_semester %}
+<div class="course-semester-group" data-semester="{{ semester_group.grouper }}">
+
+    <h3 class="course-semester-title">
+        {{ semester_group.list.0.get_year_semester_display }}
+    </h3>
+
+    {# 🔥 Sort by course_type BEFORE regrouping — the KEY fix #}
+   {% with sorted_courses=semester_group.list|sort_by_type %}
+    {% regroup sorted_courses by course_type as courses_by_type %}
+
+
+        {% for course_type_group in courses_by_type %}
+        <div class="course-type-subgroup">
+
+            <h4 class="course-type-subtitle">
+                {% if course_type_group.grouper == 'TH' %}
+                    Theory Courses
+                {% else %}
+                    Laboratory Courses
+                {% endif %}
+            </h4>
+
+            <div class="courses-grid">
+                {% for course in course_type_group.list %}
+                <div class="course-tile">
+
+                    <div class="course-tile-header">
+                        <span class="course-code-badge">{{ course.course_code }}</span>
+                        <span class="course-type-badge {% if course.course_type == 'TH' %}theory{% else %}lab{% endif %}">
+                            {{ course.get_course_type_display }}
+                        </span>
+                    </div>
+
+                    <div class="course-year-semester">
+                        <span class="year-semester-badge">
+                            {{ course.get_year_semester_display }}
+                        </span>
+                    </div>
+
+                    <h4 class="course-tile-title">{{ course.title }}</h4>
+
+                    <div class="course-tile-hours">
+                        <span>{{ course.credit_hours }} Cr</span>
+                        <span>•</span>
+                        <span>{{ course.contact_hours }} Hr</span>
+                    </div>
+
+                    {% if course.prerequisites.all %}
+                    <div class="course-prerequisites">
+                        <span class="prereq-label">Prerequisites:</span>
+                        <div class="prereq-codes">
+                            {% for prereq in course.prerequisites.all %}
+                            <span class="prereq-code">{{ prereq.course_code }}</span>
+                            {% endfor %}
                         </div>
                     </div>
-                    {% endfor %}
+                    {% endif %}
+
+                    {% if course.stats %}
+                    <div class="course-tile-stats">
+                        <div class="stat-item"><span class="stat-label">COs</span><span class="stat-value">{{ course.stats.co_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">POs</span><span class="stat-value">{{ course.stats.po_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">Ks</span><span class="stat-value">{{ course.stats.k_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">Ps</span><span class="stat-value">{{ course.stats.p_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">As</span><span class="stat-value">{{ course.stats.a_count }}</span></div>
+                        <div class="stat-item"><span class="stat-label">Blooms</span><span class="stat-value">{{ course.stats.blooms_count }}</span></div>
+                    </div>
+                    {% else %}
+                    <div class="course-tile-stats">
+                        <span class="no-outcomes">No outcomes defined</span>
+                    </div>
+                    {% endif %}
+
+                    {% if course.course_outline_pdf %}
+                    <a href="{{ course.course_outline_pdf.url }}" target="_blank" class="course-pdf-link-tile">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                             <polyline points="7 10 12 15 17 10"></polyline>
+                             <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        PDF
+                    </a>
+                    {% endif %}
                 </div>
                 {% endfor %}
+            </div>
+
+        </div>
+        {% endfor %}
+    {% endwith %}
+
+</div>
+{% endfor %}
+
             </div>
             {% endif %}
         </div>
@@ -562,15 +561,15 @@
     .admission-element-page {
         padding: 1rem 0.5rem;
     }
-    
+
     .admission-title {
         font-size: 2rem;
     }
-    
+
     .admission-content {
         padding: 2rem 1.5rem;
     }
-    
+
     .admission-rich-content {
         font-size: 1rem;
         line-height: 1.7;
@@ -581,7 +580,7 @@
     .admission-title {
         font-size: 1.75rem;
     }
-    
+
     .admission-content {
         padding: 1.5rem 1rem;
     }
@@ -674,9 +673,12 @@
     border-radius: 10px;
     padding: 0.9rem;
     transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between; /* stretch content */
+
+    min-height: 350px; /* consistent height */
     min-width: 0;
     box-sizing: border-box;
 }
@@ -916,24 +918,24 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.8rem;
     }
-    
+
     .course-tile {
         padding: 0.8rem;
     }
-    
+
     .course-tile-stats {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.35rem;
     }
-    
+
     .stat-item {
         padding: 0.35rem 0.15rem;
     }
-    
+
     .stat-label {
         font-size: 0.6rem;
     }
-    
+
     .stat-value {
         font-size: 0.9rem;
     }
@@ -1003,7 +1005,7 @@
         gap: 0.5rem;
         padding: 0.75rem;
     }
-    
+
     .semester-pill,
     .you-should-know-btn-pill {
         padding: 0.5rem 1rem;
@@ -1309,20 +1311,20 @@
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .stats-tables {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .you-should-know-content {
         padding: 1.5rem;
     }
-    
+
     .stats-table {
         font-size: 0.85rem;
     }
-    
+
     .stats-table th,
     .stats-table td {
         padding: 0.4rem 0.3rem;
@@ -1334,19 +1336,19 @@
 document.addEventListener('DOMContentLoaded', function() {
     const pills = document.querySelectorAll('.semester-pill');
     const semesterGroups = document.querySelectorAll('.course-semester-group');
-    
+
     pills.forEach(pill => {
         pill.addEventListener('click', function() {
             const selectedSemester = this.getAttribute('data-semester');
-            
+
             // Update active state
             pills.forEach(p => p.classList.remove('active'));
             this.classList.add('active');
-            
+
             // Filter courses
             semesterGroups.forEach(group => {
                 const groupSemester = group.getAttribute('data-semester');
-                
+
                 if (selectedSemester === 'all') {
                     group.classList.remove('hidden');
                 } else if (groupSemester === selectedSemester) {
@@ -1357,20 +1359,20 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
+
     // Add event listener for "You Should Know" button
     const youShouldKnowBtn = document.getElementById('youShouldKnowBtn');
     const youShouldKnowContent = document.getElementById('youShouldKnowContent');
-    
+
     if (youShouldKnowBtn && youShouldKnowContent) {
         youShouldKnowBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            const isHidden = youShouldKnowContent.style.display === 'none' || 
+
+            const isHidden = youShouldKnowContent.style.display === 'none' ||
                            youShouldKnowContent.style.display === '' ||
                            window.getComputedStyle(youShouldKnowContent).display === 'none';
-            
+
             if (isHidden) {
                 youShouldKnowContent.style.display = 'block';
                 youShouldKnowBtn.classList.add('active');
@@ -1386,20 +1388,20 @@ document.addEventListener('DOMContentLoaded', function() {
 window.toggleYouShouldKnow = function() {
     const content = document.getElementById('youShouldKnowContent');
     const btn = document.querySelector('.you-should-know-btn-pill');
-    
+
     if (!content) {
         console.error('Could not find content element with ID: youShouldKnowContent');
         return;
     }
-    
+
     if (!btn) {
         console.error('Could not find button element with class: you-should-know-btn-pill');
         return;
     }
-    
+
     const currentDisplay = window.getComputedStyle(content).display;
     const isHidden = currentDisplay === 'none' || content.style.display === 'none' || content.style.display === '';
-    
+
     if (isHidden) {
         content.style.display = 'block';
         btn.classList.add('active');
@@ -1410,4 +1412,3 @@ window.toggleYouShouldKnow = function() {
 };
 </script>
 {% endblock %}
-

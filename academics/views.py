@@ -24,11 +24,15 @@ def manage_courses(request):
     if not check_course_access(request.user):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('people:user_profile')
-    
+
     # Get all programs and courses
     programs = Program.objects.all().prefetch_related('courses')
-    courses = Course.objects.all().select_related('program').prefetch_related('outcomes').order_by('program', 'year_semester', 'course_code')
-    
+
+    courses = Course.objects.all() \
+        .select_related('program') \
+        .prefetch_related('outcomes') \
+        .order_by('program', 'year_semester', 'course_type', 'course_code')
+
     # Filter by program if specified
     program_id = request.GET.get('program')
     if program_id:
