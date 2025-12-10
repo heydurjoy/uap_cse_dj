@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Class Routine - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="create-routine-page">
+        <div class="page-header">
+            <a href="{% url 'office:manage_routines' %}" class="back-link">← Back to Manage Routines</a>
+            <h1>Create Class Routine</h1>
+        </div>
+        
+        <div class="form-container">
+            <form method="post" enctype="multipart/form-data" class="routine-form">
+                {% csrf_token %}
+                
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="message message-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="academic_year">Academic Year *</label>
+                    <input type="number" name="academic_year" id="academic_year" 
+                           value="{% if form_data.academic_year %}{{ form_data.academic_year }}{% else %}{{ current_year }}{% endif %}" 
+                           min="2000" max="{{ current_year|add:5 }}" required 
+                           class="form-input">
+                    <small class="form-help">Enter the academic year (e.g., {{ current_year }})</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="semester">Semester *</label>
+                    <select name="semester" id="semester" required class="form-select">
+                        <option value="">Select Semester</option>
+                        {% for code, display in SEMESTER_CHOICES %}
+                        <option value="{{ code }}" {% if form_data.semester == code %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="year_semester">Year-Semester *</label>
+                    <select name="year_semester" id="year_semester" required class="form-select">
+                        <option value="">Select Year-Semester</option>
+                        {% for code, display in YEAR_SEMESTER_CHOICES %}
+                        <option value="{{ code }}" {% if form_data.year_semester == code %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="section">Section *</label>
+                    <select name="section" id="section" required class="form-select">
+                        <option value="">Select Section</option>
+                        {% for code, display in SECTION_CHOICES %}
+                        <option value="{{ code }}" {% if form_data.section == code %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="routine_image">Routine Image *</label>
+                    <input type="file" name="routine_image" id="routine_image" accept="image/*" required class="form-input-file">
+                    <small class="form-help">Upload the timetable image (JPG, PNG, etc.)</small>
+                    <div id="image-preview" class="image-preview" style="display: none;">
+                        <img id="preview-img" src="" alt="Preview">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Create Routine</button>
+                    <a href="{% url 'office:manage_routines' %}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.create-routine-page {
+    padding: 2rem 0;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 1rem 0 2rem;
+}
+
+.form-container {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.routine-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-input, .form-select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-input-file {
+    padding: 0.75rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-input-file:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.form-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.image-preview {
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.image-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
+}
+
+.messages {
+    margin-bottom: 1.5rem;
+}
+
+.message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.message-error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.message-success {
+    background: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+@media (max-width: 768px) {
+    .form-container {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* Remove underlines from anchor tags and make them follow theme */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.back-link {
+    color: var(--color-primary);
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    text-decoration: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('routine_image');
+    const preview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
+

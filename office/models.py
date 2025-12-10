@@ -1,14 +1,42 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from ckeditor.fields import RichTextField
 from people.models import BaseUser
+from datetime import datetime
 
 
 # Semester Choices for Admission Results
 SEMESTER_CHOICES = (
     ('Fall', 'Fall'),
     ('Spring', 'Spring'),
+)
+
+# Year-Semester Choices
+YEAR_SEMESTER_CHOICES = (
+    ('1-1', 'Year 1, Semester 1'),
+    ('1-2', 'Year 1, Semester 2'),
+    ('2-1', 'Year 2, Semester 1'),
+    ('2-2', 'Year 2, Semester 2'),
+    ('3-1', 'Year 3, Semester 1'),
+    ('3-2', 'Year 3, Semester 2'),
+    ('4-1', 'Year 4, Semester 1'),
+    ('4-2', 'Year 4, Semester 2'),
+)
+
+# Section Choices
+SECTION_CHOICES = (
+    ('A', 'A'),
+    ('B', 'B'),
+    ('C', 'C'),
+    ('D', 'D'),
+    ('E', 'E'),
+    ('F', 'F'),
+    ('G', 'G'),
+    ('H', 'H'),
+    ('I', 'I'),
+    ('J', 'J'),
 )
 
 # Post Type Choices
@@ -194,3 +222,74 @@ class PostAttachment(models.Model):
 
     def __str__(self):
         return f"{self.post.short_title} - {self.file.name}"
+
+
+class ClassRoutine(models.Model):
+    """
+    Model for managing class routines (timetables).
+    Only authorized staff (Officer/Faculty) with User Level >= 3 can manage routines.
+    """
+    academic_year = models.IntegerField(
+        verbose_name="Academic Year",
+        help_text="The year (e.g., 2025)",
+        validators=[
+            MinValueValidator(2000),
+            MaxValueValidator(datetime.now().year + 5)
+        ]
+    )
+    semester = models.CharField(
+        max_length=10,
+        choices=SEMESTER_CHOICES,
+        verbose_name="Semester",
+        help_text="The academic period: Fall or Spring"
+    )
+    year_semester = models.CharField(
+        max_length=3,
+        choices=YEAR_SEMESTER_CHOICES,
+        verbose_name="Year-Semester",
+        help_text="Student level (e.g., 1-1, 2-2, 4-2)"
+    )
+    section = models.CharField(
+        max_length=1,
+        choices=SECTION_CHOICES,
+        verbose_name="Section",
+        help_text="Class division (A to J)"
+    )
+    routine_image = models.ImageField(
+        upload_to='class_routines/',
+        verbose_name="Routine Image",
+        help_text="The timetable image"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Created At",
+        help_text="Timestamp when the routine was created"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Updated At",
+        help_text="Timestamp when the routine was last updated"
+    )
+    created_by = models.ForeignKey(
+        BaseUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_routines',
+        verbose_name="Created By",
+        help_text="Links to the user who created the routine"
+    )
+
+    class Meta:
+        verbose_name = 'Class Routine'
+        verbose_name_plural = 'Class Routines'
+        ordering = ['-academic_year', 'semester', 'year_semester', 'section']
+        # Ensure unique combination of academic_year, semester, year_semester, and section
+        unique_together = ('academic_year', 'semester', 'year_semester', 'section')
+
+    def __str__(self):
+        return f"{self.academic_year} {self.semester} - {self.get_year_semester_display()} Section {self.section}"
+
+    def clean(self):
+        """Validate the model"""
+        super().clean()
+        # Additional validation can be added here if needed

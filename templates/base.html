@@ -117,7 +117,7 @@
                         {% for element in admission_elements %}
                         <li><a href="{% url 'designs:admission_element_detail' element.pk %}" class="dropdown-link">{{ element.title }}</a></li>
                         {% endfor %}
-                        <li><a href="#" class="dropdown-link">Admission Result</a></li>
+                        <li><a href="{% url 'office:search_admission_results' %}" class="dropdown-link">Admission Result</a></li>
                     </ul>
                 </li>
                 <li class="nav-dropdown">

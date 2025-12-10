@@ -1618,6 +1618,10 @@ body.theme-transitioning * {
     padding: 3rem 0;
 }
 
+.main-content > .home-hero:first-child {
+    margin-top: -3rem;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -2190,7 +2194,7 @@ p {
     display: flex;
     align-items: flex-start;
     padding: 3.6rem 0 3.6rem 0;
-    margin-top: 0;
+    margin-top: -3rem;
     background: var(--bg-primary);
     position: relative;
     overflow: visible;

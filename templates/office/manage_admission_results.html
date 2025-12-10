@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Admission Results - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-admission-results-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Admission Test Results</h1>
+        </div>
+        
+        <!-- Filters and Actions -->
+        <div class="results-toolbar">
+            <div class="toolbar-left">
+                <form method="get" class="filter-form">
+                    <select name="year" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Years</option>
+                        {% for year in years %}
+                        <option value="{{ year }}" {% if year_filter == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="semester" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Semesters</option>
+                        {% for code, display in SEMESTER_CHOICES %}
+                        <option value="{{ code }}" {% if semester_filter == code %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="text" name="search" placeholder="Search results..." value="{{ search_query }}" class="search-input">
+                    <button type="submit" class="filter-btn">Filter</button>
+                    <a href="{% url 'office:manage_admission_results' %}" class="clear-btn">Clear</a>
+                </form>
+            </div>
+            <div class="toolbar-right">
+                <a href="{% url 'office:create_admission_result' %}" class="action-btn success">+ Create Result</a>
+            </div>
+        </div>
+        
+        <!-- Results Table -->
+        <div class="results-table-container">
+            {% if results %}
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Academic Year</th>
+                        <th>Semester</th>
+                        <th>Slot</th>
+                        <th>Published Date</th>
+                        <th>Created By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td><strong>{{ result.academic_year }}</strong></td>
+                        <td>{{ result.get_semester_display }}</td>
+                        <td>Slot {{ result.slot }}</td>
+                        <td>{{ result.publish_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if result.created_by %}
+                                {% if result.created_by.user_type == 'faculty' and result.created_by.faculty_profile %}
+                                    {{ result.created_by.faculty_profile.name|default:result.created_by.email }}
+                                {% elif result.created_by.user_type == 'officer' and result.created_by.officer_profile %}
+                                    {{ result.created_by.officer_profile.name|default:result.created_by.email }}
+                                {% else %}
+                                    {{ result.created_by.email }}
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-secondary);">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions-cell">
+                            <a href="{% url 'office:search_admission_results' %}?year={{ result.academic_year }}&semester={{ result.semester }}&slot={{ result.slot }}" class="action-icon-btn view-icon-btn" title="View Public Page">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+                            <a href="{% url 'office:edit_admission_result' result.pk %}" class="action-icon-btn edit-icon-btn" title="Edit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </a>
+                            <a href="{% url 'office:delete_admission_result' result.pk %}" class="action-icon-btn delete-icon-btn" title="Delete">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </a>
+                            {% if result.official_pdf %}
+                            <a href="{{ result.official_pdf.url }}" class="action-icon-btn download-icon-btn" title="Download PDF" download>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                </svg>
+                <h3>No results found</h3>
+                <p>No admission results match your search criteria.</p>
+                <a href="{% url 'office:create_admission_result' %}" class="action-btn success">Create First Result</a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-admission-results-page {
+    padding: 2rem 0;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 1rem 0;
+}
+
+.results-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.toolbar-left {
+    flex: 1;
+    min-width: 300px;
+}
+
+.toolbar-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-select, .search-input {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.search-input {
+    min-width: 200px;
+}
+
+.filter-btn, .clear-btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.filter-btn {
+    background: var(--color-primary);
+    color: white;
+}
+
+.filter-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+.clear-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.action-btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.action-btn.success {
+    background: var(--color-primary);
+    color: white;
+}
+
+.action-btn.success:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.results-table-container {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-table thead {
+    background: var(--bg-tertiary);
+}
+
+.results-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.results-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.results-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.actions-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.view-icon-btn {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.view-icon-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.edit-icon-btn {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.edit-icon-btn:hover {
+    background: #d97706;
+    color: white;
+}
+
+.delete-icon-btn {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.delete-icon-btn:hover {
+    background: #dc2626;
+    color: white;
+}
+
+.download-icon-btn {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.download-icon-btn:hover {
+    background: #059669;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-state svg {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .results-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-left, .toolbar-right {
+        width: 100%;
+    }
+    
+    .results-table {
+        font-size: 0.9rem;
+    }
+    
+    .results-table th,
+    .results-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+

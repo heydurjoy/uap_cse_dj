@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdmissionResult, Post, PostAttachment
+from .models import AdmissionResult, Post, PostAttachment, ClassRoutine
 
 
 @admin.register(AdmissionResult)
@@ -85,5 +85,26 @@ class PostAttachmentAdmin(admin.ModelAdmin):
     fieldsets = (
         ('File Information', {
             'fields': ('post', 'file', 'uploaded_at')
+        }),
+    )
+
+
+@admin.register(ClassRoutine)
+class ClassRoutineAdmin(admin.ModelAdmin):
+    list_display = ['academic_year', 'semester', 'year_semester', 'section', 'created_at', 'created_by']
+    list_filter = ['academic_year', 'semester', 'year_semester', 'section', 'created_at']
+    search_fields = ['academic_year', 'semester', 'year_semester', 'section']
+    ordering = ['-academic_year', 'semester', 'year_semester', 'section']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Routine Information', {
+            'fields': ('academic_year', 'semester', 'year_semester', 'section')
+        }),
+        ('Routine Image', {
+            'fields': ('routine_image',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at')
         }),
     )

@@ -1,0 +1,697 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admission Test Results - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="admission-search-page">
+        <div class="search-header">
+            <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+            <h1 class="search-title">Admission Test Results</h1>
+            <p class="search-subtitle">View and download admission test results</p>
+        </div>
+        
+        <div class="search-content">
+            <!-- Search/Filter Form -->
+            <div class="search-form-container">
+                <h2 class="form-section-title">Search Results</h2>
+                <form method="get" class="admission-search-form" id="searchForm">
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="message message-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="academic_year">Academic Year</label>
+                            <select name="year" id="academic_year" class="form-select">
+                                <option value="">All Years</option>
+                                {% for year in available_years %}
+                                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="semester">Semester</label>
+                            <select name="semester" id="semester" class="form-select">
+                                <option value="">All Semesters</option>
+                                {% for code, display in SEMESTER_CHOICES %}
+                                <option value="{{ code }}" {% if selected_semester == code %}selected{% endif %}>{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="slot">Test Slot</label>
+                            <select name="slot" id="slot" class="form-select" {% if not selected_year or not selected_semester %}disabled{% endif %}>
+                                <option value="">All Slots</option>
+                                {% for slot in available_slots %}
+                                <option value="{{ slot }}" {% if selected_slot == slot %}selected{% endif %}>Slot {{ slot }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-help">Select Year and Semester to filter slots</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Filter Results</button>
+                        <a href="{% url 'office:search_admission_results' %}" class="btn-secondary">Show Latest</a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Result Display -->
+            {% if result %}
+            <div class="result-display-container">
+                <div class="result-header-card">
+                    <div class="result-badge">
+                        <span class="result-year">{{ result.academic_year }}</span>
+                        <span class="result-semester">{{ result.get_semester_display }}</span>
+                    </div>
+                    <div class="result-info">
+                        <h2 class="result-title">Slot {{ result.slot }}</h2>
+                        <p class="result-meta">
+                            <span>Published: {{ result.publish_date|date:"F d, Y" }}</span>
+                            {% if result.created_by %}
+                            <span>•</span>
+                            <span>
+                                {% if result.created_by.user_type == 'faculty' and result.created_by.faculty_profile %}
+                                    {{ result.created_by.faculty_profile.name|default:result.created_by.email }}
+                                {% elif result.created_by.user_type == 'officer' and result.created_by.officer_profile %}
+                                    {{ result.created_by.officer_profile.name|default:result.created_by.email }}
+                                {% else %}
+                                    {{ result.created_by.email }}
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if result.official_pdf %}
+                    <a href="{{ result.official_pdf.url }}" class="download-btn-header" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download PDF
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if result.result_content %}
+                <div class="result-content-section">
+                    <h3>Result Information</h3>
+                    <div class="result-html-content">
+                        {{ result.result_content|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if result.official_pdf %}
+                <div class="pdf-viewer-section">
+                    <div class="pdf-viewer-header">
+                        <h3>Official Result PDF</h3>
+                        <div class="pdf-viewer-controls">
+                            <button type="button" class="pdf-control-btn" onclick="openPDFInNewTab()" title="Open in new tab">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </button>
+                            <a href="{{ result.official_pdf.url }}" class="pdf-control-btn" download title="Download PDF">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="pdf-viewer-wrapper">
+                        <iframe 
+                            src="{% url 'office:serve_admission_pdf' result.pk %}#toolbar=1&navpanes=0&scrollbar=1" 
+                            class="pdf-iframe"
+                            title="Admission Test Result PDF"
+                            allow="fullscreen"
+                            type="application/pdf">
+                        </iframe>
+                        <div class="pdf-fallback">
+                            <p>Your browser doesn't support PDF viewing.</p>
+                            <a href="{% url 'office:serve_admission_pdf' result.pk %}" class="download-btn" download>Download PDF</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-pdf-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <p>No PDF available for this result.</p>
+                </div>
+                {% endif %}
+            </div>
+            {% elif search_performed %}
+            <div class="result-not-found-card">
+                <div class="result-icon error">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h2>No Result Found</h2>
+                <p>No result matches your search criteria.</p>
+                <a href="{% url 'office:search_admission_results' %}" class="btn-primary">View Latest Result</a>
+            </div>
+            {% elif not latest_result %}
+            <div class="no-results-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <h2>No Results Available</h2>
+                <p>No admission test results have been published yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+.admission-search-page {
+    padding: 2rem 0;
+}
+
+.search-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.search-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 1rem 0 0.5rem;
+}
+
+.search-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.search-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.search-form-container {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+}
+
+.admission-search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+}
+
+.form-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
+}
+
+/* Result Display */
+.result-display-container {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.result-header-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.result-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.result-year {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+.result-semester {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.result-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.result-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.result-meta {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.download-btn-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.download-btn-header:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.result-content-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border-left: 4px solid var(--color-primary);
+}
+
+.result-content-section h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.result-html-content {
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.result-html-content p {
+    margin: 0.5rem 0;
+}
+
+/* PDF Viewer */
+.pdf-viewer-section {
+    margin-top: 2rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.pdf-viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pdf-viewer-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.pdf-viewer-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pdf-control-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.pdf-control-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.pdf-viewer-wrapper {
+    position: relative;
+    width: 100%;
+    height: 800px;
+    background: #525252;
+    overflow: hidden;
+}
+
+.pdf-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+object.pdf-iframe {
+    min-height: 100%;
+}
+
+object.pdf-iframe iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.pdf-fallback {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+}
+
+.no-pdf-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-secondary);
+}
+
+.no-pdf-message svg {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.no-pdf-message p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Not Found / No Results */
+.result-not-found-card, .no-results-message {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    text-align: center;
+}
+
+.result-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.result-icon.error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.result-not-found-card h2, .no-results-message h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.result-not-found-card p, .no-results-message p {
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+}
+
+.messages {
+    margin-bottom: 1.5rem;
+}
+
+.message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.message-error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.message-success {
+    background: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+    }
+    
+    .result-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .result-badge {
+        width: 100%;
+    }
+    
+    .download-btn-header {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .pdf-viewer-wrapper {
+        height: 600px;
+    }
+    
+    .pdf-viewer-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const yearSelect = document.getElementById('academic_year');
+    const semesterSelect = document.getElementById('semester');
+    const slotSelect = document.getElementById('slot');
+    
+    function loadSlots() {
+        const year = yearSelect.value;
+        const semester = semesterSelect.value;
+        
+        if (year && semester) {
+            fetch(`{% url 'office:get_available_slots' %}?year=${year}&semester=${semester}`)
+                .then(response => response.json())
+                .then(data => {
+                    slotSelect.innerHTML = '<option value="">All Slots</option>';
+                    
+                    if (data.slots && data.slots.length > 0) {
+                        slotSelect.disabled = false;
+                        data.slots.forEach(slot => {
+                            const option = document.createElement('option');
+                            option.value = slot;
+                            option.textContent = `Slot ${slot}`;
+                            slotSelect.appendChild(option);
+                        });
+                        
+                        // Preselect slot if it was in URL
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const slotParam = urlParams.get('slot');
+                        if (slotParam) {
+                            slotSelect.value = slotParam;
+                        }
+                    } else {
+                        slotSelect.disabled = true;
+                        slotSelect.innerHTML = '<option value="">No slots available</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading slots:', error);
+                    slotSelect.disabled = true;
+                    slotSelect.innerHTML = '<option value="">Error loading slots</option>';
+                });
+        } else {
+            slotSelect.disabled = true;
+            slotSelect.innerHTML = '<option value="">All Slots</option>';
+        }
+    }
+    
+    yearSelect.addEventListener('change', loadSlots);
+    semesterSelect.addEventListener('change', loadSlots);
+    
+    // Load slots on page load if year and semester are already selected
+    if (yearSelect.value && semesterSelect.value) {
+        loadSlots();
+    }
+});
+
+function openPDFInNewTab() {
+    const iframe = document.querySelector('.pdf-iframe');
+    if (iframe && iframe.src) {
+        // Remove the hash fragment for opening in new tab
+        const url = iframe.src.split('#')[0];
+        window.open(url, '_blank');
+    }
+}
+</script>
+{% endblock %}
