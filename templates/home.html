@@ -69,6 +69,7 @@
                 <p class="eyebrow uapnow-anim">Whats up?</p><br>
                 <h2 class="uapnow-anim uapnow-title">UAP CSE Now <span class="uapnow-star" aria-hidden="true">✦</span></h2>
                 <p class="subtitle">Everything at a glance — notices, events, seminars, workshops.</p>
+                <a href="{% url 'office:post_list' %}" class="view-all-link">View All Posts →</a>
             </div>
             <div class="uapnow-filters">
                 <button class="uapnow-chip active" type="button">Notices</button>
@@ -987,6 +988,24 @@ document.addEventListener("DOMContentLoaded", () => {
     align-items: flex-start;
     gap: 1rem;
     flex-wrap: wrap;
+}
+
+.view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.view-all-link:hover {
+    color: var(--color-primary-hover);
+    gap: 0.75rem;
+    text-decoration: underline;
 }
 
 .uapnow-filters {

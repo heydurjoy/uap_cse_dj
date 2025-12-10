@@ -4,25 +4,73 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Post, PostAttachment, AdmissionResult, POST_TYPE_CHOICES
 
 
 def post_list(request):
     """
-    Display list of all posts, filterable by type.
+    Display list of all posts with search, filter, and sort functionality.
     """
-    post_type = request.GET.get('type', '')
     posts = Post.objects.all()
     
-    if post_type:
-        posts = posts.filter(post_type=post_type)
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        posts = posts.filter(
+            Q(short_title__icontains=search_query) |
+            Q(long_title__icontains=search_query) |
+            Q(tags__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
     
-    # Order by pinned first, then by date
-    posts = posts.order_by('-is_pinned', '-publish_date')
+    # Filter by post type
+    post_type_filter = request.GET.get('type', '')
+    if post_type_filter:
+        posts = posts.filter(post_type=post_type_filter)
+    
+    # Sort functionality
+    sort_by = request.GET.get('sort', 'pinned')
+    if sort_by == 'oldest':
+        posts = posts.order_by('publish_date')
+    elif sort_by == 'newest':
+        posts = posts.order_by('-publish_date')
+    elif sort_by == 'type':
+        posts = posts.order_by('post_type', '-publish_date')
+    elif sort_by == 'pinned':
+        # Pinned first, then by date
+        posts = posts.order_by('-is_pinned', '-publish_date')
+    else:
+        # Default: pinned first, then by date
+        posts = posts.order_by('-is_pinned', '-publish_date')
+    
+    # Count posts by type for stats (before pagination)
+    total_posts_count = posts.count()
+    posts_by_type = {}
+    for code, display in POST_TYPE_CHOICES:
+        posts_by_type[code] = Post.objects.filter(post_type=code).count()
+    
+    # Pagination - 9 posts per page
+    paginator = Paginator(posts, 9)
+    page = request.GET.get('page', 1)
+    
+    try:
+        posts_page = paginator.page(page)
+    except PageNotAnInteger:
+        posts_page = paginator.page(1)
+    except EmptyPage:
+        posts_page = paginator.page(paginator.num_pages)
     
     context = {
-        'posts': posts,
-        'selected_type': post_type,
+        'posts': posts_page,
+        'selected_type': post_type_filter,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
+        'posts_by_type': posts_by_type,
+        'total_posts': total_posts_count,
+        'paginator': paginator,
+        'is_paginated': posts_page.has_other_pages(),
     }
     return render(request, 'office/post_list.html', context)
 
@@ -141,15 +189,22 @@ def create_post(request):
             post.is_pinned = request.POST.get('is_pinned') == 'on'
             post.created_by = request.user
             
-            # Validate pinned posts limit
+            # Get user access level
+            try:
+                access_level = int(request.user.access_level) if request.user.access_level else 0
+            except (ValueError, TypeError):
+                access_level = 0
+            
+            # Handle pinned posts limit - automatically unpin oldest if needed
             if post.is_pinned:
                 other_pinned = Post.objects.filter(is_pinned=True)
                 if other_pinned.count() >= 3:
-                    messages.error(request, 'Maximum 3 posts can be pinned at a time. Please unpin another post first.')
-                    return render(request, 'office/create_post.html', {
-                        'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
-                        'post': post,
-                    })
+                    # Find and unpin the oldest pinned post
+                    oldest_pinned = other_pinned.order_by('publish_date').first()
+                    if oldest_pinned:
+                        oldest_pinned.is_pinned = False
+                        oldest_pinned.save()
+                        messages.info(request, f'Automatically unpinned the oldest pinned post: "{oldest_pinned.short_title}" to make room for this post.')
             
             post.full_clean()  # This will trigger model validation
             post.save()
@@ -164,9 +219,38 @@ def create_post(request):
             return redirect('office:manage_posts')
         except Exception as e:
             messages.error(request, f'Error creating post: {str(e)}')
+            # Get user access level for error context
+            try:
+                access_level = int(request.user.access_level) if request.user.access_level else 0
+            except (ValueError, TypeError):
+                access_level = 0
+            # Try to get post data from POST to repopulate form
+            post_data = {
+                'post_type': request.POST.get('post_type', 'notice'),
+                'short_title': request.POST.get('short_title', ''),
+                'long_title': request.POST.get('long_title', ''),
+                'tags': request.POST.get('tags', ''),
+                'description': request.POST.get('description', ''),
+            }
+            return render(request, 'office/create_post.html', {
+                'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
+                'post': post_data,
+                'access_level': access_level,
+            })
+    
+    # Get user access level
+    try:
+        access_level = int(request.user.access_level) if request.user.access_level else 0
+    except (ValueError, TypeError):
+        access_level = 0
+    
+    # Get post_type from GET parameter (for direct links to create notice)
+    default_post_type = request.GET.get('post_type', 'notice')
     
     context = {
         'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
+        'access_level': access_level,
+        'default_post_type': default_post_type,
     }
     return render(request, 'office/create_post.html', context)
 
@@ -205,14 +289,15 @@ def edit_post(request, pk):
             # Handle pinned status
             new_pinned = request.POST.get('is_pinned') == 'on'
             if new_pinned and not post.is_pinned:
-                # Check if we can pin this post
+                # Check if we need to unpin oldest to make room
                 other_pinned = Post.objects.filter(is_pinned=True).exclude(pk=post.pk)
                 if other_pinned.count() >= 3:
-                    messages.error(request, 'Maximum 3 posts can be pinned at a time. Please unpin another post first.')
-                    return render(request, 'office/edit_post.html', {
-                        'post': post,
-                        'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
-                    })
+                    # Find and unpin the oldest pinned post
+                    oldest_pinned = other_pinned.order_by('publish_date').first()
+                    if oldest_pinned:
+                        oldest_pinned.is_pinned = False
+                        oldest_pinned.save()
+                        messages.info(request, f'Automatically unpinned the oldest pinned post: "{oldest_pinned.short_title}" to make room for this post.')
             
             post.is_pinned = new_pinned
             

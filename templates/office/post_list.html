@@ -1,0 +1,646 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load academics_filters %}
+
+{% block title %}All Posts - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="posts-list-page">
+        <div class="posts-header">
+            <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+            <h1 class="posts-title">All Posts & Notices</h1>
+            <p class="posts-subtitle">Browse all announcements, notices, events, and more</p>
+        </div>
+        
+        <div class="posts-content">
+            <!-- Search and Filter Section -->
+            <div class="posts-filters">
+                <form method="get" class="filter-form">
+                    <div class="filter-group">
+                        <label for="search-input">Search:</label>
+                        <input type="text" name="search" id="search-input" placeholder="Search posts by title, tags, or content..." value="{{ search_query }}" class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="type-select">Type:</label>
+                        <select name="type" id="type-select" class="filter-select">
+                            <option value="">All Types</option>
+                            {% for code, display in POST_TYPE_CHOICES %}
+                            <option value="{{ code }}" {% if selected_type == code %}selected{% endif %}>
+                                {{ display }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sort-select">Sort By:</label>
+                        <select name="sort" id="sort-select" class="filter-select">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            <option value="type" {% if sort_by == 'type' %}selected{% endif %}>By Type</option>
+                            <option value="pinned" {% if sort_by == 'pinned' %}selected{% endif %}>Pinned First</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="filter-btn">Apply</button>
+                    {% if selected_type or search_query or sort_by != 'pinned' %}
+                    <a href="{% url 'office:post_list' %}" class="clear-btn">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="posts-stats">
+                <div class="stat-card">
+                    <span class="stat-value">{{ total_posts }}</span>
+                    <span class="stat-label">Total Posts</span>
+                </div>
+                {% for code, display in POST_TYPE_CHOICES %}
+                <div class="stat-card stat-{{ code }}">
+                    <span class="stat-value">{{ posts_by_type|get_item:code|default:0 }}</span>
+                    <span class="stat-label">{{ display }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Posts Grid -->
+            {% if posts %}
+            <div class="posts-grid">
+                {% for post in posts %}
+                <div class="post-card {% if post.is_pinned %}post-pinned{% endif %}">
+                    <div class="post-card-top">
+                        <div class="post-badge post-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
+                            {% if post.is_pinned %}
+                            <span class="pin-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 17v5M9 10V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v4M5 10h14l-1 7H6l-1-7z"></path>
+                                </svg>
+                            </span>
+                            {% endif %}
+                            {{ post.get_post_type_display }}
+                        </div>
+                        <div class="post-date">{{ post.publish_date|date:"M d, Y" }}</div>
+                    </div>
+                    <h3 class="post-card-title">{{ post.short_title }}</h3>
+                    <p class="post-card-description">{{ post.long_title|truncatewords:20 }}</p>
+                    {% if post.tags %}
+                    <div class="post-tags">
+                        {% for tag in post.get_tags_list|slice:":3" %}
+                        <span class="tag soft">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'office:post_detail' post.pk %}" class="post-link">View details →</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-posts">
+                <div class="no-posts-icon">📭</div>
+                <h3>No posts found</h3>
+                <p>{% if search_query or selected_type %}Try adjusting your search or filters.{% else %}No posts have been published yet.{% endif %}</p>
+            </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="pagination-wrapper">
+                <div class="pagination">
+                    {% if posts.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if sort_by != 'pinned' %}&sort={{ sort_by }}{% endif %}" class="pagination-btn pagination-first">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="11 17 6 12 11 7"></polyline>
+                            <polyline points="18 17 13 12 18 7"></polyline>
+                        </svg>
+                        First
+                    </a>
+                    <a href="?page={{ posts.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if sort_by != 'pinned' %}&sort={{ sort_by }}{% endif %}" class="pagination-btn pagination-prev">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Previous
+                    </a>
+                    {% else %}
+                    <span class="pagination-btn pagination-disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="11 17 6 12 11 7"></polyline>
+                            <polyline points="18 17 13 12 18 7"></polyline>
+                        </svg>
+                        First
+                    </span>
+                    <span class="pagination-btn pagination-disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Previous
+                    </span>
+                    {% endif %}
+
+                    <div class="pagination-pages">
+                        {% for num in posts.paginator.page_range %}
+                            {% if posts.number == num %}
+                            <span class="pagination-page pagination-active">{{ num }}</span>
+                            {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if sort_by != 'pinned' %}&sort={{ sort_by }}{% endif %}" class="pagination-page">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    {% if posts.has_next %}
+                    <a href="?page={{ posts.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if sort_by != 'pinned' %}&sort={{ sort_by }}{% endif %}" class="pagination-btn pagination-next">
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                    <a href="?page={{ posts.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if sort_by != 'pinned' %}&sort={{ sort_by }}{% endif %}" class="pagination-btn pagination-last">
+                        Last
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="13 17 18 12 13 7"></polyline>
+                            <polyline points="6 17 11 12 6 7"></polyline>
+                        </svg>
+                    </a>
+                    {% else %}
+                    <span class="pagination-btn pagination-disabled">
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </span>
+                    <span class="pagination-btn pagination-disabled">
+                        Last
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="13 17 18 12 13 7"></polyline>
+                            <polyline points="6 17 11 12 6 7"></polyline>
+                        </svg>
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="pagination-info">
+                    Showing {{ posts.start_index }} to {{ posts.end_index }} of {{ total_posts }} posts
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+.posts-list-page {
+    padding: 2rem 0;
+    min-height: 60vh;
+}
+
+.posts-header {
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.posts-title {
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin: 0.5rem 0;
+    font-weight: 800;
+}
+
+.posts-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+}
+
+.posts-filters {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.search-input,
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.search-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+.filter-btn,
+.clear-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
+}
+
+.filter-btn {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-shadow);
+}
+
+.clear-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.clear-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.posts-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px var(--shadow);
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.stat-notice .stat-value { color: var(--color-primary); }
+.stat-events .stat-value { color: var(--color-primary-hover); }
+.stat-seminars .stat-value { color: var(--color-primary); }
+.stat-workshop .stat-value { color: var(--color-primary-dark); }
+.stat-others .stat-value { color: var(--color-primary); }
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.post-card {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow);
+    border-color: color-mix(in srgb, var(--color-primary) 30%, var(--border-color));
+}
+
+.post-card.post-pinned {
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+    box-shadow: 0 6px 20px var(--shadow), 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.post-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.post-badge {
+    padding: 0.4rem 0.85rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.post-badge.notice { background: color-mix(in srgb, var(--color-primary) 14%, var(--bg-tertiary)); }
+.post-badge.events { background: color-mix(in srgb, var(--color-primary-hover) 14%, var(--bg-tertiary)); }
+.post-badge.seminars { background: color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)); }
+.post-badge.workshop { background: color-mix(in srgb, var(--color-primary-dark) 12%, var(--bg-secondary)); }
+.post-badge.others { background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary)); }
+
+.post-badge.pinned {
+    background: color-mix(in srgb, var(--color-primary) 20%, var(--bg-tertiary));
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+}
+
+.pin-icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+.pin-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.post-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.post-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.post-card-description {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag.soft {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.post-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.post-link:hover {
+    color: var(--color-primary-hover);
+    gap: 0.75rem;
+}
+
+.no-posts {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+.no-posts-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.no-posts h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.no-posts p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .posts-title {
+        font-size: 2rem;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+    
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .posts-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .posts-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Pagination Styles */
+.pagination-wrapper {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.pagination-btn:hover:not(.pagination-disabled) {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.pagination-btn.pagination-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+}
+
+.pagination-pages {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.pagination-page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.pagination-page:hover:not(.pagination-active) {
+    background: var(--bg-tertiary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.pagination-page.pagination-active {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.pagination-info {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .pagination {
+        gap: 0.25rem;
+    }
+    
+    .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .pagination-page {
+        min-width: 35px;
+        height: 35px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+    }
+    
+    .pagination-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+</style>
+
+{% endblock %}
+

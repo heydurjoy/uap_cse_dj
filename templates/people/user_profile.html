@@ -170,15 +170,25 @@
                 </a>
                 {% endif %}
                 
-                <!-- Post Notices - Officers -->
+                <!-- Post Notices - Officers (Level 3+) -->
                 {% if profile_type == 'officer' %}
-                <div class="action-card action-disabled">
-                    <div class="action-icon">📢</div>
-                    <div class="action-content">
-                        <h3 class="action-title">Post Notices</h3>
-                        <p class="action-desc">Coming soon - Post announcements</p>
+                    {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                    <a href="{% url 'office:create_post' %}?post_type=notice" class="action-card">
+                        <div class="action-icon">📢</div>
+                        <div class="action-content">
+                            <h3 class="action-title">Post Notices</h3>
+                            <p class="action-desc">Create and post new notices</p>
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="action-card action-disabled">
+                        <div class="action-icon">📢</div>
+                        <div class="action-content">
+                            <h3 class="action-title">Post Notices</h3>
+                            <p class="action-desc">Coming soon - Post announcements</p>
+                        </div>
                     </div>
-                </div>
+                    {% endif %}
                 {% endif %}
                 
                 <!-- Manage Posts - Level 3+ -->

@@ -444,7 +444,6 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 0;
 }
 
 .ckeditor-container {
@@ -454,36 +453,28 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    width: 100%;
 }
 
 /* Ensure CKEditor iframe takes full height */
 .ckeditor-container .cke {
     height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-}
-
-.ckeditor-container .cke_inner {
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
+    display: flex;
+    flex-direction: column;
 }
 
 .ckeditor-container .cke_contents {
     flex: 1 !important;
     min-height: 0 !important;
-    width: 100% !important;
+}
+
+.ckeditor-container .cke_inner {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
 }
 
 .ckeditor-container .cke_wysiwyg_div {
     min-height: 100% !important;
-}
-
-.ckeditor-container .cke_toolbar {
-    display: block !important;
 }
 
 @keyframes fadeIn {
@@ -582,9 +573,11 @@
         
         // Try multiple CDN sources (in order of preference)
         const cdnSources = [
-            'https://cdn.ckeditor.com/4.25.1-lts/full-all/ckeditor.js',
-            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js'
+            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',  // Most stable version
+            'https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.20.2/ckeditor.js',
+            'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js'
         ];
         
         let currentIndex = 0;
@@ -614,6 +607,7 @@
         tryLoadScript(0);
     }
     
+    // Create modal HTML
     function createModal(fieldId, fieldLabel) {
         const modal = document.createElement('div');
         modal.className = 'ckeditor-modal';
@@ -623,10 +617,19 @@
                 <div class="ckeditor-modal-header">
                     <h3 class="ckeditor-modal-title">Edit ${fieldLabel}</h3>
                     <div class="ckeditor-modal-actions">
-                        <button type="button" class="ckeditor-close-btn" onclick="closeCKEditor('${fieldId}')">
-                            Discard
+                        <button type="button" class="ckeditor-close-btn" id="ckeditor-close-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Cancel
                         </button>
-                        <button type="button" class="ckeditor-save-btn" onclick="saveCKEditor('${fieldId}')">
+                        <button type="button" class="ckeditor-save-btn" id="ckeditor-save-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
                             Save
                         </button>
                     </div>
@@ -700,8 +703,7 @@
                     height: availableHeight + 'px',
                     width: '100%',
                     removePlugins: 'elementspath',
-                    resize_enabled: false,
-                    fullPage: false
+                    resize_enabled: false
                 });
                 
                 // After editor is ready, ensure it uses full height
@@ -746,45 +748,95 @@
                 console.log('CKEditor initialized with height:', availableHeight);
             } catch (e) {
                 console.error('Error initializing CKEditor:', e);
-                alert('Error initializing editor. Please refresh the page.');
             }
         });
+        
+        // Close button handler
+        const closeBtn = document.getElementById('ckeditor-close-' + fieldId);
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                closeEditor(false);
+            };
+        }
+        
+        // Save button handler
+        const saveBtn = document.getElementById('ckeditor-save-' + fieldId);
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                closeEditor(true);
+            };
+        }
+        
+        // Click outside to close (discard changes)
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeEditor(false);
+            }
+        };
+        
+        // Escape key to close
+        const escapeHandler = function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeEditor(false);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
     }
     
-    // Global functions for modal buttons
-    window.closeCKEditor = function(fieldId) {
-        const modal = document.getElementById('ckeditor-modal-' + fieldId);
-        if (modal) {
-            modal.classList.remove('active');
-        }
-        if (currentEditor) {
-            currentEditor.destroy();
-            currentEditor = null;
-        }
-        // Restore original content
-        if (currentTextarea) {
-            currentTextarea.value = originalContent;
-        }
-    };
-    
-    window.saveCKEditor = function(fieldId) {
-        if (currentEditor) {
-            const content = currentEditor.getData();
-            if (currentTextarea) {
-                currentTextarea.value = content;
+    function closeEditor(save) {
+        if (currentModal) {
+            if (save && currentEditor) {
+                // Update textarea with editor content
+                currentEditor.updateElement();
+                const editorTextarea = document.getElementById(currentEditor.element.$.id);
+                if (editorTextarea && currentTextarea) {
+                    currentTextarea.value = editorTextarea.value;
+                }
+            } else if (!save && currentTextarea) {
+                // Discard changes - restore original content
+                currentTextarea.value = originalContent;
             }
-            closeCKEditor(fieldId);
+            
+            // Destroy editor
+            if (currentEditor) {
+                try {
+                    currentEditor.destroy();
+                } catch (e) {
+                    console.error('Error destroying editor:', e);
+                }
+                currentEditor = null;
+            }
+            
+            // Hide modal
+            currentModal.classList.remove('active');
+            
+            // Clean up temporary textarea
+            const container = currentModal.querySelector('.ckeditor-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            currentModal = null;
+            currentTextarea = null;
         }
-    };
+    }
     
-    // Attach click handlers to rich text textareas
+    // Add click handlers to textareas immediately
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Setting up CKEditor click handlers');
         Object.keys(richTextFields).forEach(function(fieldId) {
             const textarea = document.getElementById(fieldId);
             if (textarea) {
-                textarea.addEventListener('click', function() {
+                console.log('Adding click handler to:', fieldId);
+                textarea.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Textarea clicked:', fieldId);
                     showEditor(fieldId, richTextFields[fieldId]);
                 });
+            } else {
+                console.warn('Textarea not found:', fieldId);
             }
         });
     });

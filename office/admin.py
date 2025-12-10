@@ -55,7 +55,7 @@ class PostAdmin(admin.ModelAdmin):
     )
     
     def save_model(self, request, obj, form, change):
-        """Override save to validate max 3 pinned posts"""
+        """Override save to handle max 3 pinned posts - automatically unpin oldest if needed"""
         if obj.is_pinned:
             # Count other pinned posts (excluding current instance if updating)
             other_pinned = Post.objects.filter(is_pinned=True)
@@ -63,9 +63,13 @@ class PostAdmin(admin.ModelAdmin):
                 other_pinned = other_pinned.exclude(pk=obj.pk)
             
             if other_pinned.count() >= 3:
-                from django.contrib import messages
-                messages.error(request, 'Maximum 3 posts can be pinned at a time. Please unpin another post first.')
-                return
+                # Find and unpin the oldest pinned post
+                oldest_pinned = other_pinned.order_by('publish_date').first()
+                if oldest_pinned:
+                    oldest_pinned.is_pinned = False
+                    oldest_pinned.save()
+                    from django.contrib import messages
+                    messages.info(request, f'Automatically unpinned the oldest pinned post: "{oldest_pinned.short_title}" to make room for this post.')
         
         super().save_model(request, obj, form, change)
 
