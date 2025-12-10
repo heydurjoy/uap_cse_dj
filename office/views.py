@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.urls import reverse
 from .models import Post, PostAttachment, AdmissionResult, POST_TYPE_CHOICES
 
 
@@ -73,6 +74,31 @@ def post_list(request):
         'is_paginated': posts_page.has_other_pages(),
     }
     return render(request, 'office/post_list.html', context)
+
+
+def notifications_api(request):
+    """
+    API endpoint to fetch recent posts for notifications.
+    Returns top 10 most recent posts.
+    """
+    posts = Post.objects.all().order_by('-is_pinned', '-publish_date')[:10]
+    
+    notifications = []
+    for post in posts:
+        notifications.append({
+            'id': post.pk,
+            'title': post.short_title,
+            'description': post.long_title[:100] + '...' if len(post.long_title) > 100 else post.long_title,
+            'type': post.post_type,
+            'type_display': post.get_post_type_display(),
+            'date': post.publish_date.isoformat(),
+            'is_pinned': post.is_pinned,
+            'url': reverse('office:post_detail', args=[post.pk]),
+        })
+    
+    return JsonResponse({
+        'notifications': notifications
+    })
 
 
 def post_detail(request, pk):
