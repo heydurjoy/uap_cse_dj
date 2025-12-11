@@ -1382,6 +1382,103 @@ document.addEventListener("DOMContentLoaded", () => {
     50% { transform: translate(30%, 10%) rotate(12deg); opacity: 0.18; }
     100% { transform: translate(-20%, -10%) rotate(8deg); opacity: 0.35; }
 }
+@media (max-width: 1024px) {
+
+    .uapnow-title {
+        font-size: 1.9rem;
+    }
+
+    .uapnow-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.9rem;
+    }
+
+    .uapnow-card {
+        padding: 1rem;
+    }
+
+    .uapnow-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+}
+@media (max-width: 768px) {
+
+    .uapnow-section {
+        padding: 2rem 0 1.5rem;
+    }
+
+    .uapnow-title {
+        font-size: 1.65rem;
+        gap: 0.4rem;
+    }
+
+    .uapnow-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .uapnow-card {
+        padding: 0.9rem;
+        border-radius: 12px;
+    }
+
+    .uapnow-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.45rem;
+    }
+
+    .uapnow-filters {
+        justify-content: flex-start;
+        gap: 0.4rem;
+    }
+
+    .uapnow-chip {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+    }
+
+    .uapnow-badge {
+        font-size: 0.78rem;
+        padding: 0.3rem 0.65rem;
+    }
+}
+@media (max-width: 480px) {
+
+    .uapnow-title {
+        font-size: 1.45rem;
+    }
+
+    .uapnow-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .uapnow-card {
+        padding: 0.85rem;
+        gap: 0.4rem;
+        border-radius: 10px;
+    }
+
+    .uapnow-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+
+    .uapnow-date {
+        font-size: 0.82rem;
+    }
+
+    .uapnow-card h3 {
+        font-size: 1.05rem;
+    }
+
+    .uapnow-card p {
+        font-size: 0.9rem;
+    }
+}
 
 /* Easy Access Section */
 .easy-access-section {
@@ -1458,19 +1555,19 @@ document.addEventListener("DOMContentLoaded", () => {
     inset: -3px;
     border-radius: 18px;
     padding: 3px;
-    background: linear-gradient(45deg, 
-        var(--color-primary), 
-        var(--color-primary-hover), 
-        #00d4ff, 
-        var(--color-primary-hover), 
+    background: linear-gradient(45deg,
+        var(--color-primary),
+        var(--color-primary-hover),
+        #00d4ff,
+        var(--color-primary-hover),
         var(--color-primary));
     background-size: 400% 400%;
-    -webkit-mask: 
-        linear-gradient(#fff 0 0) content-box, 
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
-    mask: 
-        linear-gradient(#fff 0 0) content-box, 
+    mask:
+        linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     mask-composite: exclude;
     opacity: 0;
@@ -1576,17 +1673,17 @@ document.addEventListener("DOMContentLoaded", () => {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 1rem;
     }
-    
+
     .easy-access-tile {
         padding: 1.25rem 0.75rem;
     }
-    
+
     .tile-icon {
         width: 42px;
         height: 42px;
         margin-bottom: 0.6rem;
     }
-    
+
     .easy-access-tile h3 {
         font-size: 0.9rem;
     }
@@ -1610,23 +1707,23 @@ document.addEventListener("DOMContentLoaded", () => {
         gap: 0.875rem;
         max-width: 100%;
     }
-    
+
     .easy-access-tile {
         padding: 1rem 0.5rem;
         min-height: 100px;
     }
-    
+
     .tile-icon {
         width: 40px;
         height: 40px;
         margin-bottom: 0.5rem;
     }
-    
+
     .tile-icon svg {
         width: 18px;
         height: 18px;
     }
-    
+
     .easy-access-tile h3 {
         font-size: 0.85rem;
         line-height: 1.3;
@@ -1658,25 +1755,25 @@ document.addEventListener("DOMContentLoaded", () => {
         gap: 0.75rem;
         padding: 0 0.5rem;
     }
-    
+
     .easy-access-tile {
         padding: 0.875rem 0.4rem;
         min-height: 90px;
         border-radius: 12px;
     }
-    
+
     .tile-icon {
         width: 36px;
         height: 36px;
         border-radius: 10px;
         margin-bottom: 0.4rem;
     }
-    
+
     .tile-icon svg {
         width: 16px;
         height: 16px;
     }
-    
+
     .easy-access-tile h3 {
         font-size: 0.8rem;
         line-height: 1.2;
@@ -1789,9 +1886,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     .mapping-table {
         grid-template-columns: 1fr repeat(4, 80px);
-    }
-    .uapnow-grid {
-        grid-template-columns: 1fr;
     }
 }
 
@@ -2071,32 +2165,32 @@ document.addEventListener('keydown', function(e) {
 // Polaroid Card Rotation Animation
 (function() {
     const polaroidCards = document.querySelectorAll('.polaroid-frame');
-    
+
     if (polaroidCards.length >= 3) {
         // Add rotating class to all cards
         polaroidCards.forEach(card => {
             card.classList.add('rotating');
         });
-        
+
         // Cycle through z-index to create stacking rotation effect
         let currentFront = 0;
         const totalCards = polaroidCards.length;
         let rotationInterval = null;
         let isPaused = false;
-        
+
         function rotateStack() {
             if (isPaused) return;
-            
+
             // Remove previous state classes
             polaroidCards.forEach(card => {
                 card.classList.remove('moving-back', 'moving-forward');
             });
-            
+
             // First, apply visual transitions (opacity, blur, scale)
             polaroidCards.forEach((card, index) => {
                 const zIndex = (index - currentFront + totalCards) % totalCards;
                 const newZIndex = totalCards - zIndex;
-                
+
                 // Add transition classes for smooth visual effect
                 if (newZIndex === 1) {
                     // Card going to back - fade and blur
@@ -2106,7 +2200,7 @@ document.addEventListener('keydown', function(e) {
                     card.classList.add('moving-forward');
                 }
             });
-            
+
             // Then update z-index after a longer delay to allow smooth visual transition
             setTimeout(() => {
                 polaroidCards.forEach((card, index) => {
@@ -2119,7 +2213,7 @@ document.addEventListener('keydown', function(e) {
                         link.style.zIndex = newZIndex.toString();
                     }
                 });
-                
+
                 // Remove transition classes after z-index change to allow normal animation
                 setTimeout(() => {
                     polaroidCards.forEach(card => {
@@ -2127,18 +2221,18 @@ document.addEventListener('keydown', function(e) {
                     });
                 }, 500);
             }, 800);
-            
+
             // Move to next card
             currentFront = (currentFront + 1) % totalCards;
         }
-        
+
         function startRotation() {
             if (rotationInterval) clearInterval(rotationInterval);
             isPaused = false;
             rotateStack();
             rotationInterval = setInterval(rotateStack, 7000);
         }
-        
+
         function stopRotation() {
             if (rotationInterval) {
                 clearInterval(rotationInterval);
@@ -2146,10 +2240,10 @@ document.addEventListener('keydown', function(e) {
             }
             isPaused = true;
         }
-        
+
         // Start rotation
         startRotation();
-        
+
         // Handle hover - bring card to front
         polaroidCards.forEach((card, index) => {
             card.addEventListener('mouseenter', function() {
@@ -2166,7 +2260,7 @@ document.addEventListener('keydown', function(e) {
                     link.style.zIndex = '10';
                 }
             });
-            
+
             card.addEventListener('mouseleave', function() {
                 // Remove transition classes
                 polaroidCards.forEach(c => {

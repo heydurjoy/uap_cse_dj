@@ -853,89 +853,7 @@
     font-size: 1.1rem;
 }
 
-@media (max-width: 1200px) {
-    .courses-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
 
-@media (max-width: 900px) {
-    .courses-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 768px) {
-    .courses-list-page {
-        padding: 1rem 0.5rem;
-    }
-
-    .courses-title {
-        font-size: 2rem;
-    }
-
-    .courses-content {
-        padding: 2rem 1.5rem;
-    }
-
-    .filter-form {
-        flex-direction: column;
-    }
-
-    .filter-group {
-        min-width: 100%;
-    }
-
-    .semester-filter-pills {
-        gap: 0.5rem;
-        padding: 0.75rem;
-    }
-
-    .semester-pill {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-    }
-
-    .courses-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.8rem;
-    }
-
-    .course-tile {
-        padding: 0.8rem;
-    }
-
-    .course-tile-stats {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.35rem;
-    }
-
-    .stat-item {
-        padding: 0.35rem 0.15rem;
-    }
-
-    .stat-label {
-        font-size: 0.6rem;
-    }
-
-    .stat-value {
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .courses-title {
-        font-size: 1.75rem;
-    }
-
-    .courses-content {
-        padding: 1.5rem 1rem;
-    }
-
-    .courses-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
 
 /* You Should Know Button (Pill Style) */
 .you-should-know-btn-pill {
@@ -1229,40 +1147,146 @@
 .stats-table tbody tr:hover {
     background: var(--bg-secondary);
 }
+/* =============================== */
+/*        RESPONSIVE DESIGN        */
+/* =============================== */
 
-@media (max-width: 768px) {
-    .definitions-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+/* ---------- TABLET (≤1024px) ---------- */
+@media (max-width: 1024px) {
+
+    .courses-content {
+        padding: 2rem;
     }
 
-    .you-should-know-content {
-        padding: 1.5rem;
+    .courses-title {
+        font-size: 2rem;
     }
 
-    .semester-filter-pills {
-        gap: 0.5rem;
-        padding: 0.75rem;
+    .courses-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
     }
 
-    .semester-pill,
-    .you-should-know-btn-pill {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
+    .definition-card h4,
+    .program-title {
+        font-size: 1.7rem;
     }
 
     .stats-tables {
         grid-template-columns: 1fr;
-        gap: 1rem;
+    }
+}
+
+/* ---------- MOBILE (≤768px) ---------- */
+@media (max-width: 768px) {
+
+    .courses-list-page {
+        padding: 1.5rem 1rem;
     }
 
-    .stats-table {
+    .courses-content {
+        padding: 1.5rem;
+    }
+
+    .courses-title {
+        font-size: 1.7rem;
+    }
+
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-group {
+        min-width: 100%;
+    }
+
+    .semester-filter-pills {
+        justify-content: center;
+        padding: 0.8rem;
+        gap: 0.5rem;
+    }
+
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .course-tile {
+        min-height: 300px;
+        padding: 0.75rem;
+    }
+
+    .course-tile-title {
         font-size: 0.85rem;
+    }
+
+    .definitions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-table td:first-child {
+        min-width: auto;
+        max-width: auto;
+    }
+}
+
+/* ---------- SMALL MOBILE (≤480px) ---------- */
+@media (max-width: 480px) {
+
+    .courses-title {
+        font-size: 1.4rem;
+    }
+
+    .program-title {
+        font-size: 1.4rem;
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .course-tile {
+        min-height: auto;
+    }
+
+    .course-tile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .you-should-know-btn-pill {
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .you-should-know-content {
+        padding: 1.25rem;
     }
 
     .stats-table th,
     .stats-table td {
-        padding: 0.4rem 0.3rem;
+        font-size: 0.7rem;
+        padding: 0.4rem;
+    }
+}
+/* Wrap tables in horizontal scroll on mobile */
+@media (max-width: 768px) {
+
+    .stats-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .stats-table {
+        min-width: 600px;  /* table keeps layout but can scroll */
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+
+    .stats-table {
+        min-width: 500px;
     }
 }
 </style>

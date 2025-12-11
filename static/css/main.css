@@ -6,22 +6,22 @@
     --bg-tertiary: #bae6fd;
     --nav-bg: rgba(240, 249, 255, 0.95);
     --footer-bg: #e0f2fe;
-    
+
     /* Default Theme - Text Colors */
     --text-primary: #0c4a6e;
     --text-secondary: #075985;
     --text-tertiary: #0284c7;
-    
+
     /* Default Theme - Cyan Colors */
     --color-primary: #06b6d4;
     --color-primary-hover: #0891b2;
     --color-primary-light: #cffafe;
     --color-primary-dark: #0e7490;
-    
+
     /* Default Theme - Accent */
     --accent-color: var(--color-primary);
     --accent-hover: var(--color-primary-hover);
-    
+
     /* Default Theme - Border & Shadow */
     --border-color: #bae6fd;
     --border-color-light: #e0f2fe;
@@ -38,22 +38,22 @@
     --bg-tertiary: #ede8ff;
     --nav-bg: rgba(250, 248, 255, 0.95);
     --footer-bg: #f5f2ff;
-    
+
     /* Light Theme - Text Colors */
     --text-primary: #2d1b4e;
     --text-secondary: #6b5b8a;
     --text-tertiary: #9d8fb5;
-    
+
     /* Light Theme - Bright Lavender Colors */
     --color-primary: #9b7ed8;
     --color-primary-hover: #8a6bc7;
     --color-primary-light: #e8dff5;
     --color-primary-dark: #7c5fb8;
-    
+
     /* Light Theme - Accent (using primary) */
     --accent-color: var(--color-primary);
     --accent-hover: var(--color-primary-hover);
-    
+
     /* Light Theme - Border & Shadow */
     --border-color: #e0d5f0;
     --border-color-light: #ede8ff;
@@ -70,22 +70,22 @@
     --bg-tertiary: #2e2544;
     --nav-bg: rgba(26, 21, 38, 0.95);
     --footer-bg: #241d35;
-    
+
     /* Dark Theme - Text Colors */
     --text-primary: #e8dff5;
     --text-secondary: #c4b3d9;
     --text-tertiary: #9d8fb5;
-    
+
     /* Dark Theme - Dark Lavender Colors */
     --color-primary: #7c5fb8;
     --color-primary-hover: #8a6bc7;
     --color-primary-light: #4a3a6e;
     --color-primary-dark: #6b4fa3;
-    
+
     /* Dark Theme - Accent */
     --accent-color: var(--color-primary);
     --accent-hover: var(--color-primary-hover);
-    
+
     /* Dark Theme - Border & Shadow */
     --border-color: #3a2f4d;
     --border-color-light: #2e2544;
@@ -102,22 +102,22 @@
     --bg-tertiary: #bae6fd;
     --nav-bg: rgba(240, 249, 255, 0.95);
     --footer-bg: #e0f2fe;
-    
+
     /* Cyan Theme - Text Colors */
     --text-primary: #0c4a6e;
     --text-secondary: #075985;
     --text-tertiary: #0284c7;
-    
+
     /* Cyan Theme - Cyan Colors */
     --color-primary: #06b6d4;
     --color-primary-hover: #0891b2;
     --color-primary-light: #cffafe;
     --color-primary-dark: #0e7490;
-    
+
     /* Cyan Theme - Accent */
     --accent-color: var(--color-primary);
     --accent-hover: var(--color-primary-hover);
-    
+
     /* Cyan Theme - Border & Shadow */
     --border-color: #bae6fd;
     --border-color-light: #e0f2fe;
@@ -134,22 +134,22 @@
     --bg-tertiary: #e6f2ff;
     --nav-bg: rgba(248, 251, 255, 0.95);
     --footer-bg: #f0f7ff;
-    
+
     /* Light Blue Theme - Text Colors */
     --text-primary: #2c5282;
     --text-secondary: #4a6fa5;
     --text-tertiary: #6b8db8;
-    
+
     /* Light Blue Theme - Pastel Blue Colors */
     --color-primary: #7ab8e8;
     --color-primary-hover: #6ba8d8;
     --color-primary-light: #e6f2ff;
     --color-primary-dark: #5a9bc8;
-    
+
     /* Light Blue Theme - Accent */
     --accent-color: var(--color-primary);
     --accent-hover: var(--color-primary-hover);
-    
+
     /* Light Blue Theme - Border & Shadow */
     --border-color: #d4e7f5;
     --border-color-light: #e6f2ff;
@@ -300,7 +300,7 @@ body {
 .apply-now-btn {
     background: transparent;
     color: #06b6d4; /* Fallback color - Cyan */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #0891b2 0%,
         #06b6d4 25%,
         #22d3ee 50%,
@@ -328,7 +328,7 @@ body {
 /* Light Lavender Theme */
 [data-theme="light"] .apply-now-btn {
     color: #9b7ed8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #7c5fb8 0%,
         #9b7ed8 25%,
         #b89de8 50%,
@@ -352,7 +352,7 @@ body {
 /* Dark Lavender Theme */
 [data-theme="dark"] .apply-now-btn {
     color: #b89de8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #9b7ed8 0%,
         #b89de8 25%,
         #d4c4f0 50%,
@@ -376,7 +376,7 @@ body {
 /* Cyan Theme */
 [data-theme="cyan"] .apply-now-btn {
     color: #06b6d4; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #0891b2 0%,
         #06b6d4 25%,
         #22d3ee 50%,
@@ -400,7 +400,7 @@ body {
 /* Light Blue Theme */
 [data-theme="lightblue"] .apply-now-btn {
     color: #7ab8e8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #5a9bc8 0%,
         #7ab8e8 25%,
         #9cc5f0 50%,
@@ -490,40 +490,40 @@ body {
     .top-bar-right {
         display: none;
     }
-    
+
     .navbar {
         top: 0;
         border-top: none;
         padding: 0.5rem 0 0.75rem 0;
     }
-    
+
     .nav-container {
         flex-direction: row;
         min-height: auto;
         padding: 0 1rem 0.5rem 1rem;
     }
-    
+
     .nav-main-content {
         width: 100%;
         margin-top: 0;
         padding-top: 0;
     }
-    
+
     .nav-logo {
         height: 32px;
     }
-    
+
     .notification-btn,
     .theme-toggle {
         width: 36px;
         height: 36px;
     }
-    
+
     .hamburger {
         width: 28px;
         height: 28px;
     }
-    
+
     .nav-menu {
         top: 55px;
         height: calc(100vh - 55px);
@@ -753,9 +753,45 @@ body {
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    max-width: 35rem;
+    overflow: visible;
+    max-width: 30rem;
+    width: auto;
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: 1rem;
+    line-height: 1.25;  /* desktop line height */
 }
+
+/* Medium screens (tablets) */
+@media (max-width: 1024px) {
+    .notification-modal {
+        max-width: 90%;
+        right: 5%;
+        left: 5%;
+        top: calc(100% + 0.5rem);
+        padding: 1rem;
+    }
+}
+
+/* Small screens (phones) */
+@media (max-width: 768px) {
+    .notification-modal {
+        position:fixed;
+        top: 10rem;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+        max-width: 22rem;
+        max-height: 16rem;      /* limit height for compact modal */
+        padding: 0.5rem;       /* reduce vertical padding */
+        line-height: 1.1;      /* tighter text spacing */
+        overflow-y: auto;      /* scroll if content exceeds max-height */
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+
 
 [data-theme="dark"] .notification-modal {
     /* Dark theme handled in content */
@@ -779,7 +815,7 @@ body {
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     border-radius: 20px;
     border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
-    box-shadow: 0 20px 60px var(--shadow-lg), 
+    box-shadow: 0 20px 60px var(--shadow-lg),
                 0 0 0 1px color-mix(in srgb, var(--accent-color) 20%, transparent) inset,
                 0 8px 32px var(--shadow),
                 0 0 40px color-mix(in srgb, var(--accent-color) 15%, transparent);
@@ -789,7 +825,7 @@ body {
 [data-theme="dark"] .notification-modal-content {
     background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
                 0 0 0 1px color-mix(in srgb, var(--accent-color) 15%, transparent) inset,
                 0 8px 32px rgba(0, 0, 0, 0.3),
                 0 0 40px color-mix(in srgb, var(--accent-color) 20%, transparent);
@@ -923,8 +959,8 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--accent-color) 8%, transparent) 0%, 
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent-color) 8%, transparent) 0%,
         color-mix(in srgb, var(--accent-color) 3%, transparent) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -1111,27 +1147,27 @@ body {
 }
 
 @media (max-width: 768px) {
-    .notification-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        max-width: 100%;
-        max-height: 100vh;
-        border-radius: 0;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-    }
-    
+    /*.notification-modal {*/
+    /*    position: fixed;*/
+    /*    top: 0;*/
+    /*    left: 0;*/
+    /*    right: 0;*/
+    /*    bottom: 0;*/
+    /*    max-width: 100%;*/
+    /*    max-height: 100vh;*/
+    /*    border-radius: 0;*/
+    /*    background: rgba(0, 0, 0, 0.5);*/
+    /*    backdrop-filter: blur(4px);*/
+    /*    display: none;*/
+    /*    align-items: center;*/
+    /*    justify-content: center;*/
+    /*    padding: 1rem;*/
+    /*}*/
+
     .notification-modal.active {
         display: flex;
     }
-    
+
     .notification-modal-content {
         max-width: 100%;
         max-height: 90vh;
@@ -1139,11 +1175,11 @@ body {
         background: var(--bg-primary);
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
-    
+
     .notification-modal-header {
         padding: 1rem;
     }
-    
+
     .notification-item {
         padding: 1rem;
     }
@@ -1275,7 +1311,7 @@ body {
     left: 0;
     width: 0;
     height: 3px;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         var(--color-primary),
         var(--color-primary-hover),
         var(--color-primary)
@@ -1373,7 +1409,7 @@ body {
     visibility: hidden;
     transform: translateY(-10px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 32px var(--shadow-lg), 
+    box-shadow: 0 8px 32px var(--shadow-lg),
                 0 0 20px var(--glow-shadow),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
     z-index: 1001;
@@ -1388,8 +1424,8 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.1) 0%, 
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.1) 0%,
         rgba(255, 255, 255, 0.05) 50%,
         rgba(255, 255, 255, 0.1) 100%
     );
@@ -1454,7 +1490,7 @@ body {
     .nav-dropdown {
         width: 100%;
     }
-    
+
     .dropdown-menu {
         position: static;
         width: 100%;
@@ -1472,28 +1508,28 @@ body {
         background: transparent;
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
-        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                     padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                     margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     .nav-dropdown.active .dropdown-menu {
         max-height: 1000px;
         padding: 0.5rem 0 0.5rem 1.5rem;
         margin-top: 0.25rem;
     }
-    
+
     .dropdown-link {
         padding: 0.6rem 0.75rem;
         font-size: 0.9rem;
         border-radius: 10px;
         margin-bottom: 0.2rem;
     }
-    
+
     .dropdown-link:hover {
         transform: translateX(2px);
     }
-    
+
     .dropdown-arrow {
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -1895,7 +1931,7 @@ p {
     font-size: 3rem;
     font-weight: 800;
     color: #06b6d4; /* Fallback color - Cyan */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #0891b2 0%,
         #06b6d4 25%,
         #22d3ee 50%,
@@ -1936,7 +1972,7 @@ p {
 /* Light Lavender Theme Animation */
 [data-theme="light"] .animated-text {
     color: #9b7ed8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #7c5fb8 0%,
         #9b7ed8 25%,
         #b89de8 50%,
@@ -1958,7 +1994,7 @@ p {
 }
 
 [data-theme="light"] .animated-text-section::before {
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         transparent,
         rgba(155, 126, 216, 0.1),
         transparent
@@ -1968,7 +2004,7 @@ p {
 /* Dark Lavender Theme Animation */
 [data-theme="dark"] .animated-text {
     color: #b89de8; /* Fallback color - brighter for dark theme */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #9b7ed8 0%,
         #b89de8 25%,
         #d4c4f0 50%,
@@ -1992,7 +2028,7 @@ p {
 /* Cyan Theme Animation */
 [data-theme="cyan"] .animated-text {
     color: #06b6d4; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #0891b2 0%,
         #06b6d4 25%,
         #22d3ee 50%,
@@ -2030,7 +2066,7 @@ p {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         transparent,
         rgba(6, 182, 212, 0.1),
         transparent
@@ -2039,7 +2075,7 @@ p {
 }
 
 [data-theme="dark"] .animated-text-section::before {
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         transparent,
         rgba(124, 95, 184, 0.15),
         transparent
@@ -2047,7 +2083,7 @@ p {
 }
 
 [data-theme="cyan"] .animated-text-section::before {
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         transparent,
         rgba(6, 182, 212, 0.1),
         transparent
@@ -2057,7 +2093,7 @@ p {
 /* Light Blue Theme Animation */
 [data-theme="lightblue"] .animated-text {
     color: #7ab8e8; /* Fallback color - pastel */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #5a9bc8 0%,
         #7ab8e8 25%,
         #9cc5f0 50%,
@@ -2079,7 +2115,7 @@ p {
 }
 
 [data-theme="lightblue"] .animated-text-section::before {
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         transparent,
         rgba(122, 184, 232, 0.08),
         transparent
@@ -2149,7 +2185,7 @@ p {
 [data-theme="cyan"] .toast {
     background: rgba(240, 249, 255, 0.15);
     border: 1px solid rgba(6, 182, 212, 0.3);
-    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2), 
+    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2),
                 0 0 30px rgba(6, 182, 212, 0.3),
                 0 0 60px rgba(6, 182, 212, 0.15);
     animation: cyanGlow 2s ease-in-out infinite;
@@ -2157,12 +2193,12 @@ p {
 
 @keyframes cyanGlow {
     0%, 100% {
-        box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2), 
+        box-shadow: 0 8px 32px rgba(6, 182, 212, 0.2),
                     0 0 30px rgba(6, 182, 212, 0.3),
                     0 0 60px rgba(6, 182, 212, 0.15);
     }
     50% {
-        box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3), 
+        box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3),
                     0 0 40px rgba(6, 182, 212, 0.4),
                     0 0 80px rgba(6, 182, 212, 0.25);
     }
@@ -2179,26 +2215,26 @@ p {
     border-radius: 50%;
     background: var(--color-primary);
     flex-shrink: 0;
-    box-shadow: 0 0 10px var(--color-primary), 
+    box-shadow: 0 0 10px var(--color-primary),
                 0 0 20px var(--color-primary);
     animation: pulseIndicator 2s ease-in-out infinite;
 }
 
 [data-theme="light"] .toast-indicator {
     background: #9b7ed8;
-    box-shadow: 0 0 10px rgba(155, 126, 216, 0.8), 
+    box-shadow: 0 0 10px rgba(155, 126, 216, 0.8),
                 0 0 20px rgba(155, 126, 216, 0.6);
 }
 
 [data-theme="dark"] .toast-indicator {
     background: #7c5fb8;
-    box-shadow: 0 0 10px rgba(124, 95, 184, 0.8), 
+    box-shadow: 0 0 10px rgba(124, 95, 184, 0.8),
                 0 0 20px rgba(124, 95, 184, 0.6);
 }
 
 [data-theme="cyan"] .toast-indicator {
     background: #06b6d4;
-    box-shadow: 0 0 15px rgba(6, 182, 212, 0.8), 
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.8),
                 0 0 30px rgba(6, 182, 212, 0.6),
                 0 0 45px rgba(6, 182, 212, 0.4);
     animation: cyanPulse 1.5s ease-in-out infinite;
@@ -2206,7 +2242,7 @@ p {
 
 [data-theme="lightblue"] .toast-indicator {
     background: #7ab8e8;
-    box-shadow: 0 0 10px rgba(122, 184, 232, 0.8), 
+    box-shadow: 0 0 10px rgba(122, 184, 232, 0.8),
                 0 0 20px rgba(122, 184, 232, 0.6);
 }
 
@@ -2225,14 +2261,14 @@ p {
     0%, 100% {
         transform: scale(1);
         opacity: 1;
-        box-shadow: 0 0 15px rgba(6, 182, 212, 0.8), 
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.8),
                     0 0 30px rgba(6, 182, 212, 0.6),
                     0 0 45px rgba(6, 182, 212, 0.4);
     }
     50% {
         transform: scale(1.2);
         opacity: 1;
-        box-shadow: 0 0 20px rgba(6, 182, 212, 1), 
+        box-shadow: 0 0 20px rgba(6, 182, 212, 1),
                     0 0 40px rgba(6, 182, 212, 0.8),
                     0 0 60px rgba(6, 182, 212, 0.6);
     }
@@ -2262,7 +2298,7 @@ p {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, 
+    background: linear-gradient(135deg,
         var(--bg-primary) 0%,
         var(--bg-secondary) 30%,
         var(--bg-tertiary) 60%,
@@ -2271,7 +2307,7 @@ p {
     );
     opacity: 1;
     pointer-events: none;
-    mask-image: linear-gradient(to bottom, 
+    mask-image: linear-gradient(to bottom,
         transparent 0%,
         rgba(0, 0, 0, 0.3) 5%,
         rgba(0, 0, 0, 1) 20%,
@@ -2279,7 +2315,7 @@ p {
         rgba(0, 0, 0, 0.3) 95%,
         transparent 100%
     );
-    -webkit-mask-image: linear-gradient(to bottom, 
+    -webkit-mask-image: linear-gradient(to bottom,
         transparent 0%,
         rgba(0, 0, 0, 0.3) 5%,
         rgba(0, 0, 0, 1) 20%,
@@ -2344,7 +2380,7 @@ p {
     font-weight: 900;
     line-height: 1.1;
     margin: 0;
-    background: linear-gradient(135deg, 
+    background: linear-gradient(135deg,
         var(--color-primary) 0%,
         var(--color-primary-hover) 50%,
         var(--color-primary) 100%
@@ -2417,7 +2453,7 @@ p {
 
 .brief-text {
     color: #06b6d4; /* Fallback color - Cyan */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #0891b2 0%,
         #06b6d4 25%,
         #22d3ee 50%,
@@ -2442,7 +2478,7 @@ p {
 /* Light Lavender Theme */
 [data-theme="light"] .brief-text {
     color: #9b7ed8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #7c5fb8 0%,
         #9b7ed8 25%,
         #b89de8 50%,
@@ -2466,7 +2502,7 @@ p {
 /* Dark Lavender Theme */
 [data-theme="dark"] .brief-text {
     color: #b89de8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #9b7ed8 0%,
         #b89de8 25%,
         #d4c4f0 50%,
@@ -2490,7 +2526,7 @@ p {
 /* Cyan Theme */
 [data-theme="cyan"] .brief-text {
     color: #06b6d4; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #0891b2 0%,
         #06b6d4 25%,
         #22d3ee 50%,
@@ -2514,7 +2550,7 @@ p {
 /* Light Blue Theme */
 [data-theme="lightblue"] .brief-text {
     color: #7ab8e8; /* Fallback color */
-    background: linear-gradient(90deg, 
+    background: linear-gradient(90deg,
         #5a9bc8 0%,
         #7ab8e8 25%,
         #9cc5f0 50%,
@@ -2643,7 +2679,7 @@ p {
     .nav-container {
         padding: 0.75rem 2rem 1.5rem 2rem;
     }
-    
+
     .home-hero {
         margin: 1rem;
         border-radius: 24px;
@@ -2689,19 +2725,19 @@ p {
     .nav-divider {
         display: none !important;
     }
-    
+
     /* Desktop Dropdown Styles */
     .nav-dropdown {
         position: relative;
     }
-    
+
     .nav-dropdown .dropdown-menu {
         position: absolute;
         top: calc(100% + 0.5rem);
         left: 0;
         min-width: 220px;
     }
-    
+
     .nav-menu li {
         width: auto;
     }
@@ -2756,21 +2792,21 @@ p {
         font-size: 0.9rem;
         padding: 0.875rem 1rem 0.875rem 0.875rem;
     }
-    
+
     .toast-indicator {
         width: 10px;
         height: 10px;
     }
-    
+
     /* Mobile Hero Adjustments */
     .home-hero {
         min-height: auto;
         padding: 3rem 0 2rem 0;
         margin-top: 0;
     }
-    
+
     .home-hero::before {
-        mask-image: linear-gradient(to bottom, 
+        mask-image: linear-gradient(to bottom,
             transparent 0%,
             rgba(0, 0, 0, 0.2) 3%,
             rgba(0, 0, 0, 1) 15%,
@@ -2778,7 +2814,7 @@ p {
             rgba(0, 0, 0, 0.2) 97%,
             transparent 100%
         );
-        -webkit-mask-image: linear-gradient(to bottom, 
+        -webkit-mask-image: linear-gradient(to bottom,
             transparent 0%,
             rgba(0, 0, 0, 0.2) 3%,
             rgba(0, 0, 0, 1) 15%,
@@ -2787,37 +2823,37 @@ p {
             transparent 100%
         );
     }
-    
+
     .hero-content {
         grid-template-columns: 1fr;
         gap: 3rem;
         margin-left: 0;
     }
-    
+
     .hero-title {
         font-size: 4rem;
     }
-    
+
     .hero-welcome {
         font-size: 1.4rem;
     }
-    
+
     .hero-tagline {
         font-size: 1.4rem;
     }
-    
+
     .hero-stats {
         font-size: 2.5rem;
     }
-    
+
     .stats-prefix {
         font-size: 1.4rem;
     }
-    
+
     .hero-greeting {
         font-size: 2rem;
     }
-    
+
 
     .hero-greeting {
         font-size: 1.5rem;
