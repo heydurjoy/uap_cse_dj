@@ -542,8 +542,46 @@ body {
     z-index: 1000;
     /* padding: 0 0 1.5rem 0; */
     box-shadow: 0 4px 30px var(--glow-shadow), 0 0 20px rgba(6, 182, 212, 0.2);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 0;
+}
+
+/* Navbar scrolled state - slightly smaller */
+.navbar.scrolled {
+    box-shadow: 0 2px 20px var(--glow-shadow), 0 0 15px rgba(6, 182, 212, 0.15);
+}
+
+.nav-container {
+    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1), min-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar.scrolled .nav-container {
+    padding: 0.6rem 1rem 1.2rem 1rem;
+    min-height: 85px;
+}
+
+.nav-main-content {
+    transition: margin-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar.scrolled .nav-main-content {
+    margin-top: 1.8rem;
+}
+
+.nav-logo {
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar.scrolled .nav-logo {
+    height: 36px;
+}
+
+.top-bar-right {
+    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar.scrolled .top-bar-right {
+    padding: 0.2rem 0 0.4rem 0;
 }
 
 [data-theme="dark"] .navbar {
