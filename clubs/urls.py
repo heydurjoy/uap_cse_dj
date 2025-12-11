@@ -4,6 +4,7 @@ from . import views
 app_name = 'clubs'
 
 urlpatterns = [
+    path('activities/', views.activities, name='activities'),
     path('', views.manage_clubs, name='manage_clubs'),
     path('<int:pk>/', views.club_detail, name='club_detail'),
     path('create/', views.create_club, name='create_club'),

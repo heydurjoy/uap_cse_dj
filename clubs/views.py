@@ -5,6 +5,7 @@ from django.db.models import Q, Max
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
 from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TYPE_CHOICES
 
@@ -1244,3 +1245,87 @@ def delete_club_allowed_email(request, pk, email_pk):
         'allowed_email': allowed_email,
     }
     return render(request, 'clubs/delete_allowed_email.html', context)
+
+
+def activities(request):
+    """
+    Display all club posts from all clubs with search, filter, and sort functionality.
+    """
+    # Get all club posts from all clubs
+    posts = ClubPost.objects.all().select_related('club', 'posted_by', 'last_edited_by')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        posts = posts.filter(
+            Q(short_title__icontains=search_query) |
+            Q(long_title__icontains=search_query) |
+            Q(tags__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(club__name__icontains=search_query)
+        )
+    
+    # Filter by post type
+    post_type_filter = request.GET.get('type', '')
+    if post_type_filter:
+        posts = posts.filter(post_type=post_type_filter)
+    
+    # Filter by club
+    club_filter = request.GET.get('club', '')
+    if club_filter:
+        try:
+            posts = posts.filter(club_id=int(club_filter))
+        except (ValueError, TypeError):
+            pass
+    
+    # Sort functionality
+    sort_by = request.GET.get('sort', 'newest')
+    if sort_by == 'oldest':
+        posts = posts.order_by('created_at')
+    elif sort_by == 'newest':
+        posts = posts.order_by('-created_at')
+    elif sort_by == 'club':
+        posts = posts.order_by('club__name', '-created_at')
+    elif sort_by == 'type':
+        posts = posts.order_by('post_type', '-created_at')
+    elif sort_by == 'pinned':
+        # Pinned first, then by date
+        posts = posts.order_by('-is_pinned', '-created_at')
+    else:
+        # Default: newest first
+        posts = posts.order_by('-created_at')
+    
+    # Get all clubs for filter dropdown
+    all_clubs = Club.objects.all().order_by('sl', 'name')
+    
+    # Count posts by type for stats
+    total_posts_count = posts.count()
+    posts_by_type = {}
+    for code, display in CLUB_POST_TYPE_CHOICES:
+        posts_by_type[code] = ClubPost.objects.filter(post_type=code).count()
+    
+    # Pagination - 12 posts per page
+    paginator = Paginator(posts, 12)
+    page = request.GET.get('page', 1)
+    
+    try:
+        posts_page = paginator.page(page)
+    except PageNotAnInteger:
+        posts_page = paginator.page(1)
+    except EmptyPage:
+        posts_page = paginator.page(paginator.num_pages)
+    
+    context = {
+        'posts': posts_page,
+        'selected_type': post_type_filter,
+        'selected_club': club_filter,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'CLUB_POST_TYPE_CHOICES': CLUB_POST_TYPE_CHOICES,
+        'posts_by_type': posts_by_type,
+        'total_posts': total_posts_count,
+        'all_clubs': all_clubs,
+        'paginator': paginator,
+        'is_paginated': posts_page.has_other_pages(),
+    }
+    return render(request, 'clubs/activities.html', context)

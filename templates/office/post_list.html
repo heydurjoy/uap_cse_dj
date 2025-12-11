@@ -7,12 +7,9 @@
 {% block content %}
 <div class="container">
     <section class="posts-list-page">
-        <div class="posts-header">
-            <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
-            <h1 class="posts-title">All Posts & Notices</h1>
-            <p class="posts-subtitle">Browse all announcements, notices, events, and more</p>
+        <div class="activities-header">
+            <h1>All Posts & Notices</h1>
         </div>
-        
         <div class="posts-content">
             <!-- Search and Filter Section -->
             <div class="posts-filters">
@@ -33,11 +30,23 @@
                         </select>
                     </div>
                     <div class="filter-group">
+                        <label for="club-select">Club:</label>
+                        <select name="club" id="club-select" class="filter-select">
+                            <option value="">All Clubs</option>
+                            {% for club in all_clubs %}
+                            <option value="{{ club.pk }}" {% if selected_club == club.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ club.short_name|default:club.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
                         <label for="sort-select">Sort By:</label>
                         <select name="sort" id="sort-select" class="filter-select">
                             <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
                             <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
                             <option value="type" {% if sort_by == 'type' %}selected{% endif %}>By Type</option>
+                            <option value="club" {% if sort_by == 'club' %}selected{% endif %}>By Club</option>
                             <option value="pinned" {% if sort_by == 'pinned' %}selected{% endif %}>Pinned First</option>
                         </select>
                     </div>
@@ -65,32 +74,67 @@
             <!-- Posts Grid -->
             {% if posts %}
             <div class="posts-grid">
-                {% for post in posts %}
-                <div class="post-card {% if post.is_pinned %}post-pinned{% endif %}">
-                    <div class="post-card-top">
-                        <div class="post-badge post-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
-                            {% if post.is_pinned %}
-                            <span class="pin-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 17v5M9 10V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v4M5 10h14l-1 7H6l-1-7z"></path>
-                                </svg>
-                            </span>
-                            {% endif %}
-                            {{ post.get_post_type_display }}
+                {% for post_item in posts %}
+                {% if post_item.type == 'post' %}
+                    {% with post=post_item.object %}
+                    <div class="post-card {% if post.is_pinned %}post-pinned{% endif %}" onclick="openPostModal('post', {{ post.pk }})" style="cursor: pointer;">
+                        <div class="post-card-top">
+                            <div class="post-badge post-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
+                                {% if post.is_pinned %}
+                                <span class="pin-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 17v5M9 10V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v4M5 10h14l-1 7H6l-1-7z"></path>
+                                    </svg>
+                                </span>
+                                {% endif %}
+                                {{ post.get_post_type_display }}
+                            </div>
+                            <div class="post-date">{{ post.publish_date|date:"M d, Y" }}</div>
                         </div>
-                        <div class="post-date">{{ post.publish_date|date:"M d, Y" }}</div>
+                        <h3 class="post-card-title">{{ post.short_title }}</h3>
+                        <p class="post-card-description">{{ post.long_title|truncatewords:20 }}</p>
+                        {% if post.tags %}
+                        <div class="post-tags">
+                            {% for tag in post.get_tags_list|slice:":3" %}
+                            <span class="tag soft">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    <h3 class="post-card-title">{{ post.short_title }}</h3>
-                    <p class="post-card-description">{{ post.long_title|truncatewords:20 }}</p>
-                    {% if post.tags %}
-                    <div class="post-tags">
-                        {% for tag in post.get_tags_list|slice:":3" %}
-                        <span class="tag soft">{{ tag }}</span>
-                        {% endfor %}
+                    {% endwith %}
+                {% else %}
+                    {% with club_post=post_item.object %}
+                    <div class="post-card {% if club_post.is_pinned %}post-pinned{% endif %}" onclick="openPostModal('club_post', {{ club_post.pk }})" style="cursor: pointer;">
+                        <div class="post-card-top">
+                            <div class="post-badge post-badge-{{ club_post.post_type }}{% if club_post.is_pinned %} pinned{% endif %}">
+                                {% if club_post.is_pinned %}
+                                <span class="pin-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 17v5M9 10V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v4M5 10h14l-1 7H6l-1-7z"></path>
+                                    </svg>
+                                </span>
+                                {% endif %}
+                                {{ club_post.get_post_type_display }}
+                            </div>
+                            <div class="post-date">{{ club_post.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        {% if club_post.club.short_name %}
+                        <div class="post-club-badge">
+                            <a href="{% url 'clubs:club_detail' club_post.club.pk %}" class="club-link" onclick="event.stopPropagation();">{{ club_post.club.short_name }}</a>
+                        </div>
+                        {% endif %}
+                        <h3 class="post-card-title">{{ club_post.short_title }}</h3>
+                        <p class="post-card-description">{{ club_post.long_title|truncatewords:20 }}</p>
+                        {% if club_post.tags %}
+                        <div class="post-tags">
+                            {% for tag in club_post.get_tags_list|slice:":3" %}
+                            <span class="tag soft">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <a href="{% url 'office:post_detail' post.pk %}" class="post-link">View details →</a>
-                </div>
+                    {% endwith %}
+                {% endif %}
                 {% endfor %}
             </div>
             {% else %}
@@ -184,82 +228,87 @@
     </section>
 </div>
 
+<!-- Post Modal -->
+<div id="postModal" class="post-modal">
+    <div class="post-modal-content" id="postModalContent">
+        <div class="post-modal-header">
+            <h2 class="post-modal-title">Post Details</h2>
+            <button class="post-modal-close" onclick="closePostModal()" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="post-modal-body">
+            <div class="post-modal-meta">
+                <span class="post-modal-badge" id="postModalBadge">Event</span>
+                <span class="post-modal-date" id="postModalDate">Dec 11, 2025</span>
+            </div>
+            <h1 class="post-modal-full-title" id="postModalFullTitle">Post Title</h1>
+            <div class="post-modal-tags" id="postModalTags"></div>
+            <div class="post-modal-description" id="postModalDescription"></div>
+        </div>
+    </div>
+</div>
+
 <style>
 .posts-list-page {
-    padding: 2rem 0;
+    padding: 0.5rem 0;
     min-height: 60vh;
 }
 
-.posts-header {
-    margin-bottom: 2.5rem;
-    text-align: center;
-}
-
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 600;
+.activities-header {
     margin-bottom: 1rem;
-    transition: color 0.3s ease;
+    text-align: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
 }
 
-.back-link:hover {
-    color: var(--color-primary-hover);
-}
-
-.posts-title {
-    font-size: 3rem;
+.activities-header h1 {
+    font-size: 1.75rem;
     color: var(--color-primary);
-    margin: 0.5rem 0;
+    margin: 0;
     font-weight: 800;
-}
-
-.posts-subtitle {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin: 0.5rem 0;
 }
 
 .posts-filters {
     background: var(--bg-secondary);
-    border-radius: 15px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 15px var(--shadow);
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 4px var(--shadow);
 }
 
 .filter-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.6rem;
     align-items: flex-end;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
     flex: 1;
-    min-width: 200px;
+    min-width: 150px;
 }
 
 .filter-group label {
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .search-input,
 .filter-select {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.7rem;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 6px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     transition: all 0.3s ease;
     font-family: inherit;
 }
@@ -273,15 +322,15 @@
 
 .filter-btn,
 .clear-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     border: none;
-    border-radius: 10px;
+    border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 .filter-btn {
@@ -307,40 +356,46 @@
 }
 
 .posts-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    justify-content: center;
 }
 
 .stat-card {
     background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
     text-align: center;
-    box-shadow: 0 4px 15px var(--shadow);
+    box-shadow: 0 1px 3px var(--shadow);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px var(--shadow);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px var(--shadow);
 }
 
 .stat-value {
-    display: block;
-    font-size: 2rem;
+    display: inline-block;
+    font-size: 0.95rem;
     font-weight: 800;
     color: var(--color-primary);
-    margin-bottom: 0.5rem;
+    line-height: 1;
 }
 
 .stat-label {
-    display: block;
-    font-size: 0.9rem;
+    display: inline-block;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 600;
+    line-height: 1;
 }
 
 .stat-notice .stat-value { color: var(--color-primary); }
@@ -351,21 +406,21 @@
 
 .posts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 0;
 }
 
 .post-card {
     background: var(--bg-secondary);
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 15px var(--shadow);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px var(--shadow);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.6rem;
 }
 
 .post-card:hover {
@@ -383,20 +438,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .post-badge {
-    padding: 0.4rem 0.85rem;
-    border-radius: 12px;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     background: var(--bg-tertiary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
 }
 
 .post-badge.notice { background: color-mix(in srgb, var(--color-primary) 14%, var(--bg-tertiary)); }
@@ -421,24 +476,24 @@
 }
 
 .post-date {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 600;
     white-space: nowrap;
 }
 
 .post-card-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .post-card-description {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.4;
     margin: 0;
     flex-grow: 1;
 }
@@ -446,34 +501,199 @@
 .post-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .tag.soft {
-    padding: 0.3rem 0.7rem;
+    padding: 0.25rem 0.6rem;
     border-radius: 999px;
     background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
 }
 
-.post-link {
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.95rem;
+/* Post Modal Styles - Almost Full Page */
+.post-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+    overflow-y: auto;
+}
+
+.post-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.post-modal-content {
+    background: var(--bg-primary);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 95vw;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+.post-modal-header {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: 16px 16px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.post-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.post-modal-close {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.5rem;
+    cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-modal-close:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.post-modal-body {
+    padding: 2rem;
+}
+
+.post-modal-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.post-modal-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: auto;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.post-link:hover {
-    color: var(--color-primary-hover);
-    gap: 0.75rem;
+.post-modal-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.post-modal-full-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    line-height: 1.3;
+}
+
+.post-modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-modal-tags .tag {
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.post-modal-description {
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.post-modal-description img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Club Badge Styles */
+.post-club-badge {
+    margin-bottom: 0.5rem;
+}
+
+.club-link {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--border-color));
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.club-link:hover {
+    background: color-mix(in srgb, var(--color-primary) 20%, var(--bg-tertiary));
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
 .no-posts {
@@ -523,8 +743,24 @@
 }
 
 @media (max-width: 480px) {
+    .activities-header h1 {
+        font-size: 1.25rem;
+    }
+    
     .posts-stats {
-        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+    
+    .stat-card {
+        padding: 0.35rem 0.7rem;
+    }
+    
+    .stat-value {
+        font-size: 0.85rem;
+    }
+    
+    .stat-label {
+        font-size: 0.65rem;
     }
 }
 
@@ -640,6 +876,110 @@
     }
 }
 </style>
+
+<script>
+// Post Modal Functionality
+const postsData = {
+    {% for post_item in posts %}
+    {% if post_item.type == 'post' %}
+    'post_{{ post_item.object.pk }}': {
+        'type': 'post',
+        'post_type': '{{ post_item.object.post_type }}',
+        'post_type_display': '{{ post_item.object.get_post_type_display|escapejs }}',
+        'short_title': '{{ post_item.object.short_title|escapejs }}',
+        'long_title': '{{ post_item.object.long_title|escapejs }}',
+        'description': `{{ post_item.object.description|safe }}`,
+        'tags': '{{ post_item.object.tags|default:""|escapejs }}',
+        'date': '{{ post_item.object.publish_date|date:"F d, Y" }}',
+        'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
+        'club_name': null,
+        'club_id': null
+    }{% if not forloop.last %},{% endif %}
+    {% else %}
+    'club_post_{{ post_item.object.pk }}': {
+        'type': 'club_post',
+        'post_type': '{{ post_item.object.post_type }}',
+        'post_type_display': '{{ post_item.object.get_post_type_display|escapejs }}',
+        'short_title': '{{ post_item.object.short_title|escapejs }}',
+        'long_title': '{{ post_item.object.long_title|escapejs }}',
+        'description': `{{ post_item.object.description|safe }}`,
+        'tags': '{{ post_item.object.tags|default:""|escapejs }}',
+        'date': '{{ post_item.object.created_at|date:"F d, Y" }}',
+        'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
+        'club_name': '{{ post_item.object.club.short_name|default:post_item.object.club.name|escapejs }}',
+        'club_id': {{ post_item.object.club.pk }}
+    }{% if not forloop.last %},{% endif %}
+    {% endif %}
+    {% endfor %}
+};
+
+function openPostModal(postType, postId) {
+    const key = postType + '_' + postId;
+    const post = postsData[key];
+    if (!post) {
+        console.error('Post not found:', key);
+        return;
+    }
+    
+    const modal = document.getElementById('postModal');
+    
+    // Set modal content
+    document.getElementById('postModalBadge').textContent = post.post_type_display;
+    document.getElementById('postModalBadge').className = 'post-modal-badge post-badge-' + post.post_type + (post.is_pinned ? ' pinned' : '');
+    document.getElementById('postModalDate').textContent = post.date;
+    
+    // Title with club name if applicable
+    let titleText = post.long_title;
+    if (post.club_name) {
+        titleText += ' <span style="font-size: 0.8em; color: var(--text-secondary);"> - ' + post.club_name + '</span>';
+    }
+    document.getElementById('postModalFullTitle').innerHTML = titleText;
+    
+    // Tags
+    const tagsContainer = document.getElementById('postModalTags');
+    tagsContainer.innerHTML = '';
+    if (post.tags) {
+        const tags = post.tags.split(',').map(t => t.trim()).filter(t => t);
+        tags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'tag';
+            tagSpan.textContent = tag;
+            tagsContainer.appendChild(tagSpan);
+        });
+    }
+    
+    // Description
+    document.getElementById('postModalDescription').innerHTML = post.description;
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePostModal() {
+    const modal = document.getElementById('postModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Close modal on background click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('postModal');
+    if (e.target === modal) {
+        closePostModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('postModal');
+        if (modal.classList.contains('active')) {
+            closePostModal();
+        }
+    }
+});
+</script>
 
 {% endblock %}
 

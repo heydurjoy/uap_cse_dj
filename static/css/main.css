@@ -1340,6 +1340,7 @@ body {
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
     z-index: 1001;
     overflow: hidden;
+    pointer-events: none;
 }
 
 .dropdown-menu::before {
@@ -1363,6 +1364,7 @@ body {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    pointer-events: auto;
 }
 
 .nav-dropdown:hover .dropdown-arrow {
@@ -1381,6 +1383,8 @@ body {
     position: relative;
     z-index: 1;
     margin-bottom: 0.25rem;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .dropdown-link:hover {
@@ -1392,6 +1396,19 @@ body {
 
 .dropdown-link:last-child {
     margin-bottom: 0;
+}
+
+.dropdown-header {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
 }
 
 /* Mobile Dropdown Styles */

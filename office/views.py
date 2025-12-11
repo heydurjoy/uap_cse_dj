@@ -18,8 +18,20 @@ from django.utils import timezone
 def post_list(request):
     """
     Display list of all posts with search, filter, and sort functionality.
+    Includes both regular posts and club posts.
     """
+    # Get all regular posts
     posts = Post.objects.all()
+    
+    # Get all club posts
+    try:
+        from clubs.models import ClubPost, Club
+        club_posts = ClubPost.objects.all()
+        all_clubs = Club.objects.all().order_by('sl', 'name')
+    except (ImportError, AttributeError):
+        # If clubs app doesn't exist, create empty queryset
+        club_posts = Post.objects.none()  # Use Post queryset as fallback (will be empty)
+        all_clubs = []
     
     # Search functionality
     search_query = request.GET.get('search', '')
@@ -30,35 +42,73 @@ def post_list(request):
             Q(tags__icontains=search_query) |
             Q(description__icontains=search_query)
         )
+        club_posts = club_posts.filter(
+            Q(short_title__icontains=search_query) |
+            Q(long_title__icontains=search_query) |
+            Q(tags__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
     
     # Filter by post type
     post_type_filter = request.GET.get('type', '')
     if post_type_filter:
         posts = posts.filter(post_type=post_type_filter)
+        club_posts = club_posts.filter(post_type=post_type_filter)
+    
+    # Filter by club
+    club_filter = request.GET.get('club', '')
+    if club_filter:
+        club_posts = club_posts.filter(club_id=club_filter)
+    
+    # Create unified list with type indicator
+    unified_posts = []
+    
+    # Add regular posts (only if no club filter is selected)
+    if not club_filter:
+        for post in posts:
+            unified_posts.append({
+                'type': 'post',
+                'object': post,
+                'is_pinned': post.is_pinned,
+                'date': post.publish_date,
+            })
+    
+    # Add club posts
+    for club_post in club_posts:
+        unified_posts.append({
+            'type': 'club_post',
+            'object': club_post,
+            'is_pinned': club_post.is_pinned,
+            'date': club_post.created_at,
+        })
     
     # Sort functionality
     sort_by = request.GET.get('sort', 'pinned')
     if sort_by == 'oldest':
-        posts = posts.order_by('publish_date')
+        unified_posts.sort(key=lambda p: p['date'])
     elif sort_by == 'newest':
-        posts = posts.order_by('-publish_date')
+        unified_posts.sort(key=lambda p: p['date'], reverse=True)
     elif sort_by == 'type':
-        posts = posts.order_by('post_type', '-publish_date')
+        unified_posts.sort(key=lambda p: (p['object'].post_type if hasattr(p['object'], 'post_type') else '', p['date']), reverse=True)
+    elif sort_by == 'club':
+        unified_posts.sort(key=lambda p: (p['object'].club.name if p['type'] == 'club_post' else 'ZZZ', p['date']), reverse=True)
     elif sort_by == 'pinned':
         # Pinned first, then by date
-        posts = posts.order_by('-is_pinned', '-publish_date')
+        unified_posts.sort(key=lambda p: (not p['is_pinned'], p['date']), reverse=True)
     else:
         # Default: pinned first, then by date
-        posts = posts.order_by('-is_pinned', '-publish_date')
+        unified_posts.sort(key=lambda p: (not p['is_pinned'], p['date']), reverse=True)
     
-    # Count posts by type for stats (before pagination)
-    total_posts_count = posts.count()
+    # Count posts by type for stats
+    total_posts_count = len(unified_posts)
     posts_by_type = {}
     for code, display in POST_TYPE_CHOICES:
         posts_by_type[code] = Post.objects.filter(post_type=code).count()
+        # Add club posts of same type
+        posts_by_type[code] += club_posts.filter(post_type=code).count()
     
-    # Pagination - 9 posts per page
-    paginator = Paginator(posts, 9)
+    # Pagination - 12 posts per page (matching activities page)
+    paginator = Paginator(unified_posts, 12)
     page = request.GET.get('page', 1)
     
     try:
@@ -71,11 +121,13 @@ def post_list(request):
     context = {
         'posts': posts_page,
         'selected_type': post_type_filter,
+        'selected_club': club_filter,
         'search_query': search_query,
         'sort_by': sort_by,
         'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
         'posts_by_type': posts_by_type,
         'total_posts': total_posts_count,
+        'all_clubs': all_clubs,
         'paginator': paginator,
         'is_paginated': posts_page.has_other_pages(),
     }

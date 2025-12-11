@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'designs.context_processors.admission_elements',
                 'office.context_processors.uap_now_posts',
+                'clubs.context_processors.clubs',
             ],
         },
     },
