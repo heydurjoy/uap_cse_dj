@@ -1,0 +1,1287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ club.name }} - Club{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="club-detail-section">
+        <div class="club-detail-header">
+            <a href="{% url 'home' %}" class="back-link">
+                ← Back to Home
+            </a>
+        </div>
+        
+        {% if club.cover_photo %}
+        <div class="club-cover-photo">
+            <img src="/media/{{ club.cover_photo.name }}" alt="{{ club.name }} Cover Photo">
+        </div>
+        {% endif %}
+        
+        <div class="club-detail-card">
+            <div class="club-header-info">
+                <div class="club-logo-section">
+                    {% if club.logo %}
+                    <div class="club-logo">
+                        <img src="/media/{{ club.logo.name }}" alt="{{ club.name }} Logo">
+                    </div>
+                    {% else %}
+                    <div class="club-logo-placeholder">
+                        <span class="logo-placeholder-icon">👥</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="club-title-section">
+                    {% if club.sl %}
+                    <div class="club-serial-number">#{{ club.sl }}</div>
+                    {% endif %}
+                    <h1 class="club-name">{{ club.name }}</h1>
+                    {% if club.short_name %}
+                    <p class="club-short-name">{{ club.short_name }}</p>
+                    {% endif %}
+                    
+                    <!-- Social Links - Below Short Name -->
+                    {% if club.website_url or club.facebook_url or club.instagram_url or club.youtube_url %}
+                    <div class="club-social-links-inline">
+                        {% if club.website_url %}
+                        <a href="{{ club.website_url }}" target="_blank" rel="noopener noreferrer" class="social-link-inline" title="Website">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if club.facebook_url %}
+                        <a href="{{ club.facebook_url }}" target="_blank" rel="noopener noreferrer" class="social-link-inline" title="Facebook">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if club.instagram_url %}
+                        <a href="{{ club.instagram_url }}" target="_blank" rel="noopener noreferrer" class="social-link-inline" title="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if club.youtube_url %}
+                        <a href="{{ club.youtube_url }}" target="_blank" rel="noopener noreferrer" class="social-link-inline" title="YouTube">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if club.moto %}
+                    <p class="club-moto">{{ club.moto }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="club-info-grid">
+                {% if club.convener %}
+                <div class="info-item">
+                    <span class="info-label">Convener</span>
+                    <div class="info-value">
+                        <a href="{% url 'people:faculty_detail' club.convener.pk %}" class="person-link">
+                            {{ club.convener.name }}
+                            {% if club.convener.designation %}
+                            <span class="person-designation">({{ club.convener.designation }})</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if club.president %}
+                <div class="info-item">
+                    <span class="info-label">President</span>
+                    <div class="info-value">
+                        {{ club.president.name }}
+                        {% if club.president.student_id %}
+                        <span class="person-designation">({{ club.president.student_id }})</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Tabs -->
+            <div class="club-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="pinned">Pinned</button>
+                    <button class="tab-button" data-tab="newsfeed">Newsfeed</button>
+                    <button class="tab-button" data-tab="members">Club Members</button>
+                    <button class="tab-button" data-tab="about">About</button>
+                </div>
+                
+                <div class="tab-content">
+                    <!-- Tab 1: Pinned -->
+                    <div class="tab-pane active" id="pinned-tab">
+                        <div class="tab-content-inner">
+                            {% if pinned_posts %}
+                            <div class="club-posts-grid">
+                                {% for post in pinned_posts %}
+                                <div class="club-post-card pinned-post-card">
+                                    <div class="club-post-card-top">
+                                        <div class="club-post-badge club-post-badge-{{ post.post_type }}">
+                                            <span class="pin-icon">📌</span>
+                                            {{ post.get_post_type_display }}
+                                        </div>
+                                        <div class="club-post-date">{{ post.created_at|date:"M d, Y" }}</div>
+                                    </div>
+                                    <h3 class="club-post-title">{{ post.short_title }}</h3>
+                                    <p class="club-post-subtitle">{{ post.long_title|truncatewords:20 }}</p>
+                                    {% if post.tags %}
+                                    <div class="club-post-tags">
+                                        {% for tag in post.get_tags_list|slice:":3" %}
+                                        <span class="tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <button class="club-post-view-btn" onclick="openPostModal({{ post.pk }})">View Post →</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-content">No pinned posts yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Newsfeed -->
+                    <div class="tab-pane" id="newsfeed-tab">
+                        <div class="tab-content-inner">
+                            {% if all_posts %}
+                            <div class="club-posts-grid">
+                                {% for post in all_posts %}
+                                <div class="club-post-card {% if post.is_pinned %}pinned-post-card{% endif %}">
+                                    <div class="club-post-card-top">
+                                        <div class="club-post-badge club-post-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
+                                            {% if post.is_pinned %}
+                                            <span class="pin-icon">📌</span>
+                                            {% endif %}
+                                            {{ post.get_post_type_display }}
+                                        </div>
+                                        <div class="club-post-date">{{ post.created_at|date:"M d, Y" }}</div>
+                                    </div>
+                                    <h3 class="club-post-title">{{ post.short_title }}</h3>
+                                    <p class="club-post-subtitle">{{ post.long_title|truncatewords:20 }}</p>
+                                    {% if post.tags %}
+                                    <div class="club-post-tags">
+                                        {% for tag in post.get_tags_list|slice:":3" %}
+                                        <span class="tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <button class="club-post-view-btn" onclick="openPostModal({{ post.pk }})">View Post →</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-content">No posts yet. Check back later for updates!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 3: Club Members -->
+                    <div class="tab-pane" id="members-tab">
+                        <div class="tab-content-inner">
+                            {% if organized_members %}
+                            <div class="club-members-grid">
+                                {% for member in organized_members %}
+                                {% if member.type == 'convener' or member.type == 'faculty' %}
+                                <a href="{% url 'people:faculty_detail' member.faculty.pk %}" class="club-member-card-link">
+                                {% elif member.type == 'club_member' and member.club_member_pk %}
+                                <a href="{% url 'people:club_member_detail' member.club_member_pk %}" class="club-member-card-link">
+                                {% else %}
+                                <div class="club-member-card-link" style="pointer-events: none;">
+                                {% endif %}
+                                    <div class="club-member-card">
+                                        <div class="club-member-card-image">
+                                            {% if member.profile_pic %}
+                                            <img src="/media/{{ member.profile_pic.name }}" alt="{{ member.name }}">
+                                            {% else %}
+                                            <div class="club-member-placeholder">
+                                                <div class="placeholder-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                        <circle cx="12" cy="7" r="4"></circle>
+                                                    </svg>
+                                                </div>
+                                                <div class="placeholder-initial">{{ member.name|first|upper }}</div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="club-member-card-body">
+                                            <h3 class="club-member-name">{{ member.name }}</h3>
+                                            {% if member.designation %}
+                                            <p class="club-member-designation">{{ member.designation }}</p>
+                                            {% elif member.student_id %}
+                                            <p class="club-member-id">ID: {{ member.student_id }}</p>
+                                            {% endif %}
+                                            <p class="club-member-position">{{ member.position_title }}</p>
+                                        </div>
+                                    </div>
+                                {% if member.type == 'convener' or member.type == 'faculty' or member.club_member_pk %}
+                                </a>
+                                {% else %}
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-content">No club members found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 4: About -->
+                    <div class="tab-pane" id="about-tab">
+                        <div class="tab-content-inner">
+                            {% if club.description %}
+                            <div class="club-description">
+                                {{ club.description|safe }}
+                            </div>
+                            {% else %}
+                            <p class="no-content">No description available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+</div>
+
+<!-- Post Modal -->
+<div id="postModal" class="post-modal">
+    <div class="post-modal-content" id="postModalContent">
+        <div class="post-modal-header">
+            <h2 class="post-modal-title">Post Details</h2>
+            <button class="post-modal-close" onclick="closePostModal()" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="post-modal-body">
+            <div class="post-modal-meta">
+                <span class="post-modal-badge" id="postModalBadge">Event</span>
+                <span class="post-modal-date" id="postModalDate">Dec 11, 2025</span>
+            </div>
+            <h1 class="post-modal-full-title" id="postModalFullTitle">Post Title</h1>
+            <div class="post-modal-tags" id="postModalTags"></div>
+            <div class="post-modal-event-dates" id="postModalEventDates" style="display: none;"></div>
+            <div class="post-modal-description" id="postModalDescription"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.club-detail-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.club-detail-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.club-cover-photo {
+    width: 100%;
+    max-height: 400px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.club-cover-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.club-detail-card {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.club-header-info {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.club-logo-section {
+    flex-shrink: 0;
+}
+
+.club-logo {
+    width: 150px;
+    height: 150px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: var(--bg-tertiary);
+    border: 3px solid var(--color-primary);
+}
+
+.club-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.club-logo-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 16px;
+    background: var(--bg-tertiary);
+    border: 3px dashed var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-placeholder-icon {
+    font-size: 4rem;
+    opacity: 0.5;
+}
+
+.club-title-section {
+    flex: 1;
+}
+
+.club-serial-number {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.club-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.club-short-name {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    font-style: italic;
+}
+
+.club-social-links-inline {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.social-link-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link-inline:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.social-link-inline svg {
+    width: 20px;
+    height: 20px;
+}
+
+.established-label {
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+.club-moto {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    margin: 0;
+    font-style: italic;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+}
+
+.club-description {
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.club-description p {
+    margin: 0 0 1rem 0;
+}
+
+.club-description p:last-child {
+    margin-bottom: 0;
+}
+
+.club-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.person-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.person-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.person-designation {
+    color: var(--text-secondary);
+    font-weight: 400;
+    font-size: 0.95rem;
+}
+
+.club-social-links-section {
+    margin-top: 1rem;
+}
+
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.social-link svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+/* Tabs */
+.club-tabs {
+    margin-top: 2rem;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 0.875rem 2rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: -2px;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-button:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.tab-button.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+}
+
+.tab-content {
+    min-height: 300px;
+}
+
+.tab-pane {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.tab-content-inner {
+    padding: 1rem 0;
+}
+
+/* Club Posts Grid */
+.club-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.club-post-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.club-post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    border-color: var(--color-primary);
+}
+
+.club-post-card.pinned-post-card {
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.club-post-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.club-post-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.club-post-badge-event {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.club-post-badge-seminar {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.club-post-badge-contest {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.club-post-badge-workshop {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.club-post-badge-training {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.club-post-badge-other {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+.club-post-badge.pinned {
+    background: color-mix(in srgb, var(--color-primary) 20%, var(--bg-tertiary));
+    border: 1px solid var(--color-primary);
+}
+
+.pin-icon {
+    font-size: 0.9rem;
+}
+
+.club-post-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.club-post-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.club-post-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+}
+
+.club-post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.club-post-tags .tag {
+    padding: 0.25rem 0.6rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.club-post-view-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.club-post-view-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+/* Post Modal */
+.post-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+    overflow-y: auto;
+}
+
+.post-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.post-modal-content {
+    background: var(--bg-primary);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+.post-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: 20px 20px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.post-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.post-modal-close {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-modal-close:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.post-modal-body {
+    padding: 2rem;
+}
+
+.post-modal-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.post-modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.post-modal-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.post-modal-full-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    line-height: 1.3;
+}
+
+.post-modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-modal-tags .tag {
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.post-modal-description {
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.post-modal-description img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.post-modal-event-dates {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-modal-event-dates h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.post-modal-event-date-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-modal-event-date-item:last-child {
+    margin-bottom: 0;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.no-content {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Club Members Grid */
+.club-members-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.club-member-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.club-member-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.club-member-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.club-member-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    position: relative;
+}
+
+.club-member-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.club-member-card:hover .club-member-card-image img {
+    transform: scale(1.05);
+}
+
+.club-member-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 15%, var(--bg-tertiary)) 0%,
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary)) 100%);
+    position: relative;
+}
+
+.placeholder-icon {
+    color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+}
+
+.placeholder-initial {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    line-height: 1;
+}
+
+.club-member-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.club-member-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.club-member-designation {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    font-weight: 500;
+    margin: 0 0 0.75rem 0;
+}
+
+.club-member-id {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    font-weight: 500;
+    margin: 0 0 0.75rem 0;
+}
+
+.club-member-position {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    flex-grow: 1;
+}
+
+@media (max-width: 768px) {
+    .club-detail-section {
+        padding: 1rem 0.5rem;
+    }
+    
+    .club-header-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .club-logo,
+    .club-logo-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .club-name {
+        font-size: 2rem;
+    }
+    
+    .club-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .club-cover-photo {
+        max-height: 250px;
+    }
+    
+    .tab-buttons {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    .tab-button {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .club-members-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    @media (max-width: 480px) {
+        .club-members-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and panes
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding pane
+            this.classList.add('active');
+            document.getElementById(targetTab + '-tab').classList.add('active');
+        });
+    });
+});
+
+// Post Modal Functionality
+const postsData = {
+    {% for post in all_posts %}
+    {{ post.pk }}: {
+        'post_type': '{{ post.post_type }}',
+        'post_type_display': '{{ post.get_post_type_display|escapejs }}',
+        'short_title': '{{ post.short_title|escapejs }}',
+        'long_title': '{{ post.long_title|escapejs }}',
+        'description': `{{ post.description|safe }}`,
+        'tags': '{{ post.tags|default:""|escapejs }}',
+        'created_at': '{{ post.created_at|date:"F d, Y" }}',
+        'start_date_time': {% if post.start_date_time %}'{{ post.start_date_time|date:"F d, Y g:i A" }}'{% else %}null{% endif %},
+        'end_date_time': {% if post.end_date_time %}'{{ post.end_date_time|date:"F d, Y g:i A" }}'{% else %}null{% endif %},
+        'is_pinned': {{ post.is_pinned|yesno:"true,false" }},
+        'posted_by': {% if post.posted_by %}'{{ post.posted_by.email|escapejs }}'{% else %}null{% endif %}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+function openPostModal(postId) {
+    const post = postsData[postId];
+    if (!post) {
+        console.error('Post not found:', postId);
+        return;
+    }
+    
+    const modal = document.getElementById('postModal');
+    const modalContent = document.getElementById('postModalContent');
+    
+    // Set modal content
+    document.getElementById('postModalBadge').textContent = post.post_type_display;
+    document.getElementById('postModalBadge').className = 'post-modal-badge club-post-badge-' + post.post_type + (post.is_pinned ? ' pinned' : '');
+    document.getElementById('postModalDate').textContent = post.created_at;
+    document.getElementById('postModalFullTitle').textContent = post.long_title;
+    
+    // Tags
+    const tagsContainer = document.getElementById('postModalTags');
+    tagsContainer.innerHTML = '';
+    if (post.tags) {
+        const tags = post.tags.split(',').map(t => t.trim()).filter(t => t);
+        tags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'tag';
+            tagSpan.textContent = tag;
+            tagsContainer.appendChild(tagSpan);
+        });
+    }
+    
+    // Description
+    document.getElementById('postModalDescription').innerHTML = post.description;
+    
+    // Event dates
+    const eventDatesContainer = document.getElementById('postModalEventDates');
+    if (post.start_date_time || post.end_date_time) {
+        eventDatesContainer.style.display = 'block';
+        eventDatesContainer.innerHTML = '<h4>Event Schedule</h4>';
+        if (post.start_date_time) {
+            const startDiv = document.createElement('div');
+            startDiv.className = 'post-modal-event-date-item';
+            startDiv.innerHTML = '<strong>Start:</strong> ' + post.start_date_time;
+            eventDatesContainer.appendChild(startDiv);
+        }
+        if (post.end_date_time) {
+            const endDiv = document.createElement('div');
+            endDiv.className = 'post-modal-event-date-item';
+            endDiv.innerHTML = '<strong>End:</strong> ' + post.end_date_time;
+            eventDatesContainer.appendChild(endDiv);
+        }
+    } else {
+        eventDatesContainer.style.display = 'none';
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePostModal() {
+    const modal = document.getElementById('postModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Close modal on background click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('postModal');
+    if (e.target === modal) {
+        closePostModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('postModal');
+        if (modal.classList.contains('active')) {
+            closePostModal();
+        }
+    }
+});
+</script>
+
+<!-- Post Modal -->
+<div id="postModal" class="post-modal">
+    <div class="post-modal-content" id="postModalContent">
+        <div class="post-modal-header">
+            <h2 class="post-modal-title">Post Details</h2>
+            <button class="post-modal-close" onclick="closePostModal()" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="post-modal-body">
+            <div class="post-modal-meta">
+                <span class="post-modal-badge" id="postModalBadge">Event</span>
+                <span class="post-modal-date" id="postModalDate">Dec 11, 2025</span>
+            </div>
+            <h1 class="post-modal-full-title" id="postModalFullTitle">Post Title</h1>
+            <div class="post-modal-tags" id="postModalTags"></div>
+            <div class="post-modal-event-dates" id="postModalEventDates" style="display: none;"></div>
+            <div class="post-modal-description" id="postModalDescription"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

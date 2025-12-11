@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'people',
     'academics',
     'office',
+    'clubs',
 ]
 
 # Custom User Model

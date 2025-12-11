@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Allow Email for Club Member Sign Up - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="create-email-page">
+        <div class="page-header">
+            <a href="{% url 'clubs:manage_allowed_emails' club.pk %}" class="back-link">← Back to Add Members</a>
+            <h1>Allow Email for Club Member Sign Up: {{ club.name }}</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Info Box -->
+        <div class="info-box">
+            <p><strong>Allow Club Member to Sign Up:</strong> By adding this email, you're allowing a user with this email address to create an account and join this club. The user will be automatically set as <strong>Club Member</strong> type with <strong>Level 1</strong> (lowest) access. These settings cannot be changed.</p>
+        </div>
+        
+        <!-- Form -->
+        <div class="form-card">
+            <form method="post" action="{% url 'clubs:create_allowed_email' club.pk %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        id="email" 
+                        required 
+                        placeholder="example@email.com"
+                        value="{% if form_data.email %}{{ form_data.email }}{% endif %}"
+                        class="form-input"
+                    >
+                    <small class="form-help">Enter the email address that will be allowed to sign up as a club member for this club. The user will be able to create an account with this email.</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Allow Email for Sign Up</button>
+                    <a href="{% url 'clubs:manage_allowed_emails' club.pk %}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.create-email-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.info-box {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.form-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.submit-btn {
+    padding: 0.75rem 2rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    padding: 0.75rem 2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .create-email-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-card {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn, .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

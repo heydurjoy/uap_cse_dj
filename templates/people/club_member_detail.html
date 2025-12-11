@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ club_member.name }} - Club Member{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="club-member-detail">
+        <div class="detail-header">
+            <a href="{% url 'home' %}" class="back-link">
+                ← Back to Home
+            </a>
+        </div>
+        
+        <div class="club-member-profile-section">
+            <div class="club-member-image-bio-column">
+                <div class="club-member-profile-image">
+                    <img src="{% if club_member.profile_pic %}/media/{{ club_member.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ club_member.name }}">
+                </div>
+            </div>
+            
+            <div class="club-member-profile-info">
+                <h1 class="club-member-detail-name">{{ club_member.name }}</h1>
+                
+                <div class="info-grid">
+                    {% if club_member.student_id %}
+                    <div class="info-item">
+                        <span class="info-label">Student ID</span>
+                        <span class="info-value">{{ club_member.student_id }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if club_member.base_user.email %}
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value email-value">{{ club_member.base_user.email }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if club_member.last_club_position %}
+                    <div class="info-item">
+                        <span class="info-label">Last Position</span>
+                        <span class="info-value">{{ club_member.last_club_position }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Club Positions -->
+                {% if positions %}
+                <div class="positions-section">
+                    <h3 class="section-title">Club Positions</h3>
+                    <div class="positions-list">
+                        {% regroup positions by academic_year as positions_by_year %}
+                        {% for year_group in positions_by_year %}
+                            {% regroup year_group.list by semester as positions_by_semester %}
+                            {% for semester_group in positions_by_semester %}
+                                <div class="position-group">
+                                    <h4 class="position-group-header">{{ year_group.grouper }} - {{ semester_group.grouper|title }}</h4>
+                                    <div class="position-items">
+                                        {% for position in semester_group.list %}
+                                        <div class="position-item">
+                                            <span class="position-club-name">{{ position.club.name }}</span>
+                                            <span class="position-title">{{ position.position_title }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Clubs as President -->
+                {% if clubs_as_president %}
+                <div class="president-clubs-section">
+                    <h3 class="section-title">President of</h3>
+                    <div class="clubs-list">
+                        {% for club in clubs_as_president %}
+                        <a href="{% url 'clubs:club_detail' club.pk %}" class="club-link">
+                            <div class="club-item">
+                                {% if club.logo %}
+                                <img src="/media/{{ club.logo.name }}" alt="{{ club.name }}" class="club-logo-small">
+                                {% else %}
+                                <div class="club-logo-placeholder-small">👥</div>
+                                {% endif %}
+                                <span class="club-name">{{ club.name }}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- About Section -->
+        {% if club_member.about %}
+        <div class="about-section">
+            <h3 class="section-title">About</h3>
+            <div class="about-content">
+                {{ club_member.about|safe }}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.club-member-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.detail-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.club-member-profile-section {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    align-items: start;
+    padding: 2rem;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 3%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 1%, transparent) 100%);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.club-member-profile-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    background: var(--bg-secondary);
+    position: relative;
+}
+
+.club-member-profile-image::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.club-member-profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.club-member-profile-image:hover img {
+    transform: scale(1.05);
+}
+
+.club-member-detail-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.email-value {
+    color: var(--color-primary);
+    word-break: break-all;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+}
+
+.positions-section,
+.president-clubs-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.positions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.position-group {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.position-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.position-group-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+}
+
+.position-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.position-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.position-club-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.position-title {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-style: italic;
+}
+
+.clubs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.club-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.club-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.club-item:hover {
+    border-color: var(--color-primary);
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.club-logo-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.club-logo-placeholder-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.club-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.about-section {
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.about-content {
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.about-content p {
+    margin: 0 0 1rem 0;
+}
+
+.about-content p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .club-member-profile-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .club-member-profile-image {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .club-member-detail-name {
+        font-size: 2rem;
+        text-align: center;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+

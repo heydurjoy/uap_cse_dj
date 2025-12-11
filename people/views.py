@@ -111,6 +111,30 @@ def faculty_detail(request, pk):
     return render(request, 'people/faculty_detail.html', context)
 
 
+def club_member_detail(request, pk):
+    """
+    Display detailed view of a single club member.
+    """
+    from .models import ClubMember
+    from clubs.models import ClubPosition, Club
+    
+    club_member = get_object_or_404(ClubMember, pk=pk)
+    
+    # Get club positions for this member
+    positions = ClubPosition.objects.filter(club_member=club_member).select_related('club').order_by('-academic_year', 'semester', 'sl')
+    
+    # Get clubs where this member is president
+    clubs_as_president = Club.objects.filter(president=club_member).select_related('convener')
+    
+    context = {
+        'club_member': club_member,
+        'positions': positions,
+        'clubs_as_president': clubs_as_president,
+    }
+    
+    return render(request, 'people/club_member_detail.html', context)
+
+
 def officer_list(request):
     """
     Display list of all officers, sorted by serial number.
@@ -211,10 +235,67 @@ def user_profile(request):
         profile = user.club_member_profile
         profile_type = 'club_member'
     
+    # Get clubs associated with the user
+    associated_clubs = []
+    if profile_type == 'faculty' and profile:
+        # Clubs where user is convener
+        from clubs.models import Club
+        convened_clubs = Club.objects.filter(convener=profile).select_related('convener', 'president')
+        for club in convened_clubs:
+            associated_clubs.append({
+                'club': club,
+                'role': 'convener',
+                'can_manage_info': True,
+                'can_manage_members': True,
+                'can_manage_posts': True,
+            })
+        
+        # Clubs where user is in a position
+        from clubs.models import ClubPosition
+        positions = ClubPosition.objects.filter(faculty=profile).select_related('club')
+        for position in positions:
+            # Check if already added as convener
+            if not any(c['club'].pk == position.club.pk for c in associated_clubs):
+                associated_clubs.append({
+                    'club': position.club,
+                    'role': position.position_title,
+                    'can_manage_info': False,
+                    'can_manage_members': False,
+                    'can_manage_posts': False,
+                })
+    
+    elif profile_type == 'club_member' and profile:
+        # Clubs where user is president
+        from clubs.models import Club
+        led_clubs = Club.objects.filter(president=profile).select_related('convener', 'president')
+        for club in led_clubs:
+            associated_clubs.append({
+                'club': club,
+                'role': 'president',
+                'can_manage_info': False,
+                'can_manage_members': False,
+                'can_manage_posts': True,
+            })
+        
+        # Clubs where user is in a position
+        from clubs.models import ClubPosition
+        positions = ClubPosition.objects.filter(club_member=profile).select_related('club')
+        for position in positions:
+            # Check if already added as president
+            if not any(c['club'].pk == position.club.pk for c in associated_clubs):
+                associated_clubs.append({
+                    'club': position.club,
+                    'role': position.position_title,
+                    'can_manage_info': False,
+                    'can_manage_members': False,
+                    'can_manage_posts': True,
+                })
+    
     context = {
         'user': user,
         'profile': profile,
         'profile_type': profile_type,
+        'associated_clubs': associated_clubs,
     }
     
     return render(request, 'people/user_profile.html', context)

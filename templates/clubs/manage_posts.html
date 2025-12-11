@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Posts - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-posts-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Posts: {{ club.name }}</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Filters and Actions -->
+        <div class="posts-toolbar">
+            <div class="toolbar-left">
+                <form method="get" class="filter-form">
+                    <input type="text" name="search" placeholder="Search posts..." value="{{ search_query }}" class="search-input">
+                    
+                    <select name="type" class="filter-select">
+                        <option value="">All Types</option>
+                        {% for value, label in CLUB_POST_TYPE_CHOICES %}
+                        <option value="{{ value }}" {% if post_type_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="sort" class="filter-select">
+                        <option value="pinned" {% if sort_by == 'pinned' %}selected{% endif %}>Pinned First</option>
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                        <option value="type" {% if sort_by == 'type' %}selected{% endif %}>By Type</option>
+                        <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                        <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title (Z-A)</option>
+                    </select>
+                    
+                    <button type="submit" class="filter-btn">Apply</button>
+                    <a href="{% url 'clubs:manage_posts' club.pk %}" class="clear-btn">Clear</a>
+                </form>
+            </div>
+            <div class="toolbar-right">
+                <a href="{% url 'clubs:create_post' club.pk %}" class="action-btn success">+ Create Post</a>
+            </div>
+        </div>
+        
+        <!-- Posts Table -->
+        <div class="posts-table-container">
+            {% if posts %}
+            <table class="posts-table">
+                <thead>
+                    <tr>
+                        <th>Post Type</th>
+                        <th>Short Title</th>
+                        <th>Pinned</th>
+                        <th>Posted By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>
+                            <span class="post-type-badge post-type-{{ post.post_type }}" title="{{ post.get_post_type_display }}">
+                                {{ post.get_post_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ post.short_title }}</strong>
+                            {% if post.is_pinned %}
+                            <span class="pinned-badge">📌</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if post.is_pinned %}
+                            <span class="pinned-indicator">Yes</span>
+                            {% else %}
+                            <span class="not-pinned">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if post.posted_by %}
+                                {% if post.posted_by.user_type == 'faculty' and post.posted_by.faculty_profile %}
+                                    {{ post.posted_by.faculty_profile.name|default:post.posted_by.email }}
+                                {% elif post.posted_by.user_type == 'officer' and post.posted_by.officer_profile %}
+                                    {{ post.posted_by.officer_profile.name|default:post.posted_by.email }}
+                                {% elif post.posted_by.user_type == 'club_member' and post.posted_by.club_member_profile %}
+                                    {{ post.posted_by.club_member_profile.name|default:post.posted_by.email }}
+                                {% else %}
+                                    {{ post.posted_by.email }}
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-secondary);">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ post.created_at|date:"M d, Y" }}</td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <a href="{% url 'clubs:edit_post' club.pk post.pk %}" class="action-icon-btn edit-icon-btn" title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'clubs:delete_post' club.pk post.pk %}" class="action-icon-btn delete-icon-btn" title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-posts-message">
+                <p>No posts found. {% if search_query %}Try a different search term.{% else %}Create your first post to get started.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-posts-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.posts-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.filter-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+    min-width: 250px;
+}
+
+.search-input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.filter-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.filter-select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.filter-btn, .clear-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-btn {
+    background: var(--color-primary);
+    color: white;
+}
+
+.filter-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+.clear-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.clear-btn:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.action-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn.success {
+    background: var(--color-primary);
+    color: white;
+}
+
+.action-btn.success:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+.posts-table-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.posts-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.posts-table thead {
+    background: var(--bg-tertiary);
+}
+
+.posts-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.posts-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.posts-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.posts-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.pinned-badge {
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.pinned-indicator {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.not-pinned {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.post-type-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.post-type-event {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.post-type-seminar {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.post-type-contest {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.post-type-workshop {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.post-type-training {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.post-type-other {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+.actions-col {
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.action-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    background: transparent;
+}
+
+.edit-icon-btn {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+.edit-icon-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.delete-icon-btn {
+    color: #dc3545;
+    background: color-mix(in srgb, #dc3545 15%, transparent);
+}
+
+.delete-icon-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.no-posts-message {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .manage-posts-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .posts-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-left, .toolbar-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .search-input, .filter-btn, .clear-btn, .action-btn {
+        width: 100%;
+    }
+    
+    .posts-table {
+        font-size: 0.85rem;
+    }
+    
+    .posts-table th,
+    .posts-table td {
+        padding: 0.6rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+

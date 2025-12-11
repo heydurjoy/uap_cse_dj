@@ -1,0 +1,786 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Post - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="create-post-page">
+        <div class="page-header">
+            <a href="{% url 'clubs:manage_posts' club.pk %}" class="back-link">← Back to Posts</a>
+            <h1>Edit Post: {{ post.short_title }}</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="post-form-container">
+            <form method="post" class="post-form">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <h3>Post Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="post_type">Post Type *</label>
+                            <select name="post_type" id="post_type" required>
+                                {% for value, label in CLUB_POST_TYPE_CHOICES %}
+                                <option value="{{ value }}" {% if post.post_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="short_title">Short Title *</label>
+                            <input type="text" name="short_title" id="short_title" maxlength="50" required 
+                                   placeholder="e.g., Event Announcement" 
+                                   value="{{ post.short_title }}">
+                            <small class="form-help">Max 50 characters</small>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="long_title">Long Title *</label>
+                            <input type="text" name="long_title" id="long_title" maxlength="255" required 
+                                   placeholder="e.g., Upcoming Event Announcement - Join Us!" 
+                                   value="{{ post.long_title }}">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="tags">Tags</label>
+                            <input type="text" name="tags" id="tags" maxlength="200" 
+                                   placeholder="e.g., signup, deadline, important" 
+                                   value="{{ post.tags|default:'' }}">
+                            <small class="form-help">Comma-separated tags</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="start_date_time">Start Date/Time</label>
+                            <input type="datetime-local" name="start_date_time" id="start_date_time" 
+                                   value="{% if post.start_date_time %}{{ post.start_date_time|date:'Y-m-d\TH:i' }}{% endif %}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="end_date_time">End Date/Time</label>
+                            <input type="datetime-local" name="end_date_time" id="end_date_time" 
+                                   value="{% if post.end_date_time %}{{ post.end_date_time|date:'Y-m-d\TH:i' }}{% endif %}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_pinned" id="is_pinned" {% if post.is_pinned %}checked{% endif %}>
+                                <span>Pin this post (Max 3 pinned posts per club)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Content</h3>
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea name="description" id="description" rows="8" required class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{{ post.description }}</textarea>
+                        <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Update Post</button>
+                    <a href="{% url 'clubs:manage_posts' club.pk %}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.create-post-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.post-form-container {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 1.5rem;
+}
+
+.form-section h3 {
+    font-size: 1.3rem;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    font-weight: 700;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="datetime-local"],
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group input[type="datetime-local"] {
+    width: 100%;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.form-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.submit-btn {
+    padding: 0.75rem 2rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.cancel-btn {
+    padding: 0.75rem 2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+    transform: translateY(-2px);
+}
+
+/* Rich text textarea styling */
+.rich-text-textarea {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    resize: none;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.rich-text-textarea:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 2%, var(--bg-tertiary));
+}
+
+.rich-text-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--glow-shadow);
+    outline: none;
+}
+
+/* CKEditor Modal - Full Page */
+.ckeditor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+.ckeditor-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ckeditor-modal-content {
+    background: var(--bg-primary);
+    border-radius: 20px !important;
+    width: 98%;
+    max-width: 1600px;
+    height: 95vh;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.ckeditor-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: 20px 20px 0 0;
+}
+
+.ckeditor-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.ckeditor-modal-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.ckeditor-close-btn,
+.ckeditor-save-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.95rem;
+}
+
+.ckeditor-close-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.ckeditor-close-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.ckeditor-save-btn {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.ckeditor-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-shadow);
+}
+
+.ckeditor-modal-body {
+    flex: 1;
+    padding: 1rem;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.ckeditor-container .cke {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container .cke_contents {
+    flex: 1 !important;
+    min-height: 0 !important;
+}
+
+.ckeditor-container .cke_inner {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container .cke_wysiwyg_div {
+    min-height: 100% !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .create-post-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .post-form-container {
+        padding: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+    
+    .ckeditor-modal-content {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0 !important;
+    }
+    
+    .ckeditor-modal-header {
+        border-radius: 0;
+    }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
+<script>
+// CKEditor Modal - Full Page Popup (same as create_post.html)
+(function() {
+    const richTextFields = {
+        'description': 'Description'
+    };
+    
+    let ckeditorLoaded = false;
+    let currentModal = null;
+    let currentEditor = null;
+    let currentTextarea = null;
+    let originalContent = '';
+    
+    function loadCKEditor(callback) {
+        if (typeof CKEDITOR !== 'undefined') {
+            ckeditorLoaded = true;
+            if (callback) callback();
+            return;
+        }
+        
+        if (ckeditorLoaded) {
+            if (callback) callback();
+            return;
+        }
+        
+        const cdnSources = [
+            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',
+            'https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.20.2/ckeditor.js',
+            'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js'
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript(index) {
+            if (index >= cdnSources.length) {
+                console.error('All CKEditor CDN sources failed');
+                alert('Failed to load editor. Please check your internet connection and refresh the page.');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = cdnSources[index];
+            script.onload = function() {
+                ckeditorLoaded = true;
+                console.log('CKEditor loaded successfully from:', cdnSources[index]);
+                if (callback) callback();
+            };
+            script.onerror = function() {
+                console.warn('Failed to load from:', cdnSources[index], 'trying next...');
+                currentIndex++;
+                tryLoadScript(currentIndex);
+            };
+            document.head.appendChild(script);
+        }
+        
+        tryLoadScript(0);
+    }
+    
+    function createModal(fieldId, fieldLabel) {
+        const modal = document.createElement('div');
+        modal.className = 'ckeditor-modal';
+        modal.id = 'ckeditor-modal-' + fieldId;
+        modal.innerHTML = `
+            <div class="ckeditor-modal-content">
+                <div class="ckeditor-modal-header">
+                    <h3 class="ckeditor-modal-title">Edit ${fieldLabel}</h3>
+                    <div class="ckeditor-modal-actions">
+                        <button type="button" class="ckeditor-close-btn" id="ckeditor-close-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Cancel
+                        </button>
+                        <button type="button" class="ckeditor-save-btn" id="ckeditor-save-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save
+                        </button>
+                    </div>
+                </div>
+                <div class="ckeditor-modal-body">
+                    <div class="ckeditor-container" id="ckeditor-container-${fieldId}">
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading editor...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        return modal;
+    }
+    
+    function showEditor(fieldId, fieldLabel) {
+        const textarea = document.getElementById(fieldId);
+        if (!textarea) {
+            console.error('Textarea not found:', fieldId);
+            return;
+        }
+        
+        originalContent = textarea.value;
+        currentTextarea = textarea;
+        
+        let modal = document.getElementById('ckeditor-modal-' + fieldId);
+        if (!modal) {
+            modal = createModal(fieldId, fieldLabel);
+        }
+        currentModal = modal;
+        
+        modal.classList.add('active');
+        
+        loadCKEditor(function() {
+            if (typeof CKEDITOR === 'undefined') {
+                console.error('CKEDITOR is still undefined');
+                return;
+            }
+            
+            const container = document.getElementById('ckeditor-container-' + fieldId);
+            if (!container) {
+                console.error('Container not found');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            const editorTextarea = document.createElement('textarea');
+            editorTextarea.id = 'ckeditor-textarea-' + fieldId;
+            editorTextarea.value = originalContent;
+            container.appendChild(editorTextarea);
+            
+            try {
+                const modalBody = container.closest('.ckeditor-modal-body');
+                const modalContent = container.closest('.ckeditor-modal-content');
+                const headerHeight = modalContent ? modalContent.querySelector('.ckeditor-modal-header').offsetHeight : 80;
+                const availableHeight = modalBody ? (modalBody.offsetHeight - 20) : window.innerHeight - headerHeight - 40;
+                
+                currentEditor = CKEDITOR.replace(editorTextarea, {
+                    toolbar: 'Full',
+                    height: availableHeight + 'px',
+                    width: '100%',
+                    removePlugins: 'elementspath',
+                    resize_enabled: false
+                });
+                
+                currentEditor.on('instanceReady', function() {
+                    const editorInstance = this;
+                    const editorElement = editorInstance.container;
+                    const editorInner = editorElement.findOne('.cke_inner');
+                    const editorContents = editorElement.findOne('.cke_contents');
+                    
+                    if (editorInner) {
+                        editorInner.setStyle('height', '100%');
+                        editorInner.setStyle('display', 'flex');
+                        editorInner.setStyle('flex-direction', 'column');
+                    }
+                    
+                    if (editorContents) {
+                        editorContents.setStyle('flex', '1');
+                        editorContents.setStyle('min-height', '0');
+                    }
+                    
+                    setTimeout(function() {
+                        if (modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            editorInstance.resize('100%', newHeight + 'px');
+                        }
+                    }, 100);
+                });
+                
+                let resizeTimeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(function() {
+                        if (currentEditor && modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            currentEditor.resize('100%', newHeight + 'px');
+                        }
+                    }, 250);
+                });
+            } catch (e) {
+                console.error('Error initializing CKEditor:', e);
+            }
+        });
+        
+        const closeBtn = document.getElementById('ckeditor-close-' + fieldId);
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                closeEditor(false);
+            };
+        }
+        
+        const saveBtn = document.getElementById('ckeditor-save-' + fieldId);
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                closeEditor(true);
+            };
+        }
+        
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeEditor(false);
+            }
+        };
+        
+        const escapeHandler = function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeEditor(false);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+    
+    function closeEditor(save) {
+        if (currentModal) {
+            if (save && currentEditor) {
+                currentEditor.updateElement();
+                const editorTextarea = document.getElementById(currentEditor.element.$.id);
+                if (editorTextarea && currentTextarea) {
+                    currentTextarea.value = editorTextarea.value;
+                }
+            } else if (!save && currentTextarea) {
+                currentTextarea.value = originalContent;
+            }
+            
+            if (currentEditor) {
+                try {
+                    currentEditor.destroy();
+                } catch (e) {
+                    console.error('Error destroying editor:', e);
+                }
+                currentEditor = null;
+            }
+            
+            currentModal.classList.remove('active');
+            
+            const container = currentModal.querySelector('.ckeditor-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            currentModal = null;
+            currentTextarea = null;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        Object.keys(richTextFields).forEach(function(fieldId) {
+            const textarea = document.getElementById(fieldId);
+            if (textarea) {
+                textarea.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showEditor(fieldId, richTextFields[fieldId]);
+                });
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}
+

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Post - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="delete-post-page">
+        <div class="page-header">
+            <a href="{% url 'clubs:manage_posts' club.pk %}" class="back-link">← Back to Posts</a>
+            <h1>Delete Post</h1>
+        </div>
+        
+        <div class="delete-confirmation-card">
+            <h2>Are you sure you want to delete this post?</h2>
+            
+            <div class="post-details">
+                <div class="detail-item">
+                    <span class="detail-label">Club:</span>
+                    <span class="detail-value">{{ club.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Title:</span>
+                    <span class="detail-value">{{ post.title }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Published:</span>
+                    <span class="detail-value">{{ post.publish_date|date:"M d, Y" }}</span>
+                </div>
+                {% if post.is_pinned %}
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value pinned-badge">📌 Pinned</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <form method="post" class="delete-form">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="delete-btn">Yes, Delete</button>
+                    <a href="{% url 'clubs:manage_posts' club.pk %}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.delete-post-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.delete-confirmation-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2.5rem;
+    border: 1px solid var(--border-color);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.delete-confirmation-card h2 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin: 0 0 2rem 0;
+    text-align: center;
+}
+
+.post-details {
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.pinned-badge {
+    color: var(--color-primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.delete-btn {
+    padding: 0.75rem 2rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    padding: 0.75rem 2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .delete-post-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .delete-confirmation-card {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .delete-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

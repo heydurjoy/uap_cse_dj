@@ -61,6 +61,15 @@ class AllowedEmail(models.Model):
         help_text="When this email was added to allowed list"
     )
     
+    created_by = models.ForeignKey(
+        'BaseUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_allowed_emails',
+        help_text="The user who created this allowed email"
+    )
+    
     blocked_at = models.DateTimeField(
         null=True,
         blank=True,

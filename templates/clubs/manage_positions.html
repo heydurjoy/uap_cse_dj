@@ -1,0 +1,1011 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Positions - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-positions-page">
+        <div class="page-header">
+            <a href="{% url 'clubs:manage_clubs' %}" class="back-link">← Back to Clubs</a>
+            <h1>Manage Positions: {{ club.name }}</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Filters and Actions -->
+        <div class="positions-toolbar">
+            <div class="toolbar-left">
+                <form method="get" class="filter-form">
+                    <select name="year" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Years</option>
+                        {% for year in year_choices %}
+                        <option value="{{ year }}" {% if year_filter == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="semester" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Semesters</option>
+                        {% for code, display in SEMESTER_CHOICES %}
+                        <option value="{{ code }}" {% if semester_filter == code %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <a href="{% url 'clubs:manage_positions' club.pk %}" class="clear-btn">Clear Filters</a>
+                </form>
+            </div>
+            <div class="toolbar-right">
+                <a href="{% url 'clubs:manage_allowed_emails' club.pk %}" class="action-btn" title="Manage Members">
+                    👥 Manage Members
+                </a>
+                <button type="button" class="action-btn success" onclick="showAddPositionForm()">+ Add Position</button>
+            </div>
+        </div>
+        
+        <!-- Add Position Form (Hidden by default) -->
+        <div class="add-position-form-container" id="addPositionForm" style="display: none;">
+            <div class="form-card">
+                <h3>Add New Position</h3>
+                <form method="post" action="{% url 'clubs:add_position' club.pk %}">
+                    {% csrf_token %}
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="position_title">Position Title *</label>
+                            <input type="text" name="position_title" id="position_title" required 
+                                   placeholder="e.g., Vice President, Secretary" maxlength="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="academic_year">Academic Year *</label>
+                            <select name="academic_year" id="academic_year" required>
+                                <option value="">Select Year</option>
+                                {% for year in year_choices %}
+                                <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="semester">Semester *</label>
+                            <select name="semester" id="semester" required>
+                                <option value="">Select Semester</option>
+                                {% for code, display in SEMESTER_CHOICES %}
+                                <option value="{{ code }}">{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="person_type">Person Type *</label>
+                            <select name="person_type" id="person_type" required onchange="togglePersonSelect()">
+                                <option value="">Select Type</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="club_member">Club Member</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="facultyGroup" style="display: none;">
+                            <label for="faculty">Select Faculty *</label>
+                            <select name="faculty" id="faculty">
+                                <option value="">-- Select Faculty --</option>
+                                {% for faculty in faculties %}
+                                <option value="{{ faculty.pk }}">{{ faculty.name }} {% if faculty.designation %}({{ faculty.designation }}){% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="clubMemberGroup" style="display: none;">
+                            <label for="club_member">Select Club Member</label>
+                            <select name="club_member" id="club_member" onchange="toggleEmailInput()">
+                                <option value="">-- Select Club Member --</option>
+                                {% for member in club_members %}
+                                <option value="{{ member.pk }}">{{ member.name }} {% if member.student_id %}({{ member.student_id }}){% endif %}</option>
+                                {% endfor %}
+                                <option value="new">➕ Can't find a member? Allow him to sign up</option>
+                            </select>
+                        </div>
+                        
+                        <div id="emailGroup" style="display: none;">
+                            <div class="form-group">
+                                <label for="new_member_email">Email Address *</label>
+                                <input type="email" name="new_member_email" id="new_member_email" 
+                                       placeholder="example@email.com" 
+                                       maxlength="255">
+                                <small class="form-help">Enter the email address. A dummy club member will be created with this email. The member can sign up later to access their account. If the member already exists, they should reset their password instead.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">Add Position</button>
+                        <button type="button" class="cancel-btn" onclick="hideAddPositionForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Hidden CSRF token for JavaScript -->
+        {% csrf_token %}
+        
+        <!-- Positions Table -->
+        <div class="positions-table-container">
+            {% if positions %}
+            {% regroup positions by academic_year as positions_by_year %}
+            {% for year_group in positions_by_year %}
+                {% regroup year_group.list by semester as positions_by_semester %}
+                {% for semester_group in positions_by_semester %}
+                    <div class="position-group" data-year="{{ year_group.grouper }}" data-semester="{{ semester_group.grouper }}">
+                        <h3 class="group-header">{{ year_group.grouper }} - {{ semester_group.grouper|title }}</h3>
+                        <table class="positions-table sortable-table">
+                            <thead>
+                                <tr>
+                                    <th class="drag-handle-col"></th>
+                                    <th>Position</th>
+                                    <th>Person</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="sortable-tbody" data-year="{{ year_group.grouper }}" data-semester="{{ semester_group.grouper }}">
+                                {% for position in semester_group.list %}
+                                <tr class="position-row" data-position-id="{{ position.pk }}" data-year="{{ year_group.grouper }}" data-semester="{{ semester_group.grouper }}">
+                                    <td class="drag-handle">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="9" y1="5" x2="9" y2="19"></line>
+                                            <line x1="15" y1="5" x2="15" y2="19"></line>
+                                        </svg>
+                                    </td>
+                                    <td><strong>{{ position.position_title }}</strong></td>
+                                    <td>{{ position.get_person_name }}</td>
+                                    <td>
+                                        <span class="type-badge type-{{ position.get_person_type }}">
+                                            {{ position.get_person_type|title }}
+                                        </span>
+                                    </td>
+                                    <td class="actions-col">
+                                        <div class="action-buttons">
+                                            <a href="{% url 'clubs:edit_position' club.pk position.pk %}" class="action-icon-btn edit-icon-btn" title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a href="{% url 'clubs:delete_position' club.pk position.pk %}" class="action-icon-btn delete-icon-btn" title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% else %}
+            <div class="no-positions-message">
+                <p>No positions found. {% if year_filter or semester_filter %}Try clearing the filters.{% else %}Add a position to get started.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-positions-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.positions-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.filter-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.clear-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.action-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn.success {
+    background: var(--color-primary);
+    color: white;
+}
+
+.action-btn.success:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+.action-btn:not(.success) {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.action-btn:not(.success):hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.add-position-form-container {
+    margin-bottom: 2rem;
+}
+
+.form-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-card h3 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    font-weight: 700;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-group input[type="email"] {
+    width: 100%;
+}
+
+.form-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+#emailGroup {
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+    margin-top: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.submit-btn {
+    padding: 0.75rem 2rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    padding: 0.75rem 2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+    transform: translateY(-2px);
+}
+
+.positions-table-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.position-group {
+    margin-bottom: 2rem;
+}
+
+.position-group:last-child {
+    margin-bottom: 0;
+}
+
+.group-header {
+    font-size: 1.2rem;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.positions-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.positions-table thead {
+    background: var(--bg-tertiary);
+}
+
+.positions-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.drag-handle-col {
+    width: 40px;
+    text-align: center;
+}
+
+.drag-handle {
+    cursor: move;
+    cursor: grab;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.drag-handle:hover {
+    color: var(--color-primary);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.position-row {
+    cursor: move;
+    cursor: grab;
+}
+
+.position-row:active {
+    cursor: grabbing;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: var(--bg-tertiary);
+}
+
+.sortable-chosen {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-primary));
+}
+
+.sortable-drag {
+    opacity: 0.8;
+}
+
+.drag-handle-col {
+    width: 40px;
+    text-align: center;
+}
+
+.drag-handle {
+    cursor: move;
+    cursor: grab;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.drag-handle:hover {
+    color: var(--color-primary);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.position-row {
+    cursor: move;
+    cursor: grab;
+}
+
+.position-row:active {
+    cursor: grabbing;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: var(--bg-tertiary);
+}
+
+.sortable-chosen {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-primary));
+}
+
+.sortable-drag {
+    opacity: 0.8;
+}
+
+.positions-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.positions-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.positions-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.type-badge.type-faculty {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+}
+
+.type-badge.type-club_member {
+    background: color-mix(in srgb, #28a745 15%, transparent);
+    color: #28a745;
+}
+
+.actions-col {
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.action-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    background: transparent;
+}
+
+.edit-icon-btn {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+.edit-icon-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.delete-icon-btn {
+    color: #dc3545;
+    background: color-mix(in srgb, #dc3545 15%, transparent);
+}
+
+.delete-icon-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.no-positions-message {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .manage-positions-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .positions-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-left, .toolbar-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .filter-select, .clear-btn, .action-btn {
+        width: 100%;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .positions-table {
+        font-size: 0.85rem;
+    }
+    
+    .positions-table th,
+    .positions-table td {
+        padding: 0.6rem 0.5rem;
+    }
+}
+</style>
+
+<!-- SortableJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+function showAddPositionForm() {
+    document.getElementById('addPositionForm').style.display = 'block';
+    document.getElementById('addPositionForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideAddPositionForm() {
+    document.getElementById('addPositionForm').style.display = 'none';
+    // Reset form
+    document.querySelector('#addPositionForm form').reset();
+    document.getElementById('facultyGroup').style.display = 'none';
+    document.getElementById('clubMemberGroup').style.display = 'none';
+    document.getElementById('faculty').required = false;
+    document.getElementById('club_member').required = false;
+}
+
+function togglePersonSelect() {
+    const personType = document.getElementById('person_type').value;
+    const facultyGroup = document.getElementById('facultyGroup');
+    const clubMemberGroup = document.getElementById('clubMemberGroup');
+    const emailGroup = document.getElementById('emailGroup');
+    const facultySelect = document.getElementById('faculty');
+    const clubMemberSelect = document.getElementById('club_member');
+    const emailInput = document.getElementById('new_member_email');
+    
+    if (personType === 'faculty') {
+        facultyGroup.style.display = 'block';
+        clubMemberGroup.style.display = 'none';
+        emailGroup.style.display = 'none';
+        facultySelect.required = true;
+        clubMemberSelect.required = false;
+        emailInput.required = false;
+        clubMemberSelect.value = '';
+        emailInput.value = '';
+    } else if (personType === 'club_member') {
+        facultyGroup.style.display = 'none';
+        clubMemberGroup.style.display = 'block';
+        facultySelect.required = false;
+        facultySelect.value = '';
+        toggleEmailInput(); // Check if "new" is selected
+    } else {
+        facultyGroup.style.display = 'none';
+        clubMemberGroup.style.display = 'none';
+        emailGroup.style.display = 'none';
+        facultySelect.required = false;
+        clubMemberSelect.required = false;
+        emailInput.required = false;
+        facultySelect.value = '';
+        clubMemberSelect.value = '';
+        emailInput.value = '';
+    }
+}
+
+function toggleEmailInput() {
+    const clubMemberSelect = document.getElementById('club_member');
+    const emailGroup = document.getElementById('emailGroup');
+    const emailInput = document.getElementById('new_member_email');
+    
+    if (clubMemberSelect.value === 'new') {
+        emailGroup.style.display = 'block';
+        emailInput.required = true;
+        clubMemberSelect.removeAttribute('required');
+        // Change name so "new" value doesn't get submitted
+        clubMemberSelect.name = 'club_member_temp';
+    } else {
+        emailGroup.style.display = 'none';
+        emailInput.required = false;
+        emailInput.value = '';
+        // Restore the name attribute
+        clubMemberSelect.name = 'club_member';
+        if (document.getElementById('person_type').value === 'club_member') {
+            clubMemberSelect.required = true;
+        }
+    }
+}
+
+// Initialize SortableJS when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit to ensure everything is loaded
+    setTimeout(function() {
+        if (typeof Sortable === 'undefined') {
+            console.error('SortableJS not loaded');
+            showNotification('Drag and drop library failed to load. Please refresh the page.', 'error');
+            return;
+        }
+        initializeSortable();
+    }, 200);
+});
+
+function initializeSortable() {
+    const sortableTables = document.querySelectorAll('.sortable-tbody');
+    console.log('Found', sortableTables.length, 'sortable tables');
+    
+    sortableTables.forEach(function(tbody) {
+        const year = tbody.getAttribute('data-year');
+        const semester = tbody.getAttribute('data-semester');
+        console.log('Initializing sortable for', year, semester);
+        
+        if (typeof Sortable === 'undefined') {
+            console.error('Sortable is not defined');
+            return;
+        }
+        
+        try {
+            new Sortable(tbody, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onEnd: function(evt) {
+                    console.log('Drag ended');
+                    // Get all position IDs in the new order
+                    const rows = Array.from(tbody.querySelectorAll('.position-row'));
+                    const positionIds = rows.map(row => {
+                        const id = row.getAttribute('data-position-id');
+                        return parseInt(id);
+                    });
+                    
+                    console.log('New order:', positionIds);
+                    
+                    // Auto-save the new order
+                    updatePositionOrder({{ club.pk }}, year, semester, positionIds);
+                }
+            });
+            console.log('Sortable initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Sortable:', error);
+        }
+    });
+}
+
+function updatePositionOrder(clubId, academicYear, semester, positionIds) {
+    // Get CSRF token from cookie or hidden input
+    let csrftoken = getCookie('csrftoken');
+    if (!csrftoken) {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+            csrftoken = csrfInput.value;
+        }
+    }
+    
+    if (!csrftoken) {
+        console.error('CSRF token not found');
+        showNotification('Error: CSRF token not found', 'error');
+        return;
+    }
+    
+    console.log('Updating order:', {
+        clubId: clubId,
+        academicYear: academicYear,
+        semester: semester,
+        positionIds: positionIds
+    });
+    
+    fetch(`/clubs/${clubId}/positions/update-order/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            position_ids: positionIds,
+            academic_year: parseInt(academicYear),
+            semester: semester
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Server error');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            showNotification('Order updated successfully', 'success');
+        } else {
+            showNotification('Error: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating order: ' + error.message, 'error');
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Simple notification function
+function showNotification(message, type) {
+    // Create a simple notification element
+    const notification = document.createElement('div');
+    notification.className = `drag-notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+</script>
+
+<style>
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+</style>
+{% endblock %}
+

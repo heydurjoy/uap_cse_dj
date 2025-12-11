@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Position - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-position-page">
+        <div class="page-header">
+            <a href="{% url 'clubs:manage_positions' club.pk %}" class="back-link">← Back to Positions</a>
+            <h1>Edit Position: {{ club.name }}</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Edit Form -->
+        <div class="form-card">
+            <h3>Edit Position</h3>
+            <form method="post" action="{% url 'clubs:edit_position' club.pk position.pk %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="position_title">Position Title *</label>
+                        <input type="text" name="position_title" id="position_title" required 
+                               placeholder="e.g., Vice President, Secretary" maxlength="100"
+                               value="{{ position.position_title }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="academic_year">Academic Year *</label>
+                        <select name="academic_year" id="academic_year" required>
+                            <option value="">Select Year</option>
+                            {% for year in year_choices %}
+                            <option value="{{ year }}" {% if year == position.academic_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="semester">Semester *</label>
+                        <select name="semester" id="semester" required>
+                            <option value="">Select Semester</option>
+                            {% for code, display in SEMESTER_CHOICES %}
+                            <option value="{{ code }}" {% if code == position.semester %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="person_type">Person Type *</label>
+                        <select name="person_type" id="person_type" required onchange="togglePersonSelect()">
+                            <option value="">Select Type</option>
+                            <option value="faculty" {% if position.faculty %}selected{% endif %}>Faculty</option>
+                            <option value="club_member" {% if position.club_member %}selected{% endif %}>Club Member</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="facultyGroup" style="display: {% if position.faculty %}block{% else %}none{% endif %};">
+                        <label for="faculty">Select Faculty *</label>
+                        <select name="faculty" id="faculty">
+                            <option value="">-- Select Faculty --</option>
+                            {% for faculty in faculties %}
+                            <option value="{{ faculty.pk }}" {% if position.faculty and position.faculty.pk == faculty.pk %}selected{% endif %}>
+                                {{ faculty.name }} {% if faculty.designation %}({{ faculty.designation }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="clubMemberGroup" style="display: {% if position.club_member %}block{% else %}none{% endif %};">
+                        <label for="club_member">Select Club Member *</label>
+                        <select name="club_member" id="club_member">
+                            <option value="">-- Select Club Member --</option>
+                            {% for member in club_members %}
+                            <option value="{{ member.pk }}" {% if position.club_member and position.club_member.pk == member.pk %}selected{% endif %}>
+                                {{ member.name }} {% if member.student_id %}({{ member.student_id }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Update Position</button>
+                    <a href="{% url 'clubs:manage_positions' club.pk %}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.edit-position-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.form-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-card h3 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    font-weight: 700;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.submit-btn {
+    padding: 0.75rem 2rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    padding: 0.75rem 2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-btn:hover {
+    background: var(--border-color);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .edit-position-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn, .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+function togglePersonSelect() {
+    const personType = document.getElementById('person_type').value;
+    const facultyGroup = document.getElementById('facultyGroup');
+    const clubMemberGroup = document.getElementById('clubMemberGroup');
+    const facultySelect = document.getElementById('faculty');
+    const clubMemberSelect = document.getElementById('club_member');
+    
+    if (personType === 'faculty') {
+        facultyGroup.style.display = 'block';
+        clubMemberGroup.style.display = 'none';
+        facultySelect.required = true;
+        clubMemberSelect.required = false;
+        clubMemberSelect.value = '';
+    } else if (personType === 'club_member') {
+        facultyGroup.style.display = 'none';
+        clubMemberGroup.style.display = 'block';
+        facultySelect.required = false;
+        clubMemberSelect.required = true;
+        facultySelect.value = '';
+    } else {
+        facultyGroup.style.display = 'none';
+        clubMemberGroup.style.display = 'none';
+        facultySelect.required = false;
+        clubMemberSelect.required = false;
+        facultySelect.value = '';
+        clubMemberSelect.value = '';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    togglePersonSelect();
+});
+</script>
+{% endblock %}
+
