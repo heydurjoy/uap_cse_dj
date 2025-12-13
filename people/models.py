@@ -406,6 +406,12 @@ class Faculty(models.Model):
         help_text="Date when faculty joined"
     )
     
+    last_office_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Last date of service at UAP. If set, faculty will be shown in Legacy Faculty section"
+    )
+    
     google_scholar_url = models.URLField(
         max_length=255,
         blank=True,
@@ -493,6 +499,13 @@ class Faculty(models.Model):
         null=True,
         blank=True,
         help_text="Whether this faculty member is the MCSE admission coordinator"
+    )
+    
+    is_on_study_leave = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is currently on study leave"
     )
     
     cv = models.FileField(

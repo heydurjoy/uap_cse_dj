@@ -79,15 +79,19 @@
                         <h2 class="result-title">Slot {{ result.slot }}</h2>
                         <p class="result-meta">
                             <span>Published: {{ result.publish_date|date:"F d, Y" }}</span>
-                            {% if result.created_by %}
+                            {% if result.created_by_name or result.created_by %}
                             <span>•</span>
                             <span>
-                                {% if result.created_by.user_type == 'faculty' and result.created_by.faculty_profile %}
-                                    {{ result.created_by.faculty_profile.name|default:result.created_by.email }}
-                                {% elif result.created_by.user_type == 'officer' and result.created_by.officer_profile %}
-                                    {{ result.created_by.officer_profile.name|default:result.created_by.email }}
+                                {% if result.created_by %}
+                                    {% if result.created_by.user_type == 'faculty' and result.created_by.faculty_profile %}
+                                        {{ result.created_by.faculty_profile.name|default:result.created_by.email }}
+                                    {% elif result.created_by.user_type == 'officer' and result.created_by.officer_profile %}
+                                        {{ result.created_by.officer_profile.name|default:result.created_by.email }}
+                                    {% else %}
+                                        {{ result.created_by.email }}
+                                    {% endif %}
                                 {% else %}
-                                    {{ result.created_by.email }}
+                                    {{ result.created_by_name|default:"Unknown User" }}
                                 {% endif %}
                             </span>
                             {% endif %}

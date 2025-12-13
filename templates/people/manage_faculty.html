@@ -1,0 +1,1073 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Faculty - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-faculty-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Faculty</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Tabs -->
+        <div class="faculty-tabs">
+            <a href="?tab=active{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by != 'sl' %}&sort={{ sort_by }}{% endif %}" 
+               class="tab-link {% if active_tab == 'active' %}active{% endif %}">
+                Active Faculty ({{ faculties_active|length }})
+            </a>
+            <a href="?tab=leave{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by != 'sl' %}&sort={{ sort_by }}{% endif %}" 
+               class="tab-link {% if active_tab == 'leave' %}active{% endif %}">
+                On Leave ({{ faculties_on_leave|length }})
+            </a>
+            <a href="?tab=former{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by != 'sl' %}&sort={{ sort_by }}{% endif %}" 
+               class="tab-link {% if active_tab == 'former' %}active{% endif %}">
+                Former Faculty ({{ former_faculties|length }})
+            </a>
+        </div>
+        
+        <!-- Toolbar: Search, Sort, Create, Bulk Actions -->
+        <div class="faculty-toolbar">
+            <div class="toolbar-left">
+                <div class="search-form">
+                    <input type="text" name="search" id="search-input" placeholder="Search by name, designation, email, or phone..." value="{{ search_query }}" class="search-input">
+                    <div class="search-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </div>
+                    {% if search_query %}
+                    <a href="?tab={{ active_tab }}{% if sort_by != 'sl' %}&sort={{ sort_by }}{% endif %}" class="clear-search-btn" title="Clear search">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <form method="get" class="sort-form">
+                    <input type="hidden" name="tab" value="{{ active_tab }}">
+                    {% if search_query %}
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                    {% endif %}
+                    <select name="sort" id="sort-select" class="sort-select" onchange="this.form.submit()">
+                        <option value="sl" {% if sort_by == 'sl' %}selected{% endif %}>Sort by Serial</option>
+                        <option value="designation" {% if sort_by == 'designation' %}selected{% endif %}>Sort by Designation</option>
+                    </select>
+                </form>
+            </div>
+            
+            <div class="toolbar-right">
+                <a href="{% url 'people:create_faculty' %}" class="btn-create">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Create Faculty
+                </a>
+                <button type="button" id="select-all-btn" class="btn-select-all">Select All</button>
+                <button type="button" id="delete-selected-btn" class="btn-delete-selected" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete Selected
+                </button>
+            </div>
+        </div>
+        
+        <div class="faculty-list-container">
+            {% if faculties %}
+            <div class="info-note" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid var(--color-primary);">
+                <p style="margin: 0; color: var(--text-primary); font-size: 0.9rem;">
+                    <strong>💡 Tip:</strong> Drag faculty members up or down using the handle icon to change their display order. Changes are saved automatically.
+                </p>
+            </div>
+            <table class="faculty-table sortable-table">
+                <thead>
+                    <tr>
+                        <th class="checkbox-col">
+                            <input type="checkbox" id="select-all-checkbox" title="Select All">
+                        </th>
+                        <th class="drag-handle-col"></th>
+                        <th>Serial</th>
+                        <th>Name</th>
+                        <th>Designation</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="sortable-tbody">
+                    {% for faculty in faculties %}
+                    <tr class="faculty-row" data-faculty-id="{{ faculty.pk }}">
+                        <td class="checkbox-col">
+                            <input type="checkbox" class="faculty-checkbox" value="{{ faculty.pk }}" data-faculty-name="{{ faculty.name }}">
+                        </td>
+                        <td class="drag-handle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="9" y1="5" x2="9" y2="19"></line>
+                                <line x1="15" y1="5" x2="15" y2="19"></line>
+                            </svg>
+                        </td>
+                        <td><strong>{{ faculty.sl|default:"-" }}</strong></td>
+                        <td><strong>{{ faculty.name }}</strong></td>
+                        <td>{{ faculty.designation|default:"-" }}</td>
+                        <td>{{ faculty.base_user.email|default:"-" }}</td>
+                        <td>{{ faculty.phone|default:"-" }}</td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <a href="{% url 'people:edit_faculty' faculty.pk %}" class="action-icon-btn edit-icon-btn" title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'people:faculty_detail' faculty.pk %}" class="action-icon-btn view-icon-btn" title="View">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-faculty-message">
+                <p>{% if search_query %}No faculty members found matching "{{ search_query }}".{% else %}No faculty members found.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<!-- Hidden CSRF token for JavaScript -->
+{% csrf_token %}
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.manage-faculty-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.faculty-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.faculty-table thead {
+    background: var(--bg-tertiary);
+}
+
+.faculty-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.faculty-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.faculty-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.faculty-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.checkbox-col {
+    width: 40px;
+    text-align: center;
+}
+
+.checkbox-col input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.drag-handle-col {
+    width: 40px;
+    text-align: center;
+}
+
+.drag-handle {
+    cursor: move;
+    cursor: grab;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.drag-handle:hover {
+    color: var(--color-primary);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.faculty-row {
+    cursor: move;
+    cursor: grab;
+}
+
+.faculty-row:active {
+    cursor: grabbing;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: var(--bg-tertiary);
+}
+
+.sortable-chosen {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-primary));
+}
+
+.sortable-drag {
+    opacity: 0.8;
+}
+
+.actions-col {
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.action-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    background: transparent;
+}
+
+.view-icon-btn {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+
+.view-icon-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.edit-icon-btn {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+.edit-icon-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.no-faculty-message {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Toolbar Styles */
+.faculty-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: 'Lexend', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.clear-search-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.sort-form {
+    display: flex;
+    align-items: center;
+}
+
+.sort-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: 'Lexend', sans-serif;
+    cursor: pointer;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.btn-create,
+.btn-select-all,
+.btn-delete-selected {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Lexend', sans-serif;
+    text-decoration: none;
+}
+
+.btn-create {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-create:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.btn-select-all {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-select-all:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-delete-selected {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-delete-selected:hover:not(:disabled) {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-delete-selected:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Tabs Styles */
+.faculty-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0;
+}
+
+.tab-link {
+    padding: 0.875rem 1.75rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: -2px;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+    font-family: 'Lexend', sans-serif;
+}
+
+.tab-link:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.tab-link.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+}
+
+/* Toast Notification Styles */
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 8px 25px var(--shadow);
+    z-index: 10000;
+    min-width: 300px;
+    max-width: 400px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-success {
+    border-left: 4px solid var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+}
+
+.toast-error {
+    border-left: 4px solid #dc3545;
+    background: color-mix(in srgb, #dc3545 5%, var(--bg-primary));
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.toast-icon {
+    font-size: 1.25rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+    color: var(--color-primary);
+}
+
+.toast-error .toast-icon {
+    color: #dc3545;
+}
+
+.toast-message {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .manage-faculty-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .faculty-table {
+        font-size: 0.85rem;
+    }
+    
+    .faculty-table th,
+    .faculty-table td {
+        padding: 0.6rem 0.5rem;
+    }
+    
+    .toast-notification {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        transform: translateX(100%);
+    }
+    
+    .toast-notification.show {
+        transform: translateX(0);
+    }
+    
+    .faculty-tabs {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .tab-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .faculty-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-left,
+    .toolbar-right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+<!-- SortableJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+// Initialize SortableJS when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        if (typeof Sortable === 'undefined') {
+            console.error('SortableJS not loaded');
+            showToast('Drag and drop library failed to load. Please refresh the page.', 'error');
+            return;
+        }
+        initializeSortable();
+    }, 200);
+});
+
+function initializeSortable() {
+    const sortableTbody = document.querySelector('.sortable-tbody');
+    
+    if (!sortableTbody) {
+        console.log('No sortable tbody found');
+        return;
+    }
+    
+    if (typeof Sortable === 'undefined') {
+        console.error('Sortable is not defined');
+        return;
+    }
+    
+    try {
+        new Sortable(sortableTbody, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            onEnd: function(evt) {
+                console.log('Drag ended');
+                // Get all faculty IDs in the new order
+                const rows = Array.from(sortableTbody.querySelectorAll('.faculty-row'));
+                const facultyIds = rows.map(row => {
+                    const id = row.getAttribute('data-faculty-id');
+                    return parseInt(id);
+                });
+                
+                console.log('New order:', facultyIds);
+                
+                // Auto-save the new order
+                updateFacultyOrder(facultyIds);
+            }
+        });
+        console.log('Sortable initialized successfully');
+    } catch (error) {
+        console.error('Error initializing Sortable:', error);
+    }
+}
+
+function updateFacultyOrder(facultyIds) {
+    // Get CSRF token from cookie or hidden input
+    let csrftoken = getCookie('csrftoken');
+    if (!csrftoken) {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+            csrftoken = csrfInput.value;
+        }
+    }
+    
+    if (!csrftoken) {
+        console.error('CSRF token not found');
+        showToast('Error: CSRF token not found', 'error');
+        return;
+    }
+    
+    console.log('Updating order:', facultyIds);
+    
+    fetch('{% url "people:update_faculty_order" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            faculty_ids: facultyIds
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Server error');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            showToast('Serial numbers updated successfully!', 'success');
+            // Update serial numbers in the table
+            const rows = document.querySelectorAll('.faculty-row');
+            rows.forEach((row, index) => {
+                const serialCell = row.querySelector('td:nth-child(2)');
+                if (serialCell) {
+                    serialCell.innerHTML = '<strong>' + (index + 1) + '</strong>';
+                }
+            });
+        } else {
+            showToast('Error: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error updating order: ' + error.message, 'error');
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Floating Toast Notification Function
+function showToast(message, type = 'success') {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => toast.remove());
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    
+    // Icon based on type
+    const icon = type === 'success' ? '✓' : '✕';
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">${icon}</span>
+            <span class="toast-message">${message}</span>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Real-time search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchValue = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Debounce: wait 500ms after user stops typing
+            searchTimeout = setTimeout(function() {
+                const currentUrl = new URL(window.location.href);
+                const activeTab = currentUrl.searchParams.get('tab') || 'active';
+                const sortBy = currentUrl.searchParams.get('sort') || 'sl';
+                
+                // Build new URL
+                const params = new URLSearchParams();
+                params.set('tab', activeTab);
+                if (sortBy !== 'sl') {
+                    params.set('sort', sortBy);
+                }
+                if (searchValue) {
+                    params.set('search', searchValue);
+                }
+                
+                // Update URL and reload
+                window.location.href = '?' + params.toString();
+            }, 500);
+        });
+        
+        // Allow Enter key to search immediately (without debounce)
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                
+                const searchValue = this.value.trim();
+                const currentUrl = new URL(window.location.href);
+                const activeTab = currentUrl.searchParams.get('tab') || 'active';
+                const sortBy = currentUrl.searchParams.get('sort') || 'sl';
+                
+                // Build new URL
+                const params = new URLSearchParams();
+                params.set('tab', activeTab);
+                if (sortBy !== 'sl') {
+                    params.set('sort', sortBy);
+                }
+                if (searchValue) {
+                    params.set('search', searchValue);
+                }
+                
+                // Update URL and reload
+                window.location.href = '?' + params.toString();
+            }
+        });
+    }
+});
+
+// Bulk delete functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    const facultyCheckboxes = document.querySelectorAll('.faculty-checkbox');
+    
+    // Select all checkbox
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            facultyCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateDeleteButton();
+        });
+    }
+    
+    // Select all button
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            const allChecked = Array.from(facultyCheckboxes).every(cb => cb.checked);
+            facultyCheckboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+            });
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = !allChecked;
+            }
+            updateDeleteButton();
+        });
+    }
+    
+    // Individual checkboxes
+    facultyCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateDeleteButton();
+        });
+    });
+    
+    // Delete selected button
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', function() {
+            const selectedIds = Array.from(facultyCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => parseInt(cb.value));
+            
+            if (selectedIds.length === 0) {
+                showToast('Please select at least one faculty member to delete.', 'error');
+                return;
+            }
+            
+            const selectedNames = Array.from(facultyCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.getAttribute('data-faculty-name'));
+            
+            if (!confirm(`Are you sure you want to delete ${selectedIds.length} faculty member(s)?\n\n${selectedNames.join(', ')}\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            // Get CSRF token
+            let csrftoken = getCookie('csrftoken');
+            if (!csrftoken) {
+                const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrfInput) {
+                    csrftoken = csrfInput.value;
+                }
+            }
+            
+            fetch('{% url "people:bulk_delete_faculty" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    faculty_ids: selectedIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // Reload page after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showToast('Error: ' + (data.message || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error deleting faculty: ' + error.message, 'error');
+            });
+        });
+    }
+    
+    function updateSelectAllState() {
+        if (selectAllCheckbox && facultyCheckboxes.length > 0) {
+            const allChecked = Array.from(facultyCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(facultyCheckboxes).some(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+        }
+    }
+    
+    function updateDeleteButton() {
+        if (deleteSelectedBtn) {
+            const selectedCount = Array.from(facultyCheckboxes).filter(cb => cb.checked).length;
+            deleteSelectedBtn.disabled = selectedCount === 0;
+            if (selectedCount > 0) {
+                deleteSelectedBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete Selected (${selectedCount})
+                `;
+            } else {
+                deleteSelectedBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete Selected
+                `;
+            }
+        }
+    }
+    
+    // Initialize state
+    updateSelectAllState();
+    updateDeleteButton();
+});
+</script>
+{% endblock %}
+

@@ -1171,7 +1171,8 @@ const postsData = {
         'start_date_time': {% if post.start_date_time %}'{{ post.start_date_time|date:"F d, Y g:i A" }}'{% else %}null{% endif %},
         'end_date_time': {% if post.end_date_time %}'{{ post.end_date_time|date:"F d, Y g:i A" }}'{% else %}null{% endif %},
         'is_pinned': {{ post.is_pinned|yesno:"true,false" }},
-        'posted_by': {% if post.posted_by %}'{{ post.posted_by.email|escapejs }}'{% else %}null{% endif %}
+        'posted_by': {% if post.posted_by %}'{{ post.posted_by.email|escapejs }}'{% else %}null{% endif %},
+        'posted_by_name': {% if post.posted_by_name %}'{{ post.posted_by_name|escapejs }}'{% else %}null{% endif %}
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
 };

@@ -59,25 +59,29 @@
             </div>
             {% endif %}
             
-            {% if post.created_by %}
+            {% if post.created_by_name or post.created_by %}
             <div class="post-author">
                 <span class="author-label">Posted by:</span>
-                {% if post.created_by.user_type == 'faculty' and post.created_by.faculty_profile %}
-                    <a href="{% url 'people:faculty_detail' post.created_by.faculty_profile.pk %}" class="author-name">
-                        {% if post.created_by.faculty_profile.name %}{{ post.created_by.faculty_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
-                    </a>
-                {% elif post.created_by.user_type == 'officer' and post.created_by.officer_profile %}
-                    <a href="{% url 'people:officer_detail' post.created_by.officer_profile.pk %}" class="author-name">
-                        {% if post.created_by.officer_profile.name %}{{ post.created_by.officer_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
-                    </a>
-                {% elif post.created_by.user_type == 'staff' and post.created_by.staff_profile %}
-                    <span class="author-name">
-                        {% if post.created_by.staff_profile.name %}{{ post.created_by.staff_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
-                    </span>
+                {% if post.created_by %}
+                    {% if post.created_by.user_type == 'faculty' and post.created_by.faculty_profile %}
+                        <a href="{% url 'people:faculty_detail' post.created_by.faculty_profile.pk %}" class="author-name">
+                            {% if post.created_by.faculty_profile.name %}{{ post.created_by.faculty_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </a>
+                    {% elif post.created_by.user_type == 'officer' and post.created_by.officer_profile %}
+                        <a href="{% url 'people:officer_detail' post.created_by.officer_profile.pk %}" class="author-name">
+                            {% if post.created_by.officer_profile.name %}{{ post.created_by.officer_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </a>
+                    {% elif post.created_by.user_type == 'staff' and post.created_by.staff_profile %}
+                        <span class="author-name">
+                            {% if post.created_by.staff_profile.name %}{{ post.created_by.staff_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </span>
+                    {% else %}
+                        <span class="author-name">
+                            {% if post.created_by.first_name or post.created_by.last_name %}{{ post.created_by.get_full_name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </span>
+                    {% endif %}
                 {% else %}
-                    <span class="author-name">
-                        {% if post.created_by.first_name or post.created_by.last_name %}{{ post.created_by.get_full_name }}{% else %}{{ post.created_by.email }}{% endif %}
-                    </span>
+                    <span class="author-name">{{ post.created_by_name|default:"Unknown User" }}</span>
                 {% endif %}
             </div>
             {% endif %}

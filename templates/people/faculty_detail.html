@@ -119,9 +119,15 @@
                     </div>
                     <div class="service-duration-card">
                         <div class="service-duration-header">
-                            <span class="service-label">Serving UAP</span>
+                            <span class="service-label">{% if service_data.is_former %}Served UAP{% else %}Serving UAP{% endif %}</span>
                             {% if faculty.joining_date %}
-                            <span class="service-joining-date">Since {{ faculty.joining_date|date:"F Y" }}</span>
+                            <span class="service-joining-date">
+                                {% if service_data.is_former %}
+                                    {{ faculty.joining_date|date:"F Y" }} - {{ service_data.last_office_date|date:"F Y" }}
+                                {% else %}
+                                    Since {{ faculty.joining_date|date:"F Y" }}
+                                {% endif %}
+                            </span>
                             {% endif %}
                         </div>
                         <div class="service-duration-content">

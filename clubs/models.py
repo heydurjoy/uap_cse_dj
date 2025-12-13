@@ -291,6 +291,17 @@ class ClubPost(models.Model):
         related_name='posted_club_posts',
         help_text="The original user who created this post"
     )
+    posted_by_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Name of the user who posted this (preserved even if user is deleted)"
+    )
+    posted_by_email = models.EmailField(
+        blank=True,
+        null=True,
+        help_text="Email of the user who posted this (preserved even if user is deleted)"
+    )
     
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -323,6 +334,30 @@ class ClubPost(models.Model):
     
     def __str__(self):
         return f"{self.club.name} - {self.short_title}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-populate posted_by_name and posted_by_email when posted_by is set"""
+        if self.posted_by and not self.posted_by_name:
+            # Get the user's name based on their type
+            name = None
+            email = self.posted_by.email or ''
+            
+            if self.posted_by.user_type == 'faculty' and hasattr(self.posted_by, 'faculty_profile'):
+                name = self.posted_by.faculty_profile.name if self.posted_by.faculty_profile else None
+            elif self.posted_by.user_type == 'officer' and hasattr(self.posted_by, 'officer_profile'):
+                name = self.posted_by.officer_profile.name if self.posted_by.officer_profile else None
+            elif self.posted_by.user_type == 'club_member' and hasattr(self.posted_by, 'club_member_profile'):
+                name = self.posted_by.club_member_profile.name if self.posted_by.club_member_profile else None
+            elif self.posted_by.user_type == 'staff' and hasattr(self.posted_by, 'staff_profile'):
+                name = self.posted_by.staff_profile.name if self.posted_by.staff_profile else None
+            else:
+                # Fallback to full name or email
+                name = self.posted_by.get_full_name() or self.posted_by.email or ''
+            
+            self.posted_by_name = name or email
+            self.posted_by_email = email
+        
+        super().save(*args, **kwargs)
     
     def get_tags_list(self):
         """Helper method to return tags as a list"""

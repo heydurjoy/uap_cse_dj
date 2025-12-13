@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Faculty - {{ faculty.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+<link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-faculty-page">
+        <div class="page-header">
+            <a href="{% url 'people:manage_faculty' %}" class="back-link">← Back to Faculty Management</a>
+            <h1>Edit Faculty: {{ faculty.name }}</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="faculty-form-container">
+            <form method="post" enctype="multipart/form-data" class="faculty-form">
+                {% csrf_token %}
+                
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" name="name" id="name" maxlength="50" required value="{{ faculty.name }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="shortname">Short Name</label>
+                            <input type="text" name="shortname" id="shortname" maxlength="5" value="{{ faculty.shortname|default:'' }}" placeholder="e.g., DM">
+                            <small class="form-help">Short name or initials (max 5 characters)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="designation">Designation</label>
+                            <select name="designation" id="designation">
+                                <option value="">-- Select Designation --</option>
+                                {% for code, display in DESIGNATION_CHOICES %}
+                                <option value="{{ code }}" {% if faculty.designation == code %}selected{% endif %}>{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="text" name="phone" id="phone" maxlength="11" value="{{ faculty.phone|default:'' }}" placeholder="e.g., 01712345678">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="joining_date">Joining Date</label>
+                            <input type="date" name="joining_date" id="joining_date" value="{% if faculty.joining_date %}{{ faculty.joining_date|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="last_office_date">Last Office Date (Former Faculty)</label>
+                            <input type="date" name="last_office_date" id="last_office_date" value="{% if faculty.last_office_date %}{{ faculty.last_office_date|date:'Y-m-d' }}{% endif %}">
+                            <small class="form-help">If set, this faculty member will be moved to the Former Faculty section. Leave empty for active faculty.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bio">Bio (Max 92 characters)</label>
+                            <input type="text" name="bio" id="bio" maxlength="92" value="{{ faculty.bio|default:'' }}" placeholder="Short biography">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Picture Section -->
+                <div class="form-section">
+                    <h3>Profile Picture</h3>
+                    <div class="form-group">
+                        {% if faculty.profile_pic %}
+                        <div style="margin-bottom: 1rem;">
+                            <label>Current Picture:</label>
+                            <div style="margin-top: 0.5rem;">
+                                <img src="/media/{{ faculty.profile_pic.name }}" alt="{{ faculty.name }}" style="max-width: 200px; border-radius: 8px; border: 2px solid var(--border-color);">
+                            </div>
+                        </div>
+                        {% endif %}
+                        <label for="profile_pic">Upload New Picture (Optional)</label>
+                        <input type="file" name="profile_pic" id="profile_pic" accept="image/*">
+                        <small class="form-help">Image will be cropped to 1:1 aspect ratio (400x400)</small>
+                        {% if faculty.cropping %}
+                        <input type="hidden" name="cropping" value="{{ faculty.cropping }}">
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- About Section -->
+                <div class="form-section">
+                    <h3>About</h3>
+                    <div class="form-group">
+                        <label for="about">Detailed About Section</label>
+                        <textarea name="about" id="about" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if faculty.about %}{{ faculty.about }}{% endif %}</textarea>
+                        <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                    </div>
+                </div>
+                
+                <!-- Research Links Section -->
+                <div class="form-section">
+                    <h3>Research Links</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="google_scholar_url">Google Scholar URL</label>
+                            <input type="url" name="google_scholar_url" id="google_scholar_url" value="{{ faculty.google_scholar_url|default:'' }}" placeholder="https://scholar.google.com/...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="researchgate_url">ResearchGate URL</label>
+                            <input type="url" name="researchgate_url" id="researchgate_url" value="{{ faculty.researchgate_url|default:'' }}" placeholder="https://www.researchgate.net/...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="orcid_url">ORCID URL</label>
+                            <input type="url" name="orcid_url" id="orcid_url" value="{{ faculty.orcid_url|default:'' }}" placeholder="https://orcid.org/...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="scopus_url">Scopus URL</label>
+                            <input type="url" name="scopus_url" id="scopus_url" value="{{ faculty.scopus_url|default:'' }}" placeholder="https://www.scopus.com/...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="linkedin_url">LinkedIn URL</label>
+                            <input type="url" name="linkedin_url" id="linkedin_url" value="{{ faculty.linkedin_url|default:'' }}" placeholder="https://www.linkedin.com/...">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Research Information Section -->
+                <div class="form-section">
+                    <h3>Research Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="researches">Research Interests</label>
+                            <textarea name="researches" id="researches" rows="6" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if faculty.researches %}{{ faculty.researches }}{% endif %}</textarea>
+                            <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="citation">Total Citations</label>
+                            <input type="number" name="citation" id="citation" min="0" value="{{ faculty.citation|default:0 }}" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Routine Section -->
+                <div class="form-section">
+                    <h3>Routine</h3>
+                    <div class="form-group">
+                        <label for="routine">Faculty Routine</label>
+                        <textarea name="routine" id="routine" rows="6" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if faculty.routine %}{{ faculty.routine }}{% endif %}</textarea>
+                        <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                    </div>
+                </div>
+                
+                <!-- Special Roles Section -->
+                <div class="form-section">
+                    <h3>Special Roles</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_head" id="is_head" {% if faculty.is_head %}checked{% endif %}>
+                                <span>Head of Department</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_dept_proctor" id="is_dept_proctor" {% if faculty.is_dept_proctor %}checked{% endif %}>
+                                <span>Department Proctor</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_bsc_admission_coordinator" id="is_bsc_admission_coordinator" {% if faculty.is_bsc_admission_coordinator %}checked{% endif %}>
+                                <span>BSc Admission Coordinator</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_mcse_admission_coordinator" id="is_mcse_admission_coordinator" {% if faculty.is_mcse_admission_coordinator %}checked{% endif %}>
+                                <span>MCSE Admission Coordinator</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_on_study_leave" id="is_on_study_leave" {% if faculty.is_on_study_leave %}checked{% endif %}>
+                                <span>On Study Leave</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CV Section -->
+                <div class="form-section">
+                    <h3>CV/Resume</h3>
+                    <div class="form-group">
+                        {% if faculty.cv %}
+                        <div style="margin-bottom: 1rem;">
+                            <label>Current CV:</label>
+                            <div style="margin-top: 0.5rem;">
+                                <a href="/media/{{ faculty.cv.name }}" target="_blank" style="color: var(--color-primary); text-decoration: none; font-weight: 600;">
+                                    📄 View Current CV
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <label for="cv">Upload New CV (Optional)</label>
+                        <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx">
+                        <small class="form-help">Upload faculty CV/resume document (PDF, DOC, or DOCX)</small>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <a href="{% url 'people:manage_faculty' %}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.edit-faculty-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.faculty-form-container {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    flex-direction: row;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group input[type="file"],
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: 'Lexend', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.form-help {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.rich-text-field {
+    min-height: 200px;
+}
+
+.rich-text-textarea {
+    font-family: 'Lexend', sans-serif;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    font-family: 'Lexend', sans-serif;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .edit-faculty-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+</style>
+
+<!-- CKEditor for Rich Text Fields -->
+<script src="https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize CKEditor for rich text fields
+    const richTextFields = ['about', 'researches', 'routine'];
+    
+    richTextFields.forEach(function(fieldId) {
+        const textarea = document.getElementById(fieldId);
+        if (textarea) {
+            CKEDITOR.replace(fieldId, {
+                toolbar: 'full',
+                height: 300,
+                width: '100%',
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
+

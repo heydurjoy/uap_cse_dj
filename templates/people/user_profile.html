@@ -304,6 +304,17 @@
                     </div>
                 </a>
                 {% endif %}
+                
+                <!-- Manage Faculty (Power Users Only) -->
+                {% if user.is_power_user %}
+                <a href="{% url 'people:manage_faculty' %}" class="action-card">
+                    <div class="action-icon">👨‍🏫</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Faculty</h3>
+                        <p class="action-desc">Edit faculty details and reorder by dragging</p>
+                    </div>
+                </a>
+                {% endif %}
             </div>
             
             <!-- Associated Clubs Section -->

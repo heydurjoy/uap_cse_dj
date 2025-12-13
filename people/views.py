@@ -2,15 +2,18 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, models
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Max
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail
 
 
 def faculty_list(request):
     """
     Display list of all faculties, sorted by designation first, then by sl.
+    Separates former faculty (with last_office_date) from active faculty.
     """
     # Get all faculties
     all_faculties = Faculty.objects.all()
@@ -24,27 +27,77 @@ def faculty_list(request):
         'Teaching Assistant': 5,
     }
     
-    # Sort faculties: first by designation (using order dict), then by sl
-    # Handle None values for designation and sl
-    sorted_faculties = sorted(
-        all_faculties,
+    # Separate former faculty (with last_office_date) from active faculty
+    former_faculties = [f for f in all_faculties if f.last_office_date]
+    active_faculties = [f for f in all_faculties if not f.last_office_date]
+    
+    # Separate active faculties on study leave from others
+    faculties_on_leave = [f for f in active_faculties if f.is_on_study_leave]
+    faculties_active = [f for f in active_faculties if not f.is_on_study_leave]
+    
+    # Sort active faculties: first by is_head (heads first), then by designation, then by sl
+    sorted_active = sorted(
+        faculties_active,
+        key=lambda f: (
+            0 if f.is_head else 1,  # Heads first (0 < 1)
+            designation_order.get(f.designation, 999) if f.designation else 999,
+            f.sl if f.sl else 999
+        )
+    )
+    
+    # Sort faculties on leave: by designation, then by sl
+    sorted_on_leave = sorted(
+        faculties_on_leave,
         key=lambda f: (
             designation_order.get(f.designation, 999) if f.designation else 999,
             f.sl if f.sl else 999
         )
     )
     
-    # Group by designation for display
+    # Sort former faculties: by last_office_date (most recent first), then by designation, then by sl
+    sorted_former = sorted(
+        former_faculties,
+        key=lambda f: (
+            f.last_office_date if f.last_office_date else date.min,  # Most recent first
+            designation_order.get(f.designation, 999) if f.designation else 999,
+            f.sl if f.sl else 999
+        ),
+        reverse=True  # Most recent last_office_date first
+    )
+    
+    # Combine: active first, then those on leave, then former
+    sorted_faculties = sorted_active + sorted_on_leave
+    
+    # Group active faculties by designation for display
     faculties_by_designation = {}
     for faculty in sorted_faculties:
-        designation = faculty.designation or 'Other'
+        # If head, create a special "Head of the Department" group
+        if faculty.is_head:
+            designation = 'Head of the Department'
+        elif faculty.is_on_study_leave:
+            designation = 'Faculty on Study Leave'
+        else:
+            designation = faculty.designation or 'Other'
+        
         if designation not in faculties_by_designation:
             faculties_by_designation[designation] = []
         faculties_by_designation[designation].append(faculty)
     
+    # Group former faculties by designation
+    former_faculties_by_designation = {}
+    for faculty in sorted_former:
+        # Former faculty can also be heads, but we'll show them in their designation group
+        designation = faculty.designation or 'Other'
+        
+        if designation not in former_faculties_by_designation:
+            former_faculties_by_designation[designation] = []
+        former_faculties_by_designation[designation].append(faculty)
+    
     context = {
         'faculties': sorted_faculties,
         'faculties_by_designation': faculties_by_designation,
+        'former_faculties': sorted_former,
+        'former_faculties_by_designation': former_faculties_by_designation,
     }
     
     return render(request, 'people/faculty_list.html', context)
@@ -61,12 +114,21 @@ def faculty_detail(request, pk):
     
     # Calculate detailed years of service
     service_data = None
+    is_former = faculty.last_office_date is not None
+    
     if faculty.joining_date:
-        today = timezone.now()
+        # For former faculty, use last_office_date as end date; otherwise use today
+        if is_former:
+            end_date = faculty.last_office_date
+            end_datetime = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+        else:
+            end_date = timezone.now().date()
+            end_datetime = timezone.now()
+        
         joining_datetime = timezone.make_aware(datetime.combine(faculty.joining_date, datetime.min.time()))
         
         # Calculate total time difference
-        delta = today - joining_datetime
+        delta = end_datetime - joining_datetime
         
         total_days = delta.days
         total_seconds = delta.total_seconds()
@@ -74,23 +136,23 @@ def faculty_detail(request, pk):
         minutes = int((total_seconds % 3600) // 60)
         
         # Calculate years and months
-        today_date = today.date()
+        end_date_obj = end_date
         joining = faculty.joining_date
         
-        years = today_date.year - joining.year
-        months = today_date.month - joining.month
-        days_in_month = today_date.day - joining.day
+        years = end_date_obj.year - joining.year
+        months = end_date_obj.month - joining.month
+        days_in_month = end_date_obj.day - joining.day
         
         # Adjust for negative months/days
         if days_in_month < 0:
             months -= 1
             # Get days in previous month
-            if today_date.month == 1:
+            if end_date_obj.month == 1:
                 from calendar import monthrange
-                days_in_prev_month = monthrange(today_date.year - 1, 12)[1]
+                days_in_prev_month = monthrange(end_date_obj.year - 1, 12)[1]
             else:
                 from calendar import monthrange
-                days_in_prev_month = monthrange(today_date.year, today_date.month - 1)[1]
+                days_in_prev_month = monthrange(end_date_obj.year, end_date_obj.month - 1)[1]
             days_in_month += days_in_prev_month
         
         if months < 0:
@@ -103,6 +165,8 @@ def faculty_detail(request, pk):
             'minutes': minutes,
             'years': years,
             'months': months,
+            'is_former': is_former,
+            'last_office_date': faculty.last_office_date,
         }
     
     context = {
@@ -916,4 +980,452 @@ def bulk_delete_allowed_emails(request):
         return JsonResponse({
             'success': False,
             'message': f'Error deleting allowed emails: {str(e)}'
+        }, status=500)
+
+
+@login_required
+def manage_faculty(request):
+    """
+    Manage faculty list with drag-and-drop reordering, search, and sorting.
+    Separates faculty into tabs: Active, On Leave, and Former.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('people:user_profile')
+    
+    # Get active tab from request
+    active_tab = request.GET.get('tab', 'active')
+    
+    # Get all faculties
+    all_faculties = Faculty.objects.all().select_related('base_user')
+    
+    # Separate into categories
+    former_faculties = all_faculties.filter(last_office_date__isnull=False)
+    active_faculties = all_faculties.filter(last_office_date__isnull=True)
+    faculties_on_leave = active_faculties.filter(is_on_study_leave=True)
+    faculties_active = active_faculties.filter(is_on_study_leave=False)
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    search_filter = Q()
+    if search_query:
+        search_filter = (
+            Q(name__icontains=search_query) |
+            Q(designation__icontains=search_query) |
+            Q(base_user__email__icontains=search_query) |
+            Q(phone__icontains=search_query)
+        )
+    
+    # Apply search to each category
+    if search_query:
+        faculties_active = faculties_active.filter(search_filter)
+        faculties_on_leave = faculties_on_leave.filter(search_filter)
+        former_faculties = former_faculties.filter(search_filter)
+    
+    # Sort by designation
+    sort_by = request.GET.get('sort', 'sl')
+    designation_order = {
+        'Professor': 1,
+        'Associate Professor': 2,
+        'Assistant Professor': 3,
+        'Lecturer': 4,
+        'Teaching Assistant': 5,
+    }
+    
+    def sort_faculties(faculties_queryset):
+        """Helper function to sort faculties"""
+        # If no serial numbers, assign them first
+        if isinstance(faculties_queryset, list):
+            # Already a list, check if any have sl
+            if not any(f.sl for f in faculties_queryset):
+                for index, faculty in enumerate(faculties_queryset, start=1):
+                    faculty.sl = index
+                    faculty.save()
+        elif faculties_queryset.exists() and not any(f.sl for f in faculties_queryset):
+            for index, faculty in enumerate(faculties_queryset, start=1):
+                faculty.sl = index
+                faculty.save()
+        
+        # Apply sorting
+        if sort_by == 'designation':
+            # Convert to list and sort by designation
+            if not isinstance(faculties_queryset, list):
+                faculties_list = list(faculties_queryset)
+            else:
+                faculties_list = faculties_queryset
+            faculties_list.sort(key=lambda f: (
+                designation_order.get(f.designation, 999) if f.designation else 999,
+                f.sl if f.sl else 999
+            ))
+            return faculties_list
+        else:
+            # Default: sort by serial number
+            if isinstance(faculties_queryset, list):
+                # Convert list back to queryset for ordering
+                pks = [f.pk for f in faculties_queryset]
+                return Faculty.objects.filter(pk__in=pks).select_related('base_user').order_by('sl')
+            return faculties_queryset.order_by('sl')
+    
+    # Sort each category
+    faculties_active = sort_faculties(faculties_active)
+    faculties_on_leave = sort_faculties(faculties_on_leave)
+    former_faculties = sort_faculties(former_faculties)
+    
+    # Get the current tab's faculties
+    if active_tab == 'leave':
+        current_faculties = faculties_on_leave
+    elif active_tab == 'former':
+        current_faculties = former_faculties
+    else:  # default to 'active'
+        current_faculties = faculties_active
+    
+    # Get unique designations for filter dropdown
+    all_designations = Faculty.objects.exclude(designation__isnull=True).exclude(designation='').values_list('designation', flat=True).distinct().order_by('designation')
+    
+    context = {
+        'faculties': current_faculties,
+        'faculties_active': faculties_active,
+        'faculties_on_leave': faculties_on_leave,
+        'former_faculties': former_faculties,
+        'active_tab': active_tab,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'all_designations': all_designations,
+    }
+    
+    return render(request, 'people/manage_faculty.html', context)
+
+
+@login_required
+def edit_faculty(request, pk):
+    """
+    Edit faculty details.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('people:user_profile')
+    
+    faculty = get_object_or_404(Faculty, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            # Update basic fields
+            faculty.name = request.POST.get('name', '').strip()
+            faculty.shortname = request.POST.get('shortname', '').strip()
+            faculty.designation = request.POST.get('designation', '').strip() or None
+            faculty.phone = request.POST.get('phone', '').strip() or None
+            faculty.bio = request.POST.get('bio', '').strip() or None
+            faculty.about = request.POST.get('about', '')
+            
+            # Update profile picture if provided
+            if 'profile_pic' in request.FILES:
+                faculty.profile_pic = request.FILES['profile_pic']
+            
+            # Update joining date
+            joining_date_str = request.POST.get('joining_date', '').strip()
+            if joining_date_str:
+                from datetime import datetime
+                try:
+                    faculty.joining_date = datetime.strptime(joining_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            else:
+                faculty.joining_date = None
+            
+            # Update last office date
+            last_office_date_str = request.POST.get('last_office_date', '').strip()
+            if last_office_date_str:
+                try:
+                    from datetime import datetime
+                    faculty.last_office_date = datetime.strptime(last_office_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            else:
+                faculty.last_office_date = None
+            
+            # Update research links
+            faculty.google_scholar_url = request.POST.get('google_scholar_url', '').strip() or None
+            faculty.researchgate_url = request.POST.get('researchgate_url', '').strip() or None
+            faculty.orcid_url = request.POST.get('orcid_url', '').strip() or None
+            faculty.scopus_url = request.POST.get('scopus_url', '').strip() or None
+            faculty.linkedin_url = request.POST.get('linkedin_url', '').strip() or None
+            
+            # Update research information
+            faculty.researches = request.POST.get('researches', '')
+            citation_str = request.POST.get('citation', '0').strip()
+            if citation_str:
+                try:
+                    faculty.citation = int(citation_str)
+                except ValueError:
+                    pass
+            
+            # Update routine
+            faculty.routine = request.POST.get('routine', '')
+            
+            # Update special roles
+            faculty.is_head = request.POST.get('is_head') == 'on'
+            faculty.is_dept_proctor = request.POST.get('is_dept_proctor') == 'on'
+            faculty.is_bsc_admission_coordinator = request.POST.get('is_bsc_admission_coordinator') == 'on'
+            faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
+            faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
+            
+            # Update CV if provided
+            if 'cv' in request.FILES:
+                faculty.cv = request.FILES['cv']
+            
+            # Update cropping if provided
+            if 'cropping' in request.POST:
+                faculty.cropping = request.POST.get('cropping', '')
+            
+            faculty.save()
+            
+            messages.success(request, f'Faculty "{faculty.name}" updated successfully!')
+            return redirect('people:manage_faculty')
+            
+        except Exception as e:
+            messages.error(request, f'Error updating faculty: {str(e)}')
+    
+    context = {
+        'faculty': faculty,
+        'DESIGNATION_CHOICES': Faculty.DESIGNATION_CHOICES,
+    }
+    
+    return render(request, 'people/edit_faculty.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_faculty_order(request):
+    """
+    Update the order (serial numbers) of faculty via drag and drop.
+    Expects JSON: {"faculty_ids": [1, 2, 3, ...]}
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to update faculty order.'
+        }, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        faculty_ids = data.get('faculty_ids', [])
+        
+        if not faculty_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'Missing required data: faculty_ids.'
+            }, status=400)
+        
+        # Verify all faculty IDs exist
+        faculties = Faculty.objects.filter(pk__in=faculty_ids)
+        
+        if faculties.count() != len(faculty_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some faculty IDs do not exist.'
+            }, status=400)
+        
+        # Update serial numbers based on the order provided
+        for index, faculty_id in enumerate(faculty_ids, start=1):
+            Faculty.objects.filter(pk=faculty_id).update(sl=index)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Faculty order updated successfully!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating order: {str(e)}'
+        }, status=500)
+
+
+@login_required
+def create_faculty(request):
+    """
+    Create a new faculty member.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        try:
+            # Get the next available serial number
+            max_sl = Faculty.objects.aggregate(Max('sl'))['sl__max'] or 0
+            next_sl = max_sl + 1
+            
+            # Create BaseUser first
+            email = request.POST.get('email', '').strip()
+            if not email:
+                messages.error(request, 'Email is required.')
+                return redirect('people:create_faculty')
+            
+            # Check if user already exists
+            if BaseUser.objects.filter(email=email).exists():
+                messages.error(request, f'A user with email "{email}" already exists.')
+                return redirect('people:create_faculty')
+            
+            # Create BaseUser
+            base_user = BaseUser.objects.create_user(
+                username=email.split('@')[0],
+                email=email,
+                user_type='faculty',
+                password='temp_password_123'  # Should be changed by user
+            )
+            
+            # Create Faculty profile
+            faculty = Faculty.objects.create(
+                base_user=base_user,
+                name=request.POST.get('name', '').strip(),
+                shortname=request.POST.get('shortname', '').strip(),
+                designation=request.POST.get('designation', '').strip() or None,
+                phone=request.POST.get('phone', '').strip() or None,
+                bio=request.POST.get('bio', '').strip() or None,
+                about=request.POST.get('about', ''),
+                sl=next_sl,
+            )
+            
+            # Update profile picture if provided
+            if 'profile_pic' in request.FILES:
+                faculty.profile_pic = request.FILES['profile_pic']
+                faculty.save()
+            
+            # Update joining date
+            joining_date_str = request.POST.get('joining_date', '').strip()
+            if joining_date_str:
+                from datetime import datetime
+                try:
+                    faculty.joining_date = datetime.strptime(joining_date_str, '%Y-%m-%d').date()
+                    faculty.save()
+                except ValueError:
+                    pass
+            
+            # Update last office date
+            last_office_date_str = request.POST.get('last_office_date', '').strip()
+            if last_office_date_str:
+                try:
+                    from datetime import datetime
+                    faculty.last_office_date = datetime.strptime(last_office_date_str, '%Y-%m-%d').date()
+                    faculty.save()
+                except ValueError:
+                    pass
+            
+            # Update research links
+            faculty.google_scholar_url = request.POST.get('google_scholar_url', '').strip() or None
+            faculty.researchgate_url = request.POST.get('researchgate_url', '').strip() or None
+            faculty.orcid_url = request.POST.get('orcid_url', '').strip() or None
+            faculty.scopus_url = request.POST.get('scopus_url', '').strip() or None
+            faculty.linkedin_url = request.POST.get('linkedin_url', '').strip() or None
+            
+            # Update research information
+            faculty.researches = request.POST.get('researches', '')
+            citation_str = request.POST.get('citation', '0').strip()
+            if citation_str:
+                try:
+                    faculty.citation = int(citation_str)
+                except ValueError:
+                    pass
+            
+            # Update routine
+            faculty.routine = request.POST.get('routine', '')
+            
+            # Update special roles
+            faculty.is_head = request.POST.get('is_head') == 'on'
+            faculty.is_dept_proctor = request.POST.get('is_dept_proctor') == 'on'
+            faculty.is_bsc_admission_coordinator = request.POST.get('is_bsc_admission_coordinator') == 'on'
+            faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
+            faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
+            
+            # Update CV if provided
+            if 'cv' in request.FILES:
+                faculty.cv = request.FILES['cv']
+            
+            # Update cropping if provided
+            if 'cropping' in request.POST:
+                faculty.cropping = request.POST.get('cropping', '')
+            
+            faculty.save()
+            
+            messages.success(request, f'Faculty "{faculty.name}" created successfully!')
+            return redirect('people:manage_faculty')
+            
+        except Exception as e:
+            messages.error(request, f'Error creating faculty: {str(e)}')
+    
+    context = {
+        'DESIGNATION_CHOICES': Faculty.DESIGNATION_CHOICES,
+    }
+    
+    return render(request, 'people/create_faculty.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_delete_faculty(request):
+    """
+    Bulk delete faculty members.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to delete faculty.'
+        }, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        faculty_ids = data.get('faculty_ids', [])
+        
+        if not faculty_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'No faculty selected for deletion.'
+            }, status=400)
+        
+        # Get faculties to delete
+        faculties_to_delete = Faculty.objects.filter(pk__in=faculty_ids)
+        
+        if faculties_to_delete.count() != len(faculty_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some faculty IDs do not exist.'
+            }, status=400)
+        
+        # Get names for response
+        faculty_names = [f.name for f in faculties_to_delete]
+        
+        # Delete associated BaseUser objects
+        base_user_ids = [f.base_user_id for f in faculties_to_delete if f.base_user_id]
+        BaseUser.objects.filter(pk__in=base_user_ids).delete()
+        
+        # Faculty objects will be deleted via CASCADE
+        
+        # Reassign serial numbers to remaining faculties
+        remaining_faculties = Faculty.objects.all().order_by('sl')
+        for index, faculty in enumerate(remaining_faculties, start=1):
+            faculty.sl = index
+            faculty.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully deleted {len(faculty_names)} faculty member(s).',
+            'deleted_faculties': faculty_names
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting faculty: {str(e)}'
         }, status=500)

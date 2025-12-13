@@ -98,6 +98,8 @@
                                 {% else %}
                                     {{ post.posted_by.email }}
                                 {% endif %}
+                            {% elif post.posted_by_name %}
+                                <span class="author-name">{{ post.posted_by_name }}</span>
                             {% else %}
                                 <span style="color: var(--text-secondary);">Unknown</span>
                             {% endif %}

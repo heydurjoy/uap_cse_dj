@@ -17,5 +17,11 @@ urlpatterns = [
     path('allowed-emails/create/', views.create_allowed_email, name='create_allowed_email'),
     path('allowed-emails/<int:pk>/edit/', views.edit_allowed_email, name='edit_allowed_email'),
     path('allowed-emails/bulk-delete/', views.bulk_delete_allowed_emails, name='bulk_delete_allowed_emails'),
+    # Faculty management (power users only)
+    path('manage-faculty/', views.manage_faculty, name='manage_faculty'),
+    path('manage-faculty/create/', views.create_faculty, name='create_faculty'),
+    path('manage-faculty/<int:pk>/edit/', views.edit_faculty, name='edit_faculty'),
+    path('manage-faculty/update-order/', views.update_faculty_order, name='update_faculty_order'),
+    path('manage-faculty/bulk-delete/', views.bulk_delete_faculty, name='bulk_delete_faculty'),
 ]
 

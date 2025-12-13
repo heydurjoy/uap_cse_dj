@@ -109,6 +109,8 @@
                                 {% else %}
                                     {{ post.created_by.email }}
                                 {% endif %}
+                            {% elif post.created_by_name %}
+                                <span class="author-name">{{ post.created_by_name }}</span>
                             {% else %}
                                 <span class="no-author">N/A</span>
                             {% endif %}

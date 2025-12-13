@@ -70,6 +70,8 @@
                                 {% else %}
                                     {{ routine.created_by.email }}
                                 {% endif %}
+                            {% elif routine.created_by_name %}
+                                <span class="author-name">{{ routine.created_by_name }}</span>
                             {% else %}
                                 <span style="color: var(--text-secondary);">Unknown</span>
                             {% endif %}

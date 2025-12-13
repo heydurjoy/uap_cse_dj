@@ -69,6 +69,8 @@
                                 {% else %}
                                     {{ result.created_by.email }}
                                 {% endif %}
+                            {% elif result.created_by_name %}
+                                <span class="author-name">{{ result.created_by_name }}</span>
                             {% else %}
                                 <span style="color: var(--text-secondary);">Unknown</span>
                             {% endif %}

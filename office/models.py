@@ -90,6 +90,19 @@ class AdmissionResult(models.Model):
         verbose_name="Created By",
         help_text="Links to the existing authorized user who created the post"
     )
+    created_by_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Created By Name",
+        help_text="Name of the user who created this result (preserved even if user is deleted)"
+    )
+    created_by_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Created By Email",
+        help_text="Email of the user who created this result (preserved even if user is deleted)"
+    )
 
     class Meta:
         verbose_name = 'Admission Result'
@@ -100,6 +113,28 @@ class AdmissionResult(models.Model):
 
     def __str__(self):
         return f"{self.academic_year} {self.semester} - Slot {self.slot}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-populate created_by_name and created_by_email when created_by is set"""
+        if self.created_by and not self.created_by_name:
+            # Get the user's name based on their type
+            name = None
+            email = self.created_by.email or ''
+            
+            if self.created_by.user_type == 'faculty' and hasattr(self.created_by, 'faculty_profile'):
+                name = self.created_by.faculty_profile.name if self.created_by.faculty_profile else None
+            elif self.created_by.user_type == 'officer' and hasattr(self.created_by, 'officer_profile'):
+                name = self.created_by.officer_profile.name if self.created_by.officer_profile else None
+            elif self.created_by.user_type == 'staff' and hasattr(self.created_by, 'staff_profile'):
+                name = self.created_by.staff_profile.name if self.created_by.staff_profile else None
+            else:
+                # Fallback to full name or email
+                name = self.created_by.get_full_name() or self.created_by.email or ''
+            
+            self.created_by_name = name or email
+            self.created_by_email = email
+        
+        super().save(*args, **kwargs)
 
 
 class Post(models.Model):
@@ -154,6 +189,19 @@ class Post(models.Model):
         verbose_name="Created By",
         help_text="Links to the existing authorized user who created the post"
     )
+    created_by_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Created By Name",
+        help_text="Name of the user who created this post (preserved even if user is deleted)"
+    )
+    created_by_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Created By Email",
+        help_text="Email of the user who created this post (preserved even if user is deleted)"
+    )
 
     class Meta:
         verbose_name = 'Post'
@@ -162,6 +210,28 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.get_post_type_display()}: {self.short_title} - {self.publish_date.strftime('%Y-%m-%d')}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-populate created_by_name and created_by_email when created_by is set"""
+        if self.created_by and not self.created_by_name:
+            # Get the user's name based on their type
+            name = None
+            email = self.created_by.email or ''
+            
+            if self.created_by.user_type == 'faculty' and hasattr(self.created_by, 'faculty_profile'):
+                name = self.created_by.faculty_profile.name if self.created_by.faculty_profile else None
+            elif self.created_by.user_type == 'officer' and hasattr(self.created_by, 'officer_profile'):
+                name = self.created_by.officer_profile.name if self.created_by.officer_profile else None
+            elif self.created_by.user_type == 'staff' and hasattr(self.created_by, 'staff_profile'):
+                name = self.created_by.staff_profile.name if self.created_by.staff_profile else None
+            else:
+                # Fallback to full name or email
+                name = self.created_by.get_full_name() or self.created_by.email or ''
+            
+            self.created_by_name = name or email
+            self.created_by_email = email
+        
+        super().save(*args, **kwargs)
 
     def clean(self):
         """Validate that short_title has maximum 4 words and max 3 pinned posts"""
@@ -278,6 +348,19 @@ class ClassRoutine(models.Model):
         verbose_name="Created By",
         help_text="Links to the user who created the routine"
     )
+    created_by_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Created By Name",
+        help_text="Name of the user who created this routine (preserved even if user is deleted)"
+    )
+    created_by_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Created By Email",
+        help_text="Email of the user who created this routine (preserved even if user is deleted)"
+    )
 
     class Meta:
         verbose_name = 'Class Routine'
@@ -288,6 +371,28 @@ class ClassRoutine(models.Model):
 
     def __str__(self):
         return f"{self.academic_year} {self.semester} - {self.get_year_semester_display()} Section {self.section}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-populate created_by_name and created_by_email when created_by is set"""
+        if self.created_by and not self.created_by_name:
+            # Get the user's name based on their type
+            name = None
+            email = self.created_by.email or ''
+            
+            if self.created_by.user_type == 'faculty' and hasattr(self.created_by, 'faculty_profile'):
+                name = self.created_by.faculty_profile.name if self.created_by.faculty_profile else None
+            elif self.created_by.user_type == 'officer' and hasattr(self.created_by, 'officer_profile'):
+                name = self.created_by.officer_profile.name if self.created_by.officer_profile else None
+            elif self.created_by.user_type == 'staff' and hasattr(self.created_by, 'staff_profile'):
+                name = self.created_by.staff_profile.name if self.created_by.staff_profile else None
+            else:
+                # Fallback to full name or email
+                name = self.created_by.get_full_name() or self.created_by.email or ''
+            
+            self.created_by_name = name or email
+            self.created_by_email = email
+        
+        super().save(*args, **kwargs)
 
     def clean(self):
         """Validate the model"""
