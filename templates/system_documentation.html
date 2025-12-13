@@ -1,0 +1,649 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Documentation - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
+    <div style="background: var(--bg-primary); border-radius: 15px; box-shadow: 0 8px 25px var(--shadow); padding: 3rem; margin-bottom: 3rem;">
+        <h1 style="color: var(--color-primary); font-size: 3rem; margin-bottom: 1rem; text-align: center;">CSE UAP System Documentation</h1>
+        <p style="text-align: center; color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+            Comprehensive guide to all features, user roles, permissions, and system functionality
+        </p>
+    </div>
+
+    <!-- Table of Contents -->
+    <div style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+        <h2 style="color: var(--color-primary); margin-bottom: 1rem;">Table of Contents</h2>
+        <ul style="line-height: 2; color: var(--text-primary);">
+            <li><a href="#overview" style="color: var(--color-primary); text-decoration: none;">1. System Overview</a></li>
+            <li><a href="#user-types" style="color: var(--color-primary); text-decoration: none;">2. User Types and Roles</a></li>
+            <li><a href="#permissions" style="color: var(--color-primary); text-decoration: none;">3. Permission System</a></li>
+            <li><a href="#features" style="color: var(--color-primary); text-decoration: none;">4. Features by Module</a></li>
+            <li><a href="#courses" style="color: var(--color-primary); text-decoration: none;">5. Course Management and Mapping</a></li>
+            <li><a href="#statistics" style="color: var(--color-primary); text-decoration: none;">6. Student Lifetime Statistics Calculation</a></li>
+            <li><a href="#clubs" style="color: var(--color-primary); text-decoration: none;">7. Club Management System</a></li>
+            <li><a href="#workflow" style="color: var(--color-primary); text-decoration: none;">8. System Workflows</a></li>
+        </ul>
+    </div>
+
+    <!-- 1. System Overview -->
+    <section id="overview" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">1. System Overview</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <p style="color: var(--text-primary); line-height: 1.8; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                The CSE UAP system is a comprehensive web-based platform designed for managing academic programs, 
+                student activities, faculty information, and departmental communications for the Department of 
+                Computer Science and Engineering at the University of Asia Pacific (UAP).
+            </p>
+            
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">Core Modules:</h3>
+            <ul style="color: var(--text-primary); line-height: 2; margin-left: 2rem;">
+                <li><strong>People Management:</strong> User accounts, profiles, permissions, and access control</li>
+                <li><strong>Office/Posts:</strong> Departmental notices, events, seminars, routines, and admission results</li>
+                <li><strong>Clubs:</strong> Student club management, activities, positions, and member invitations</li>
+                <li><strong>Academics:</strong> Course management, program outcomes, learning outcomes, and curriculum mapping</li>
+                <li><strong>Designs:</strong> Homepage feature cards, hero tags, admission elements, and content management</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. User Types and Roles -->
+    <section id="user-types" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">2. User Types and Roles</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--text-primary); margin-bottom: 1rem;">2.1 User Types</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                The system supports four distinct user types, each with specific roles and capabilities:
+            </p>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">👨‍🏫 Faculty</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li>Teaching staff members of the department</li>
+                    <li>Can be assigned as club conveners</li>
+                    <li>Can have special roles: Head of Department, Department Proctor, Admission Coordinators</li>
+                    <li>Can upload CV/resume documents</li>
+                    <li>Profile includes: name, shortname, designation, email, phone, office location, research interests, publications, education, experience</li>
+                    <li>Can be granted various permissions for managing content and users</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">👨‍💼 Officer</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li>Administrative staff members</li>
+                    <li>Can manage departmental posts, routines, and admission results</li>
+                    <li>Profile includes: name, designation, email, phone, office location</li>
+                    <li>Can be granted permissions similar to faculty for content management</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">👨‍🔧 Staff</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li>Support staff members (e.g., Lab Assistants)</li>
+                    <li>Basic profile with name, designation, email, phone</li>
+                    <li>Limited permissions by default</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">👥 Club Member</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li>Student members of various clubs</li>
+                    <li>Can be assigned as club presidents or hold positions (Vice President, Secretary, Treasurer, etc.)</li>
+                    <li>Can create and manage posts for their clubs</li>
+                    <li>Can invite new members via email</li>
+                    <li>Profile includes: name, email, phone</li>
+                    <li>Automatically have access to manage their own club (if they are convener/president/in position)</li>
+                    <li>Do not appear in general user permission management (managed through club membership)</li>
+                </ul>
+            </div>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">2.2 Power Users</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                Power users are users who can grant permissions to other users. They must have the 
+                <code style="background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">is_power_user</code> 
+                flag set to <code style="background: var(--bg-secondary); padding: 0.2rem 0.5rem; border-radius: 4px;">True</code> 
+                and must have the <strong>"Manage User Permissions"</strong> permission.
+            </p>
+        </div>
+    </section>
+
+    <!-- 3. Permission System -->
+    <section id="permissions" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">3. Permission System</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1.5rem;">
+                The system uses a granular permission-based access control system. Permissions are organized into categories 
+                and can be granted to users by power users. Superusers have all permissions automatically.
+            </p>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">3.1 Available Permissions</h3>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">📝 Office Permissions</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li><strong>Post Notices:</strong> Can create and edit office notices (restricted to Faculty/Officer roles)</li>
+                    <li><strong>Manage All Posts:</strong> Can create, edit, and delete all office posts (restricted to Faculty/Officer roles)</li>
+                    <li><strong>Post Routines:</strong> Can create and manage class routines/timetables (restricted to Faculty/Officer roles)</li>
+                    <li><strong>Post Admission Results:</strong> Can publish admission test results (restricted to Faculty/Officer roles)</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">👥 Club Permissions</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li><strong>Manage All Clubs:</strong> Can create, edit, and manage all clubs (restricted to Faculty/Officer roles)</li>
+                    <li><strong>Note:</strong> Club conveners automatically have access to manage their own clubs (no permission needed)</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">🎨 Design Permissions</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li><strong>Edit Feature Cards:</strong> Can edit feature cards on the homepage (any role)</li>
+                    <li><strong>Edit Head Message:</strong> Can edit message from the head of department (any role)</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--color-primary); margin-bottom: 0.5rem;">👤 User Management Permissions</h4>
+                <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                    <li><strong>Manage User Permissions:</strong> Can grant/revoke permissions and create users (any role, but requires power user status)</li>
+                    <li><strong>Note:</strong> This permission cannot be granted through the user-facing permission management page (prevents self-escalation)</li>
+                </ul>
+            </div>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">3.2 Permission Management</h3>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Power users can view all users (except club members) and grant/revoke permissions</li>
+                <li>Permissions are tracked with audit trail (who granted, when, active status)</li>
+                <li>Club members are excluded from permission management (they manage clubs through membership)</li>
+                <li>There's a separate "Manage Allowed Emails" tab for managing email whitelist (includes club members)</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 4. Features by Module -->
+    <section id="features" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">4. Features by Module</h2>
+        
+        <!-- 4.1 People Management -->
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--color-primary); margin-bottom: 1rem;">4.1 People Management</h3>
+            
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">User Registration & Authentication</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Email-based registration system with whitelist (AllowedEmail)</li>
+                <li>Users can only sign up if their email is in the AllowedEmail list</li>
+                <li>Password reset functionality with secure tokens (24-hour expiration)</li>
+                <li>User types are automatically assigned based on AllowedEmail entry</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">User Profiles</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Each user type has a specialized profile (Faculty, Officer, Staff, ClubMember)</li>
+                <li>Profile pages show user information, assigned permissions, and action cards</li>
+                <li>Action cards appear based on user permissions (e.g., "Manage Your Posts", "Manage Clubs")</li>
+                <li>Faculty profiles include research, publications, education, experience</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Allowed Email Management</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Power users can manage allowed emails through "Manage User Permissions" page</li>
+                <li>Separate tab for "Manage Allowed Emails" (includes club members)</li>
+                <li>Can create, edit, and bulk delete allowed emails</li>
+                <li>Safeguards prevent deleting emails linked to active users or users with posts</li>
+                <li>Club conveners can invite new members by creating allowed emails (sends invitation email)</li>
+            </ul>
+        </div>
+
+        <!-- 4.2 Office/Posts -->
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--color-primary); margin-bottom: 1rem;">4.2 Office/Posts Management</h3>
+            
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Posts (Notices, Events, Seminars, Workshops)</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Users with "Post Notices" permission can create and edit their own posts</li>
+                <li>Users with "Manage All Posts" permission can manage all posts</li>
+                <li>Post types: Notice, Events, Seminars, Workshop, Others</li>
+                <li>Features: Short title (max 4 words), long title, tags, rich text description, file attachments (up to 10), pinning (max 3 pinned posts)</li>
+                <li>Posts can be filtered by creator, pinned status, post type, and searched</li>
+                <li>Bulk delete functionality for selected posts</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Class Routines</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Users with "Post Routines" permission can create and manage class timetables</li>
+                <li>Routines are organized by: Academic Year, Semester (Fall/Spring), Year-Semester (1-1 to 4-2), Section (A-J)</li>
+                <li>Each routine has a unique combination of these fields</li>
+                <li>Routine images are uploaded and displayed on the website</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Admission Results</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Users with "Post Admission Results" permission can publish admission test results</li>
+                <li>Results are organized by: Academic Year, Semester, Slot number</li>
+                <li>Each result includes rich text content and an official PDF document</li>
+                <li>Unique combination of year, semester, and slot prevents duplicates</li>
+            </ul>
+        </div>
+
+        <!-- 4.3 Clubs -->
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--color-primary); margin-bottom: 1rem;">4.3 Club Management</h3>
+            
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Club Creation and Management</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Users with "Manage All Clubs" permission can create, edit, and delete clubs</li>
+                <li>Club fields: Name (required), Short Name, Serial Number, Motto, Description, Convener (Faculty), President (ClubMember), Logo (1:1 ratio), Cover Photo (21:6 ratio), Social Media Links</li>
+                <li>Bulk delete functionality for selected clubs</li>
+                <li>Club conveners automatically have access to manage their own clubs</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Club Positions</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Conveners can assign positions (Vice President, Secretary, Treasurer, etc.) for specific semesters</li>
+                <li>Positions can be filled by Faculty or Club Members</li>
+                <li>Each position is tied to: Academic Year, Semester, Position Title</li>
+                <li>Positions can be reordered using drag-and-drop interface</li>
+                <li>When adding a new member email to a position, the system creates an AllowedEmail entry and sends invitation email</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Club Posts</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Club conveners, presidents, and members in positions can create posts for their clubs</li>
+                <li>Post types: Event, Seminar, Contest, Workshop, Training, Other</li>
+                <li>Features: Short title, long title, tags, rich text description, start/end date-time, pinning (max 3 per club)</li>
+                <li>Posts can be filtered by type, searched, and sorted (pinned, newest, oldest, by title)</li>
+                <li>Posts are displayed on club detail pages and the activities page</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Member Invitations</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Club conveners can invite new members by creating allowed emails</li>
+                <li>System automatically sends invitation email with signup instructions</li>
+                <li>If email sending fails, a warning message is displayed with the error</li>
+                <li>Invited users can sign up using their email address</li>
+            </ul>
+        </div>
+
+        <!-- 4.4 Academics -->
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--color-primary); margin-bottom: 1rem;">4.4 Academics Management</h3>
+            
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Programs</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Academic programs (e.g., BSc in CSE, MCSE, BAETE)</li>
+                <li>Each program has Program Learning Outcomes (PLOs) aligned with Washington Accord standards</li>
+                <li>PLOs are numbered (PLO1, PLO2, ..., PLO12) and sorted numerically</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Courses</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Courses belong to programs and are organized by year-semester (1-1 to 4-2)</li>
+                <li>Course fields: Course Code, Title, Credit Hours, Contact Hours, Course Type (Theory/Lab), Prerequisites, Course Outline PDF</li>
+                <li>Courses can be viewed publicly on the website</li>
+                <li>Courses are displayed organized by program and year-semester</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Course Learning Outcomes (CLOs)</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Each course has multiple CLOs (typically 3-5 per course)</li>
+                <li>Each CLO maps to exactly one Program Learning Outcome (PLO)</li>
+                <li>CLOs include: Sequence Number, Statement, Mapped PLO, Bloom's Taxonomy Level, Knowledge Profile, Problem Attribute, Activity Attribute, Total Assessment Marks, Activity Type</li>
+                <li>CLOs are used to calculate student lifetime statistics</li>
+            </ul>
+        </div>
+
+        <!-- 4.5 Designs -->
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--color-primary); margin-bottom: 1rem;">4.5 Design/Homepage Management</h3>
+            
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Feature Cards</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Users with "Edit Feature Cards" permission can manage feature cards</li>
+                <li>First 2 feature cards (lowest serial numbers) are managed only by super admin via Django admin</li>
+                <li>Feature cards include: Serial Number, Picture (1:1 ratio, auto-cropped to 400x400), Caption, Title, Rich Text Description</li>
+                <li>Cards can be activated/deactivated</li>
+                <li>Cards are displayed on the homepage hero section</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Head of Department Message</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Users with "Edit Head Message" permission can edit the head's message</li>
+                <li>The message uses the first feature card (lowest serial number)</li>
+                <li>Message opens in a glass background modal when clicked on homepage</li>
+                <li>Modal displays full message with profile picture and styling</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Hero Tags</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Short tags displayed on the homepage (max 20 characters)</li>
+                <li>Can be activated/deactivated</li>
+                <li>Ordered by serial number</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">Admission Elements</h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Content sections for admission pages</li>
+                <li>Include rich text content and optional curriculum PDFs</li>
+                <li>Ordered by serial number</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 5. Course Management and Mapping -->
+    <section id="courses" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">5. Course Management and Mapping</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--text-primary); margin-bottom: 1rem;">5.1 Adding Courses</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                Courses are added through the "Add Course" interface (requires course management permission). The process involves:
+            </p>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Basic Information:</strong> Select program, enter course code, title, credit hours, contact hours, course type (Theory/Lab), year-semester</li>
+                <li><strong>Prerequisites:</strong> Select prerequisite courses (if any)</li>
+                <li><strong>Course Outline:</strong> Upload PDF document (optional)</li>
+                <li><strong>Course Learning Outcomes (CLOs):</strong> Add multiple CLOs with the following for each:
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Sequence Number (1, 2, 3, ...)</li>
+                        <li>Statement (what students should be able to do)</li>
+                        <li>Mapped Program Learning Outcome (PLO) - exactly one per CLO</li>
+                        <li>Bloom's Taxonomy Level (K1-K6 for Cognitive, A1-A5 for Affective, P1-P5 for Psychomotor)</li>
+                        <li>Knowledge Profile (K1-K8)</li>
+                        <li>Problem Attribute (P1-P7)</li>
+                        <li>Activity Attribute (A1-A5, optional)</li>
+                        <li>Total Assessment Marks (marks allocated for this CLO)</li>
+                        <li>Activity Type (e.g., Lecture, Tutorial, Laboratory Session)</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">5.2 Course to PLO Mapping</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                Each Course Learning Outcome (CLO) maps to exactly one Program Learning Outcome (PLO). This mapping is:
+            </p>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>One-to-One:</strong> Each CLO maps to one PLO (not many-to-many)</li>
+                <li><strong>Cumulative:</strong> Multiple CLOs from different courses can map to the same PLO</li>
+                <li><strong>Assessment-Based:</strong> The total assessment marks for all CLOs mapping to a PLO contribute to that PLO's statistics</li>
+                <li><strong>Credit-Based:</strong> Course credit hours are also aggregated for each PLO</li>
+            </ul>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">5.3 Attribute Mapping</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                Each CLO also includes detailed attributes for comprehensive skill assessment:
+            </p>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Bloom's Taxonomy:</strong> Cognitive (K1-K6), Affective (A1-A5), Psychomotor (P1-P5) - measures learning level</li>
+                <li><strong>Knowledge Profiles (K1-K8):</strong> Type of knowledge being addressed</li>
+                <li><strong>Problem Attributes (P1-P7):</strong> Complexity and nature of problems</li>
+                <li><strong>Activity Attributes (A1-A5):</strong> Type of engineering activity required</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 6. Student Lifetime Statistics Calculation -->
+    <section id="statistics" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">6. Student Lifetime Statistics Calculation</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1.5rem;">
+                The system calculates comprehensive statistics showing what a student will target (in terms of marks distribution) 
+                throughout their 4-year BSc in CSE program. These statistics are displayed on the homepage and program detail pages.
+            </p>
+
+            <h3 style="color: var(--text-primary); margin-bottom: 1rem;">6.1 Calculation Process</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                For a given program (e.g., BSc in CSE), the system:
+            </p>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Retrieves all courses</strong> for the program</li>
+                <li><strong>For each course:</strong>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Gets the course credit hours</li>
+                        <li>Retrieves all Course Learning Outcomes (CLOs) for that course</li>
+                    </ul>
+                </li>
+                <li><strong>For each CLO:</strong>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Adds the course credit hours to the mapped PLO's credit total</li>
+                        <li>Adds the CLO's assessment marks to the mapped PLO's marks total</li>
+                        <li>Adds credits and marks to the Bloom's Taxonomy level (K1-K6, A1-A5, P1-P5)</li>
+                        <li>Adds credits and marks to the Knowledge Profile (K1-K8)</li>
+                        <li>Adds credits and marks to the Problem Attribute (P1-P7)</li>
+                        <li>Adds credits and marks to the Activity Attribute (A1-A5) if present</li>
+                    </ul>
+                </li>
+                <li><strong>Calculates percentages:</strong> For each category, calculates the percentage of total marks</li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">6.2 Statistics Displayed</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                The calculated statistics are displayed in tables showing:
+            </p>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Program Learning Outcomes (PLOs):</strong> For each PLO (PLO1-PLO12), shows total credits, total marks, and percentage of total marks</li>
+                <li><strong>Bloom's Taxonomy Levels:</strong> Split into three domains:
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Cognitive Domain (K1-K6): Remember, Understand, Apply, Analyze, Evaluate, Create</li>
+                        <li>Affective Domain (A1-A5): Receiving, Responding, Valuing, Organizing, Characterizing</li>
+                        <li>Psychomotor Domain (P1-P5): Perception, Set, Guided Response, Mechanism, Complex Overt Response</li>
+                    </ul>
+                </li>
+                <li><strong>Knowledge Profiles (K1-K8):</strong> Shows distribution across different knowledge types</li>
+                <li><strong>Problem Attributes (P1-P7):</strong> Shows distribution across problem complexity levels</li>
+                <li><strong>Activity Attributes (A1-A5):</strong> Shows distribution across activity types</li>
+            </ul>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">6.3 Display Locations</h3>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Homepage:</strong> Statistics for BSc in CSE program displayed under "Vision, Mission, and PEO" section</li>
+                <li><strong>Program Detail Pages:</strong> Statistics for each program displayed in the "You Should Know" section</li>
+                <li><strong>Admission Pages:</strong> Statistics displayed for relevant programs</li>
+            </ul>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">6.4 Example Calculation</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                If a course "CSE 1101" (3 credits) has a CLO that:
+            </p>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Maps to PLO1</li>
+                <li>Has Bloom's level K3 (Apply)</li>
+                <li>Has Knowledge Profile K2</li>
+                <li>Has Problem Attribute P2</li>
+                <li>Has Activity Attribute A1</li>
+                <li>Has 30 assessment marks</li>
+            </ul>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-top: 1rem;">
+                Then the system adds:
+            </p>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>3 credits and 30 marks to PLO1</li>
+                <li>3 credits and 30 marks to Bloom's K3</li>
+                <li>3 credits and 30 marks to Knowledge Profile K2</li>
+                <li>3 credits and 30 marks to Problem Attribute P2</li>
+                <li>3 credits and 30 marks to Activity Attribute A1</li>
+            </ul>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-top: 1rem;">
+                This process is repeated for all CLOs across all courses in the program, and percentages are calculated 
+                based on total marks in each category.
+            </p>
+        </div>
+    </section>
+
+    <!-- 7. Club Management System -->
+    <section id="clubs" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">7. Club Management System</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--text-primary); margin-bottom: 1rem;">7.1 Club Structure</h3>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Club:</strong> Main entity with name, description, convener (Faculty), president (ClubMember), logo, cover photo, social links</li>
+                <li><strong>Positions:</strong> Semester-based positions (Vice President, Secretary, Treasurer, etc.) assigned to Faculty or Club Members</li>
+                <li><strong>Posts:</strong> Club announcements, events, seminars, contests, workshops, training sessions</li>
+                <li><strong>Members:</strong> Club members who can be assigned to positions and create posts</li>
+            </ul>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">7.2 Club Access Control</h3>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Manage All Clubs:</strong> Users with this permission (Faculty/Officer) can create, edit, delete any club</li>
+                <li><strong>Club Convener:</strong> Automatically has access to manage their own club (no permission needed)</li>
+                <li><strong>Club President:</strong> Automatically has access to manage their club's posts</li>
+                <li><strong>Position Holders:</strong> Members in positions (Vice President, Secretary, etc.) can manage club posts</li>
+            </ul>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">7.3 Posting Activities</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                Club members (conveners, presidents, position holders) can create posts for their clubs:
+            </p>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Navigate to their club's detail page</li>
+                <li>Click "Manage Posts" (if they have access)</li>
+                <li>Create a new post with:
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Post type (Event, Seminar, Contest, Workshop, Training, Other)</li>
+                        <li>Short title and long title</li>
+                        <li>Tags (comma-separated)</li>
+                        <li>Rich text description</li>
+                        <li>Start and end date-time (optional)</li>
+                        <li>Pin option (max 3 pinned posts per club)</li>
+                    </ul>
+                </li>
+                <li>Posts are displayed on the club detail page and the activities page</li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">7.4 Managing Routines (Class Timetables)</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; margin-bottom: 1rem;">
+                Class routines are managed through the Office module, not Clubs. Users with "Post Routines" permission can:
+            </p>
+            <ul style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Create routines for specific: Academic Year, Semester, Year-Semester, Section</li>
+                <li>Upload routine images (timetables)</li>
+                <li>Each combination of year, semester, year-semester, and section is unique</li>
+                <li>Routines are displayed on the website for students to view</li>
+            </ul>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">7.5 Member Invitation Process</h3>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Club convener navigates to "Manage Allowed Emails" for their club</li>
+                <li>Clicks "Add Allowed Email"</li>
+                <li>Enters the email address of the person to invite</li>
+                <li>System creates an AllowedEmail entry with user_type='club_member'</li>
+                <li>System automatically sends an invitation email with:
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Club name and convener name</li>
+                        <li>Signup instructions</li>
+                        <li>Direct link to signup page</li>
+                    </ul>
+                </li>
+                <li>If email sending fails, a warning is displayed with the error, but the allowed email is still created</li>
+                <li>Invited user can sign up using their email address</li>
+                <li>After signup, they become a ClubMember and can be assigned to positions</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- 8. System Workflows -->
+    <section id="workflow" style="margin-bottom: 3rem;">
+        <h2 style="color: var(--color-primary); font-size: 2.5rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid var(--color-primary);">8. System Workflows</h2>
+        
+        <div style="background: var(--bg-primary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <h3 style="color: var(--text-primary); margin-bottom: 1rem;">8.1 User Registration Workflow</h3>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Power user or super admin adds email to AllowedEmail list (or club convener invites member)</li>
+                <li>User receives invitation email (if sent by convener) or is informed their email is whitelisted</li>
+                <li>User visits signup page and enters: email, full name, password</li>
+                <li>System checks if email exists in AllowedEmail list</li>
+                <li>System checks if email is active and not blocked</li>
+                <li>System creates BaseUser account with user_type from AllowedEmail</li>
+                <li>System creates appropriate profile (Faculty, Officer, Staff, or ClubMember)</li>
+                <li>User is automatically logged in and redirected to profile page</li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">8.2 Permission Granting Workflow</h3>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>Power user (with "Manage User Permissions" permission) navigates to "Manage User Permissions"</li>
+                <li>System displays list of all active users (except club members)</li>
+                <li>Power user selects a user</li>
+                <li>System displays all available permissions (except "Manage User Permissions" to prevent self-escalation)</li>
+                <li>Power user checks/unchecks permissions for the user</li>
+                <li>Power user clicks "Save Permissions"</li>
+                <li>System creates/updates UserPermission records with audit trail (granted_by, granted_at)</li>
+                <li>User immediately has access to features based on granted permissions</li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">8.3 Course Creation Workflow</h3>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>User with course management permission navigates to "Add Course"</li>
+                <li>User enters basic course information (code, title, credits, type, year-semester)</li>
+                <li>User selects prerequisites (if any)</li>
+                <li>User uploads course outline PDF (optional)</li>
+                <li>User adds Course Learning Outcomes (CLOs):
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>For each CLO, enters sequence number, statement</li>
+                        <li>Selects one Program Learning Outcome (PLO) to map to</li>
+                        <li>Selects Bloom's Taxonomy level, Knowledge Profile, Problem Attribute, Activity Attribute</li>
+                        <li>Enters total assessment marks and activity type</li>
+                    </ul>
+                </li>
+                <li>User saves the course</li>
+                <li>System creates Course and CourseOutcome records</li>
+                <li>Course appears in course listings and contributes to program statistics</li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">8.4 Post Creation Workflow</h3>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li><strong>Office Posts:</strong>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>User with "Post Notices" permission can create their own posts</li>
+                        <li>User with "Manage All Posts" permission can create and manage all posts</li>
+                        <li>User creates post with type, titles, description, attachments, pinning</li>
+                        <li>Post appears on homepage and office posts page</li>
+                    </ul>
+                </li>
+                <li><strong>Club Posts:</strong>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Club convener, president, or position holder navigates to their club</li>
+                        <li>Clicks "Manage Posts"</li>
+                        <li>Creates post with type, titles, description, date-time, pinning</li>
+                        <li>Post appears on club detail page and activities page</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3 style="color: var(--text-primary); margin-top: 2rem; margin-bottom: 1rem;">8.5 Statistics Calculation Workflow</h3>
+            <ol style="color: var(--text-primary); line-height: 1.8; margin-left: 2rem;">
+                <li>User visits homepage or program detail page</li>
+                <li>System retrieves all courses for the program</li>
+                <li>For each course, system retrieves all CLOs</li>
+                <li>For each CLO, system aggregates:
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                        <li>Credits and marks to the mapped PLO</li>
+                        <li>Credits and marks to Bloom's Taxonomy level</li>
+                        <li>Credits and marks to Knowledge Profile</li>
+                        <li>Credits and marks to Problem Attribute</li>
+                        <li>Credits and marks to Activity Attribute</li>
+                    </ul>
+                </li>
+                <li>System calculates percentages for each category</li>
+                <li>System displays statistics in organized tables on the page</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <div style="text-align: center; padding: 2rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 3rem;">
+        <p>This documentation covers all major and minor features of the CSE UAP system.</p>
+        <p style="margin-top: 0.5rem;">For technical implementation details, refer to the source code.</p>
+    </div>
+</div>
+{% endblock %}
+
