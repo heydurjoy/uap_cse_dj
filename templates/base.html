@@ -12,6 +12,8 @@
     <link rel="apple-touch-icon" href="{% static 'images/icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock %}
@@ -245,13 +247,68 @@
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
+<footer class="site-footer">
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <p>&copy; 2024 Design System. All rights reserved.</p>
+    <!-- Logo Centered -->
+    <div class="footer-logo-container">
+        <img src="{% static 'images/logo.png' %}" alt="CSE UAP" class="footer-logo">
+    </div>
+
+    <!-- Tagline -->
+    <p class="footer-tagline">
+        Department of Computer Science & Engineering<br>
+        University of Asia Pacific
+    </p>
+
+    <!-- Footer Main Content -->
+<!-- Footer Main Content -->
+<div class="footer-main">
+    <!-- Left: Map -->
+    <div class="footer-map">
+        <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.217383453154!2d90.370510!3d23.780103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8bd497e3f23%3A0x77f0b4b1f57db9f8!2sUniversity%20of%20Asia%20Pacific!5e0!3m2!1sen!2sbd!4v1697000000000!5m2!1sen!2sbd"
+            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+<div class="footer-column">
+
+    <h4>Contact</h4>
+    <p>Department Administrative Office,</p>
+    <p>74/A, Green Road, Dhaka‑1205, Bangladesh</p>
+   <p><i class="fas fa-phone-alt"></i> Office: +88‑01601311283</p>
+<p><i class="fas fa-phone-alt"></i> Shahiduzzaman Suza: +88‑01722398613</p>
+<p><i class="fas fa-phone-alt"></i> Hasanul Kabir: +88‑01722398613</p>
+
+</div>
+
+        <div class="footer-column">
+            <h4>Connect</h4>
+            <a href="https://www.researchgate.net/institution/University-of-Asia-Pacific" target="_blank" class="social-link">
+                <i class="fab fa-researchgate"></i> ResearchGate
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=100063885558266#" target="_blank" class="social-link">
+                <i class="fab fa-facebook-f"></i> Facebook
+            </a>
+            <a href="https://www.linkedin.com/company/uapbd/" target="_blank" class="social-link">
+                <i class="fab fa-linkedin-in"></i> LinkedIn
+            </a>
+            <a href="mailto:dao.cse@uap-bd.edu" class="social-link">
+    <i class="fas fa-envelope"></i> Email
+</a>
+
         </div>
-    </footer>
+    </div>
+
+
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+        <p>© {{ now|date:"Y" }} CSE UAP — All Rights Reserved.</p>
+    </div>
+</footer>
+
+
+
 
     <script src="{% static 'js/theme.js' %}"></script>
     <script src="{% static 'js/mobile-menu.js' %}"></script>

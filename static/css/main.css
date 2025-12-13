@@ -928,8 +928,6 @@ body {
     gap: 1rem;
     padding: 1rem 1.25rem;
     background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: none;
     border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 10%, transparent);
     border-radius: 0;
@@ -965,20 +963,18 @@ body {
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
-    backdrop-filter: blur(10px);
 }
 
 .notification-item:hover {
-    background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
-    backdrop-filter: blur(25px) saturate(200%);
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    background: color-mix(in srgb, var(--bg-primary) 85%, transparent); /* just slightly brighter */
     transform: translateX(4px);
-    box-shadow: inset 0 0 20px color-mix(in srgb, var(--accent-color) 5%, transparent);
+    box-shadow: inset 0 0 10px color-mix(in srgb, var(--accent-color) 5%, transparent);
 }
 
 .notification-item:hover::before {
-    opacity: 1;
+    opacity: 0; /* keep it hidden since no frosted effect needed */
 }
+
 
 .notification-icon {
     width: 42px;
@@ -2956,4 +2952,259 @@ p {
     .polaroid-link.polaroid-1 { top: 0; left: 25px; }
     .polaroid-link.polaroid-2 { top: 25px; left: 45px; }
     .polaroid-link.polaroid-3 { top: 50px; left: 65px; }
+}
+/* ================== Footer Base ================== */
+.site-footer {
+    position: relative;
+    padding: 3rem 1rem 1.5rem;
+    color: var(--text-primary);
+
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-radius: 0.5rem;
+
+    border: none;
+    overflow: visible;
+    z-index: 1;
+}
+
+.site-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    box-shadow: 0 4px 30px var(--glow-shadow), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+[data-theme="cyan"] .site-footer::before {
+    box-shadow: 0 4px 30px var(--glow-shadow), 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+[data-theme="light"] .site-footer::before {
+    box-shadow: 0 4px 30px var(--glow-shadow), 0 0 20px rgba(155, 126, 216, 0.3);
+}
+
+[data-theme="dark"] .site-footer::before {
+    box-shadow: 0 4px 30px var(--glow-shadow), 0 0 20px rgba(124, 95, 184, 0.3);
+}
+
+[data-theme="lightblue"] .site-footer::before {
+    box-shadow: 0 4px 30px var(--glow-shadow), 0 0 20px rgba(122, 184, 232, 0.25);
+}
+
+/* ================== Logo & Tagline ================== */
+.footer-logo-container {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.footer-logo {
+    width: 110px;
+    max-width: 180px;
+    height: auto;
+}
+
+.footer-tagline {
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+
+/* Footer Main Layout */
+.footer-main {
+    display: flex;
+    justify-content: center; /* centers the whole section below the logo */
+    align-items: flex-start;
+    gap: 2rem; /* gap between map and info */
+    flex-wrap: wrap;
+}
+
+/* Map left side */
+.footer-map {
+    flex: 0 0 500px; /* fix width so map doesn't stretch too far left */
+    max-width: 500px;
+}
+
+.footer-map iframe {
+    width: 100%;
+    height: 250px;
+    border-radius: 2rem;
+}
+
+/* Info right side */
+.footer-info {
+    flex: 1;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* keep info aligned next to map */
+}
+
+
+/* Info right side */
+.footer-info {
+    flex: 2;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Columns styling */
+.footer-column {
+    min-width: 150px;
+    text-align: left;
+}
+
+.footer-column h4 {
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.footer-column a {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: color 0.2s ease, padding-left 0.2s ease;
+}
+
+.footer-column a:hover {
+    color: var(--color-primary);
+    padding-left: 4px;
+}
+
+.footer-column .social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.25s ease, transform 0.2s ease;
+}
+
+.footer-column .social-link i {
+    width: 18px;
+    text-align: center;
+    font-size: 16px;
+    color: currentColor;
+}
+
+.footer-column .social-link:hover {
+    color: var(--color-primary);
+    transform: translateX(4px);
+}
+
+/* ================== Footer Bottom ================== */
+.footer-bottom {
+    text-align: center;
+    padding-top: 1.2rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));
+    margin-top: 2rem;
+}
+/* ================== Responsive Footer ================== */
+
+/* Small screens (mobile) */
+@media (max-width: 767px) {
+    .footer-main {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .footer-map {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .footer-map iframe {
+        height: 200px;
+        border-radius: 1.5rem;
+    }
+
+    .footer-info {
+        flex: 1 1 100%;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .footer-column {
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .footer-column h4 {
+        font-size: 1rem;
+    }
+
+    .footer-column a,
+    .footer-column .social-link {
+        font-size: 0.9rem;
+    }
+}
+
+/* Medium screens (tablet) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .footer-main {
+        justify-content: space-around;
+        gap: 1.5rem;
+    }
+
+    .footer-map {
+        flex: 0 0 350px;
+        max-width: 350px;
+    }
+
+    .footer-map iframe {
+        height: 220px;
+    }
+
+    .footer-info {
+        flex: 1;
+        gap: 1.5rem;
+    }
+
+    .footer-column h4 {
+        font-size: 1.05rem;
+    }
+}
+
+/* Large screens (desktop) */
+@media (min-width: 1024px) {
+    .footer-main {
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    .footer-map {
+        flex: 0 0 500px;
+        max-width: 500px;
+    }
+
+    .footer-map iframe {
+        height: 250px;
+    }
+
+    .footer-info {
+        flex: 2;
+        gap: 2rem;
+    }
+
+    .footer-column h4 {
+        font-size: 1.1rem;
+    }
 }
