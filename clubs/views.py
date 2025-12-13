@@ -6,6 +6,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
 from datetime import datetime
 from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TYPE_CHOICES
 
@@ -1200,7 +1203,66 @@ def create_club_allowed_email(request, pk):
                 created_by=request.user,  # Track who created this email
             )
             
-            messages.success(request, f'Allowed email "{email}" created successfully! The user can now sign up as a club member.')
+            # Send invitation email
+            email_sent = False
+            email_error = None
+            try:
+                # Get convener name
+                convener_name = 'Club Convener'
+                if request.user.user_type == 'faculty' and hasattr(request.user, 'faculty_profile'):
+                    convener_name = request.user.faculty_profile.name or convener_name
+                elif request.user.user_type == 'officer' and hasattr(request.user, 'officer_profile'):
+                    convener_name = request.user.officer_profile.name or convener_name
+                elif request.user.user_type == 'club_member' and hasattr(request.user, 'club_member_profile'):
+                    convener_name = request.user.club_member_profile.name or convener_name
+                
+                # Build signup URL
+                signup_url = request.build_absolute_uri(reverse('signup'))
+                
+                # Email content
+                subject = f'Invitation to Join {club.name} - CSE UAP'
+                message = f'''Hello,
+
+You have been invited by {convener_name} to join {club.name} as a club member at the Department of Computer Science and Engineering (CSE), University of Asia Pacific (UAP).
+
+To complete your registration, please follow these steps:
+
+1. Visit the signup page: {signup_url}
+2. Enter your email address: {email}
+3. Fill in your full name and create a password (minimum 8 characters)
+4. Click "Sign Up" to create your account
+
+Once you sign up, you will be able to:
+- Access club information and announcements
+- Participate in club activities
+- Connect with other club members
+
+If you have any questions or need assistance, please contact the club convener or the CSE department.
+
+Best regards,
+CSE UAP Team'''
+                
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@uap-cse.edu'),
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                email_sent = True
+            except Exception as e:
+                email_error = str(e)
+                # Log the error but don't fail the entire operation
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Failed to send invitation email to {email}: {email_error}')
+            
+            # Show appropriate message based on email sending result
+            if email_sent:
+                messages.success(request, f'Allowed email "{email}" created successfully and invitation email sent! The user can now sign up as a club member.')
+            else:
+                messages.warning(request, f'Allowed email "{email}" created successfully, but failed to send invitation email. Error: {email_error}. The user can still sign up using their email address.')
+            
             return redirect('clubs:manage_allowed_emails', pk=club.pk)
             
         except Exception as e:

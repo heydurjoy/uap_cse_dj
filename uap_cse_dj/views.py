@@ -423,3 +423,8 @@ def reset_password(request, token):
         return redirect('login')
     
     return render(request, 'reset_password.html', {'token': token})
+
+
+def system_documentation(request):
+    """Display comprehensive system documentation"""
+    return render(request, 'system_documentation.html')
