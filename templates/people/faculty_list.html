@@ -90,7 +90,7 @@
                                     <p class="former-date">Service Period: Until {{ faculty.last_office_date|date:"F Y" }}</p>
                                 {% endif %}
                                 {% if faculty.bio %}
-                                    <p class="faculty-bio">{{ faculty.bio|truncatewords:20 }}</p>
+                                    <p class="faculty-bio">{{ faculty.bio }}</p>
                                 {% endif %}
                             </div>
                         </div>
@@ -195,10 +195,11 @@
 
 .faculty-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
     transition: all 0.3s ease;
 }
+
 
 .faculty-grid[data-view="list"] {
     grid-template-columns: repeat(4, 1fr);
@@ -290,74 +291,154 @@
     text-decoration: none;
     color: inherit;
     display: block;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Default short tile state */
 .faculty-card {
     background: var(--bg-secondary);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                box-shadow 0.3s ease;
     border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    height: 100%;
+    border-radius: 12px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-}
-
-.faculty-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
-.faculty-card-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    background: var(--bg-tertiary);
+    align-items: center;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
     position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
+    min-height: 180px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Expanded tile on hover */
+.faculty-card-link:hover .faculty-card {
+    transform: scale(1.08);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-primary);
+    z-index: 10;
+    min-height: 280px;
+    padding: 1.5rem;
+}
+
+.faculty-card-link:hover {
+    transform: translateY(-4px);
+    z-index: 5;
+}
+
+/* Short tile - compact circular image */
+.faculty-card-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+/* Expanded tile on hover - larger image */
+.faculty-card-link:hover .faculty-card-image {
+    width: 140px;
+    height: 140px;
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
 }
 
 .faculty-card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.faculty-card:hover .faculty-card-image img {
+.faculty-card-link:hover .faculty-card-image img {
     transform: scale(1.05);
 }
 
-
+/* Short tile - minimal body */
 .faculty-card-body {
-    padding: 1.5rem;
-    flex-grow: 1;
+    width: 100%;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Expanded tile on hover - show more content */
+.faculty-card-link:hover .faculty-card-body {
+    gap: 0.75rem;
+}
+
+/* Short tile - compact text */
 .faculty-name {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    color: var(--text-primary);
-    line-height: 1.3;
-}
-
-.faculty-designation {
-    font-size: 0.95rem;
-    color: var(--color-primary);
-    font-weight: 500;
-    margin: 0 0 0.75rem 0;
-}
-
-.faculty-bio {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
     margin: 0;
-    flex-grow: 1;
+    color: var(--text-primary);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Expanded tile on hover - larger name */
+.faculty-card-link:hover .faculty-name {
+    font-size: 1.15rem;
+    -webkit-line-clamp: 3;
+}
+
+/* Short tile - small designation */
+.faculty-designation {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    margin: 0;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Expanded tile on hover - larger designation */
+.faculty-card-link:hover .faculty-designation {
+    font-size: 0.95rem;
+}
+
+/* Short tile - hide bio */
+.faculty-bio {
+    display: none;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* Expanded tile on hover - show bio */
+.faculty-card-link:hover .faculty-bio {
+    display: block;
+    opacity: 1;
+    max-height: 100px;
+    margin-top: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .no-faculty {
@@ -441,13 +522,36 @@
         font-size: 2rem;
     }
     
-    .faculty-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 1.5rem;
+    /* Grid view: One card per row on mobile */
+    .faculty-grid[data-view="grid"] {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* Adjust card sizing for mobile */
+    .faculty-grid[data-view="grid"] .faculty-card {
+        min-height: 160px;
+    }
+    
+    .faculty-card-link:hover .faculty-card {
+        min-height: 240px;
+    }
+    
+    /* Adjust image position for mobile - move down and slightly left */
+    .faculty-grid[data-view="grid"] .faculty-card-image {
+        margin-top: 0.5rem;
+        margin-left: -0.3rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .faculty-card-link:hover .faculty-grid[data-view="grid"] .faculty-card-image {
+        margin-top: 0.75rem;
+        margin-left: -0.3rem;
+        margin-bottom: 1rem;
     }
     
     .faculty-grid[data-view="list"] {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
     
