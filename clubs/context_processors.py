@@ -9,3 +9,7 @@ def clubs(request):
         'clubs': clubs
     }
 
+
+
+
+

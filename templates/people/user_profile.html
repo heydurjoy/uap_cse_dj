@@ -237,25 +237,15 @@
                     {% endif %}
                 {% endif %}
                 
-                <!-- Manage Clubs - Level 4+ Faculty or Officers -->
+                <!-- Manage Clubs - Level 4+ -->
                 {% if user.access_level == '4' or user.access_level == '5' %}
-                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
-                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
-                        <div class="action-icon">👥</div>
-                        <div class="action-content">
-                            <h3 class="action-title">Manage Clubs</h3>
-                            <p class="action-desc">Create, edit, and manage clubs</p>
-                        </div>
-                    </a>
-                    {% else %}
-                    <div class="action-card action-disabled">
-                        <div class="action-icon">👥</div>
-                        <div class="action-content">
-                            <h3 class="action-title">Manage Clubs</h3>
-                            <p class="action-desc">Available to Faculty and Officers only</p>
-                        </div>
+                <div class="action-card action-disabled">
+                    <div class="action-icon">👥</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Clubs</h3>
+                        <p class="action-desc">Coming soon - Create and manage clubs</p>
                     </div>
-                    {% endif %}
+                </div>
                 {% endif %}
                 
                 <!-- Create Users - Level 4+ -->
@@ -282,66 +272,6 @@
                     {% endif %}
                 {% endif %}
             </div>
-            
-            <!-- Associated Clubs Section -->
-            {% if associated_clubs %}
-            <div class="associated-clubs-section" style="margin-top: 3rem;">
-                <h2 class="section-heading">Your Clubs</h2>
-                <div class="clubs-grid">
-                    {% for club_info in associated_clubs %}
-                    <div class="club-card">
-                        <div class="club-card-header">
-                            {% if club_info.club.logo %}
-                            <div class="club-logo-small">
-                                <img src="/media/{{ club_info.club.logo.name }}" alt="{{ club_info.club.name }}">
-                            </div>
-                            {% else %}
-                            <div class="club-logo-small-placeholder">
-                                <span>👥</span>
-                            </div>
-                            {% endif %}
-                            <div class="club-info-header">
-                                <h3 class="club-name">{{ club_info.club.name }}</h3>
-                                <span class="club-role-badge">{{ club_info.role|title }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="club-actions">
-                            {% if club_info.can_manage_info %}
-                            <a href="{% url 'clubs:edit_club' club_info.club.pk %}" class="club-action-btn">
-                                <span class="club-action-icon">⚙️</span>
-                                <span>Club Info</span>
-                            </a>
-                            {% endif %}
-                            
-                            {% if club_info.can_manage_members %}
-                            <a href="{% url 'clubs:manage_positions' club_info.club.pk %}" class="club-action-btn">
-                                <span class="club-action-icon">👥</span>
-                                <span>Members</span>
-                            </a>
-                            <a href="{% url 'clubs:manage_allowed_emails' club_info.club.pk %}" class="club-action-btn">
-                                <span class="club-action-icon">➕</span>
-                                <span>Add Members</span>
-                            </a>
-                            {% endif %}
-                            
-                            {% if club_info.can_manage_posts %}
-                            <a href="{% url 'clubs:manage_posts' club_info.club.pk %}" class="club-action-btn">
-                                <span class="club-action-icon">📝</span>
-                                <span>Posts</span>
-                            </a>
-                            {% endif %}
-                            
-                            <a href="{% url 'clubs:club_detail' club_info.club.pk %}" class="club-action-btn view-btn">
-                                <span class="club-action-icon">👁️</span>
-                                <span>View</span>
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
         </div>
     </section>
 </div>
@@ -667,165 +597,6 @@
     }
     
     .quick-info-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Associated Clubs Section */
-.associated-clubs-section {
-    margin-top: 3rem;
-}
-
-.clubs-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.club-card {
-    background: var(--bg-secondary);
-    border-radius: 16px;
-    padding: 1.5rem;
-    border: 2px solid var(--border-color);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.club-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-primary) 15%, transparent);
-    border-color: var(--color-primary);
-}
-
-.club-card-header {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.club-logo-small {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 2px solid var(--color-primary);
-    background: var(--bg-tertiary);
-}
-
-.club-logo-small img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.club-logo-small-placeholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border: 2px dashed var(--border-color);
-    font-size: 2rem;
-    flex-shrink: 0;
-}
-
-.club-info-header {
-    flex: 1;
-    min-width: 0;
-}
-
-.club-name {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 0.5rem 0;
-    word-wrap: break-word;
-}
-
-.club-role-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-    color: var(--color-primary);
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.club-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
-}
-
-.club-action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 0.8rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    text-decoration: none;
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-    justify-content: center;
-    text-align: center;
-}
-
-.club-action-btn:hover {
-    background: var(--color-primary);
-    color: white;
-    border-color: var(--color-primary);
-    transform: translateX(4px);
-}
-
-.club-action-btn.view-btn {
-    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
-    border-color: var(--color-primary);
-}
-
-.club-action-btn.view-btn:hover {
-    background: var(--color-primary);
-    color: white;
-}
-
-.club-action-icon {
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.club-action-btn span:not(.club-action-icon) {
-    flex: 1;
-    text-align: center;
-}
-
-@media (max-width: 768px) {
-    .clubs-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .club-actions {
-        grid-template-columns: 1fr;
-    }
-    
-    .club-action-btn {
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 600px) {
-    .clubs-grid {
         grid-template-columns: 1fr;
     }
 }

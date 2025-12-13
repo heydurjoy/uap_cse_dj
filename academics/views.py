@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from .models import Program, Course, CourseOutcome, ProgramOutcome
+from .models import Program, Course, CourseOutcome, ProgramOutcome, BLOOMS_CHOICES
 
 
 def check_course_access(user):
@@ -66,6 +66,98 @@ def manage_courses(request):
     }
     
     return render(request, 'academics/manage_courses.html', context)
+
+
+@login_required
+def add_course(request):
+    """Add a new course (level 3+ users)"""
+    if not check_course_access(request.user):
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('people:user_profile')
+    
+    programs = Program.objects.all()
+    if not programs:
+        messages.error(request, 'Please create a Program first.')
+        return redirect('academics:manage_courses')
+    
+    selected_program = programs.first()
+    
+    if request.method == 'POST':
+        try:
+            program = Program.objects.get(pk=request.POST.get('program'))
+            course = Course.objects.create(
+                program=program,
+                course_code=request.POST.get('course_code', '').strip(),
+                title=request.POST.get('title', '').strip(),
+                credit_hours=float(request.POST.get('credit_hours', 0)),
+                contact_hours=float(request.POST.get('contact_hours', 0)),
+                course_type=request.POST.get('course_type', 'TH'),
+                year_semester=request.POST.get('year_semester', '1-1'),
+            )
+            
+            if 'course_outline_pdf' in request.FILES:
+                course.course_outline_pdf = request.FILES['course_outline_pdf']
+                course.save()
+            
+            # Handle prerequisites
+            prerequisite_ids = request.POST.getlist('prerequisites')
+            if prerequisite_ids:
+                course.prerequisites.set(prerequisite_ids)
+            
+            # Handle Course Learning Outcomes (CLOs)
+            co_prefixes = set()
+            for key in request.POST.keys():
+                if key.startswith('co_') and '_sequence' in key:
+                    prefix = key.replace('_sequence', '')
+                    co_prefixes.add(prefix)
+            
+            for prefix in co_prefixes:
+                sequence_num = request.POST.get(f'{prefix}_sequence', '').strip()
+                statement = request.POST.get(f'{prefix}_statement', '').strip()
+                po_id = request.POST.get(f'{prefix}_po', '').strip()
+                blooms = request.POST.get(f'{prefix}_blooms', '').strip()
+                kp = request.POST.get(f'{prefix}_kp', '').strip()
+                pa = request.POST.get(f'{prefix}_pa', '').strip()
+                aa = request.POST.get(f'{prefix}_aa', '').strip() or None
+                marks = request.POST.get(f'{prefix}_marks', '0').strip()
+                activity = request.POST.get(f'{prefix}_activity', '').strip()
+                
+                if sequence_num and statement and po_id and blooms and kp and pa:
+                    try:
+                        CourseOutcome.objects.create(
+                            course=course,
+                            sequence_number=int(sequence_num),
+                            statement=statement,
+                            program_outcome=ProgramOutcome.objects.get(pk=int(po_id)),
+                            blooms_level=blooms,
+                            knowledge_profile=kp,
+                            problem_attribute=pa,
+                            activity_attribute=aa,
+                            total_assessment_marks=int(marks) if marks else 0,
+                            activity=activity
+                        )
+                    except (ValueError, ProgramOutcome.DoesNotExist) as e:
+                        messages.warning(request, f'Error saving CLO {sequence_num}: {str(e)}')
+            
+            messages.success(request, f'Course {course.course_code} created successfully!')
+            return redirect('academics:manage_courses')
+        except Exception as e:
+            messages.error(request, f'Error creating course: {str(e)}')
+    
+    program_outcomes = ProgramOutcome.objects.filter(program=selected_program).order_by('code')
+    all_courses = Course.objects.all().order_by('course_code')
+    
+    context = {
+        'programs': programs,
+        'selected_program': selected_program,
+        'program_outcomes': program_outcomes,
+        'all_courses': all_courses,
+        'course_outcomes': [],
+        'total_marks': 0,
+        'blooms_choices': BLOOMS_CHOICES,
+    }
+    
+    return render(request, 'academics/add_course.html', context)
 
 
 @login_required
@@ -185,6 +277,7 @@ def edit_course(request, pk):
         'course_outcomes': course_outcomes,
         'program_outcomes': program_outcomes,
         'total_marks': total_marks,
+        'blooms_choices': BLOOMS_CHOICES,
     }
     
     return render(request, 'academics/edit_course.html', context)

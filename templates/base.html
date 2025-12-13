@@ -131,13 +131,8 @@
                 <li class="nav-dropdown">
                     <a href="#" class="nav-link dropdown-toggle">Clubs <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{% url 'clubs:activities' %}" class="dropdown-link">Activities</a></li>
-                        {% for club in clubs %}
-                        <li><a href="{% url 'clubs:club_detail' club.pk %}" class="dropdown-link">{{ club.name }}</a></li>
-                        {% endfor %}
-                        {% if not clubs %}
-                        <li><span class="dropdown-link" style="color: var(--text-secondary); font-style: italic;">No clubs available</span></li>
-                        {% endif %}
+                        <li><a href="#" class="dropdown-link">CLBUS</a></li>
+                        <li><a href="#" class="dropdown-link">Activities</a></li>
                     </ul>
                 </li>
                 <li class="nav-dropdown">
@@ -229,7 +224,6 @@
     <script src="{% static 'js/mobile-menu.js' %}"></script>
     <script src="{% static 'js/dropdown.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
-    <script src="{% static 'js/navbar-scroll.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

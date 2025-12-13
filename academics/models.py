@@ -24,14 +24,29 @@ YEAR_SEMESTER_CHOICES = (
     ('4-2', 'Year 4, Semester 2'),
 )
 
-# Revised Bloom's Taxonomy (K1-K6)
+# Bloom's Taxonomy across domains
 BLOOMS_CHOICES = (
-    ('K1', 'K1: Remember (Knowledge/Cognitive) - Recall facts'),
-    ('K2', 'K2: Understand (Knowledge/Cognitive) - Explain ideas'),
-    ('K3', 'K3: Apply (Knowledge/Cognitive) - Use in new situations'),
-    ('K4', 'K4: Analyze (Knowledge/Cognitive) - Break down/Compare'),
-    ('K5', 'K5: Evaluate (Knowledge/Cognitive) - Judge value/Justify'),
-    ('K6', 'K6: Create (Knowledge/Cognitive) - Produce new work/Design'),
+    # Cognitive Domain (Knowledge – K1 to K6)
+    ('K1', 'K1: Remember – Recall facts and basic concepts'),
+    ('K2', 'K2: Understand – Explain ideas or concepts'),
+    ('K3', 'K3: Apply – Use information in new situations'),
+    ('K4', 'K4: Analyze – Break information into parts / Compare'),
+    ('K5', 'K5: Evaluate – Justify decisions / Judge value'),
+    ('K6', 'K6: Create – Produce new or original work'),
+
+    # Affective Domain (Attitudes – A1 to A5)
+    ('A1', 'A1: Receiving – Awareness / Willingness to listen'),
+    ('A2', 'A2: Responding – Participation / Active engagement'),
+    ('A3', 'A3: Valuing – Acceptance of values / Commitment'),
+    ('A4', 'A4: Organizing – Integrating values / Prioritizing'),
+    ('A5', 'A5: Characterizing – Consistent value-driven behavior'),
+
+    # Psychomotor Domain (Skills – P1 to P5)
+    ('P1', 'P1: Imitation – Copying actions / Following demonstration'),
+    ('P2', 'P2: Manipulation – Performing with guidance'),
+    ('P3', 'P3: Precision – Accurate, independent performance'),
+    ('P4', 'P4: Articulation – Coordinated, combined skills'),
+    ('P5', 'P5: Naturalization – Automatic, mastery-level performance'),
 )
 
 # Knowledge Profile (KP) Choices
