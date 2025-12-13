@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Feature Cards - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-feature-cards-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Feature Cards</h1>
+        </div>
+        
+        <div style="background: color-mix(in srgb, #ff9800 15%, var(--bg-secondary)); border: 1px solid #ff9800; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: var(--text-primary);">
+            <strong>Note:</strong> The first 2 feature cards (lowest serial numbers) are managed by super admin and are not shown here.
+        </div>
+        
+        <div class="toolbar" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'designs:create_feature_card' %}" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem;">
+                + Create Feature Card
+            </a>
+        </div>
+        
+        <div class="cards-table-container" style="background: var(--bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+            <table class="cards-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border-bottom: 2px solid var(--border-color);">
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">SL</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Image</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Caption</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Title</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Status</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if cards %}
+                        {% for card in cards %}
+                            <tr class="card-row" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">{{ card.sl_number }}</td>
+                                <td style="padding: 1rem;">
+                                    {% if card.picture %}
+                                        <img src="/media/{{ card.picture.name }}" alt="{{ card.caption }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                    {% else %}
+                                        <span style="color: var(--text-secondary);">No image</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 1rem; color: var(--text-primary);">
+                                    <strong>{{ card.caption }}</strong>
+                                </td>
+                                <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                    {{ card.title|truncatewords:5 }}
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    {% if card.is_active %}
+                                        <span style="color: #28a745; font-weight: 600;">Active</span>
+                                    {% else %}
+                                        <span style="color: var(--text-secondary);">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                        <a href="{% url 'designs:edit_feature_card' card.pk %}" class="btn-link" style="padding: 0.5rem 1rem; text-decoration: none; color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; font-size: 0.9rem;">
+                                            Edit
+                                        </a>
+                                        <a href="{% url 'designs:delete_feature_card' card.pk %}" class="btn-link" style="padding: 0.5rem 1rem; text-decoration: none; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; font-size: 0.9rem;">
+                                            Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                                No feature cards found.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<style>
+    .card-row:hover {
+        background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary)) !important;
+    }
+    
+    .btn-link:hover {
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .cards-table-container {
+            overflow-x: auto;
+        }
+        
+        .cards-table {
+            min-width: 600px;
+        }
+    }
+</style>
+{% endblock %}
+

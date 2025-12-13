@@ -6,12 +6,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Design System{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{% static 'images/icon.png' %}">
+    <!-- Favicon - Multiple sizes for better browser support -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock %}
+    <!-- Animated Favicon (Optional - cycles through multiple images) -->
+    <script>
+    // Optional: Cycle through multiple favicon images for animation effect
+    // Uncomment and add your image paths if you want animated favicon
+    /*
+    (function() {
+        const faviconImages = [
+            '{% static "images/icon.png" %}',
+            // Add more image paths here if you want to cycle through them
+            // '{% static "images/icon2.png" %}',
+            // '{% static "images/icon3.png" %}',
+        ];
+        
+        if (faviconImages.length > 1) {
+            let currentIndex = 0;
+            const favicon = document.querySelector('link[rel="icon"]');
+            
+            setInterval(function() {
+                currentIndex = (currentIndex + 1) % faviconImages.length;
+                favicon.href = faviconImages[currentIndex];
+            }, 500); // Change every 500ms
+        }
+    })();
+    */
+    </script>
 </head>
 <body>
     <!-- Navbar -->
@@ -131,8 +159,13 @@
                 <li class="nav-dropdown">
                     <a href="#" class="nav-link dropdown-toggle">Clubs <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" class="dropdown-link">CLBUS</a></li>
-                        <li><a href="#" class="dropdown-link">Activities</a></li>
+                        <li><a href="{% url 'clubs:activities' %}" class="dropdown-link">Activities</a></li>
+                        {% for club in clubs %}
+                        <li><a href="{% url 'clubs:club_detail' club.pk %}" class="dropdown-link">{{ club.name }}</a></li>
+                        {% endfor %}
+                        {% if not clubs %}
+                        <li><span class="dropdown-link" style="color: var(--text-secondary); font-style: italic;">No clubs available</span></li>
+                        {% endif %}
                     </ul>
                 </li>
                 <li class="nav-dropdown">
@@ -224,6 +257,7 @@
     <script src="{% static 'js/mobile-menu.js' %}"></script>
     <script src="{% static 'js/dropdown.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/navbar-scroll.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

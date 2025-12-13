@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load user_filters %}
 
 {% block title %}My Profile - CSE UAP{% endblock %}
 
@@ -49,17 +50,15 @@
                     <p class="profile-email">{{ user.email }}</p>
                 </div>
                 
-                <!-- Access Level Badge -->
+                <!-- User Status Badge -->
                 <div class="access-level-section">
                     <div class="access-level-badge">
-                        <span class="access-level-label">Access Level</span>
+                        <span class="access-level-label">Status</span>
                         <span class="access-level-value">
-                            {% if user.access_level == '5' %}Head
-                            {% elif user.access_level == '4' %}Super Admin
-                            {% elif user.access_level == '3' %}Course Access
-                            {% elif user.access_level == '2' %}General User
-                            {% elif user.access_level == '1' %}Club Member
-                            {% else %}Not Set
+                            {% if user.is_power_user %}
+                                <span style="color: #007bff; font-weight: bold;">Power User</span>
+                            {% else %}
+                                General User
                             {% endif %}
                         </span>
                     </div>
@@ -115,28 +114,61 @@
         <div class="permissions-section">
             <h2 class="section-heading">Your Permissions & Actions</h2>
             
-            <!-- Permission Rules Info -->
+            <!-- Manage Permissions - Special Full Width Button -->
+            {% if user.is_power_user %}
+            <div class="manage-permissions-banner" style="margin-bottom: 2rem;">
+                <a href="{% url 'people:manage_user_permissions_list' %}" class="manage-permissions-button">
+                    <div class="manage-permissions-content">
+                        <div class="manage-permissions-icon">🔐</div>
+                        <div class="manage-permissions-text">
+                            <h3 class="manage-permissions-title">Manage Permissions</h3>
+                            <p class="manage-permissions-desc">Grant and revoke permissions for users</p>
+                        </div>
+                        <div class="manage-permissions-arrow">→</div>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Permissions Info - Collapsible -->
             <div class="permission-rules-card">
-                <h3 class="rules-title">Permission Rules</h3>
-                <div class="rules-content">
-                    {% if user.access_level == '5' %}
-                        <p class="rule-item"><strong>Head (Level 5):</strong> Full access - Can do everything including creating users, managing courses, publishing admission test results, clubs, and all administrative tasks.</p>
-                    {% elif user.access_level == '4' %}
-                        <p class="rule-item"><strong>Super Admin (Level 4):</strong> Can edit profile, manage courses, publish admission test results, create/manage clubs, and create new users of any level.</p>
-                        {% if profile_type == 'officer' %}
-                        <p class="rule-item"><strong>Officer with Super Admin:</strong> Can post notices, publish admission test results, create new users (any level), create clubs, and assign club conveners.</p>
+                <button 
+                    type="button" 
+                    class="permissions-toggle-btn" 
+                    onclick="togglePermissions()"
+                    aria-expanded="false"
+                    aria-controls="permissions-content"
+                >
+                    <h3 class="rules-title" style="margin: 0; display: inline-block;">Your Permissions</h3>
+                    <span class="toggle-icon" id="permissions-toggle-icon">▼</span>
+                </button>
+                <div 
+                    class="rules-content" 
+                    id="permissions-content" 
+                    style="display: none; margin-top: 1rem;"
+                >
+                    {% with permissions=user.get_all_permissions %}
+                        {% if permissions %}
+                            <p class="rule-item"><strong>Active Permissions:</strong></p>
+                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                {% for user_perm in permissions %}
+                                    <li style="margin: 0.25rem 0;">
+                                        <strong>{{ user_perm.permission.name }}</strong>
+                                        {% if user_perm.permission.description %}
+                                            - {{ user_perm.permission.description }}
+                                        {% endif %}
+                                        <br>
+                                        <small style="color: var(--text-secondary);">
+                                            Granted by: {{ user_perm.granted_by.get_full_name|default:user_perm.granted_by.email }}
+                                            on {{ user_perm.granted_at|date:"M d, Y" }}
+                                        </small>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="rule-item">You currently have no special permissions. You can edit your own profile.</p>
                         {% endif %}
-                    {% elif user.access_level == '3' %}
-                        <p class="rule-item"><strong>Course Access (Level 3):</strong> Can edit profile, manage courses, and publish admission test results (available to both Faculty and Officers).</p>
-                    {% elif user.access_level == '2' %}
-                        <p class="rule-item"><strong>General User (Level 2):</strong> Can edit your own profile.</p>
-                    {% elif user.access_level == '1' %}
-                        <p class="rule-item"><strong>Club Member (Level 1):</strong> Basic access - Can edit your own profile.</p>
-                    {% endif %}
-                    
-                    {% if profile_type == 'officer' and user.access_level != '4' %}
-                        <p class="rule-item"><strong>Officer:</strong> Can post notices.</p>
-                    {% endif %}
+                    {% endwith %}
                 </div>
             </div>
             
@@ -170,40 +202,30 @@
                 </a>
                 {% endif %}
                 
-                <!-- Post Notices - Officers (Level 3+) -->
-                {% if profile_type == 'officer' %}
-                    {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
-                    <a href="{% url 'office:create_post' %}?post_type=notice" class="action-card">
-                        <div class="action-icon">📢</div>
-                        <div class="action-content">
-                            <h3 class="action-title">Post Notices</h3>
-                            <p class="action-desc">Create and post new notices</p>
-                        </div>
-                    </a>
-                    {% else %}
-                    <div class="action-card action-disabled">
-                        <div class="action-icon">📢</div>
-                        <div class="action-content">
-                            <h3 class="action-title">Post Notices</h3>
-                            <p class="action-desc">Coming soon - Post announcements</p>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endif %}
-                
-                <!-- Manage Posts - Level 3+ -->
-                {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                <!-- Manage Your Posts - for users with post_notices permission -->
+                {% if user|has_granted_permission:'post_notices' %}
                 <a href="{% url 'office:manage_posts' %}" class="action-card">
-                    <div class="action-icon">📢</div>
+                    <div class="action-icon">📝</div>
                     <div class="action-content">
-                        <h3 class="action-title">Manage Posts</h3>
-                        <p class="action-desc">Create, edit, and manage posts and notices</p>
+                        <h3 class="action-title">Manage Your Posts</h3>
+                        <p class="action-desc">View, edit, and manage your own posts</p>
                     </div>
                 </a>
                 {% endif %}
                 
-                <!-- Manage Courses - Level 3+ -->
-                {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                <!-- Manage All Posts - for users with manage_all_posts permission -->
+                {% if user|has_granted_permission:'manage_all_posts' %}
+                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                    <div class="action-icon">📢</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage All Posts</h3>
+                        <p class="action-desc">Create, edit, and manage all posts and notices</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- Manage Courses -->
+                {% if user|has_granted_permission:'manage_courses' %}
                 <a href="{% url 'academics:manage_courses' %}" class="action-card">
                     <div class="action-icon">📚</div>
                     <div class="action-content">
@@ -213,8 +235,8 @@
                 </a>
                 {% endif %}
                 
-                <!-- Manage Routines - Level 3+ -->
-                {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                <!-- Manage Routines -->
+                {% if user|has_granted_permission:'post_routines' %}
                 <a href="{% url 'office:manage_routines' %}" class="action-card">
                     <div class="action-icon">📅</div>
                     <div class="action-content">
@@ -224,8 +246,8 @@
                 </a>
                 {% endif %}
                 
-                <!-- Publish Admission Test Results - Level 3+ (Faculty and Officers) -->
-                {% if user.access_level == '3' or user.access_level == '4' or user.access_level == '5' %}
+                <!-- Publish Admission Test Results (Faculty and Officers) -->
+                {% if user|has_granted_permission:'post_admission_results' %}
                     {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card">
                         <div class="action-icon">📋</div>
@@ -237,41 +259,112 @@
                     {% endif %}
                 {% endif %}
                 
-                <!-- Manage Clubs - Level 4+ -->
-                {% if user.access_level == '4' or user.access_level == '5' %}
-                <div class="action-card action-disabled">
-                    <div class="action-icon">👥</div>
-                    <div class="action-content">
-                        <h3 class="action-title">Manage Clubs</h3>
-                        <p class="action-desc">Coming soon - Create and manage clubs</p>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <!-- Create Users - Level 4+ -->
-                {% if user.access_level == '4' or user.access_level == '5' %}
-                <div class="action-card action-disabled">
-                    <div class="action-icon">👤</div>
-                    <div class="action-content">
-                        <h3 class="action-title">Create Users</h3>
-                        <p class="action-desc">Coming soon - Add new users to the system</p>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <!-- Assign Club Convener - Officer with Level 4+ -->
-                {% if profile_type == 'officer' %}
-                    {% if user.access_level == '4' or user.access_level == '5' %}
-                    <div class="action-card action-disabled">
-                        <div class="action-icon">⭐</div>
+                <!-- Manage Clubs (Faculty or Officers) -->
+                {% if user|has_granted_permission:'manage_club_settings' %}
+                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
+                        <div class="action-icon">👥</div>
                         <div class="action-content">
-                            <h3 class="action-title">Assign Club Convener</h3>
-                            <p class="action-desc">Coming soon - Assign club leadership</p>
+                            <h3 class="action-title">Manage Clubs</h3>
+                            <p class="action-desc">Create, edit, and manage clubs</p>
                         </div>
-                    </div>
+                    </a>
                     {% endif %}
                 {% endif %}
+                
+                <!-- Manage Feature Cards -->
+                {% if user|has_granted_permission:'edit_feature_cards' %}
+                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card">
+                    <div class="action-icon">🎨</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Feature Cards</h3>
+                        <p class="action-desc">Edit feature cards on the homepage</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- Manage Head Message -->
+                {% if user|has_granted_permission:'edit_head_message' %}
+                <a href="{% url 'designs:manage_head_message' %}" class="action-card">
+                    <div class="action-icon">💬</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Head Message</h3>
+                        <p class="action-desc">Edit message from the head of department</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- Manage My Permissions -->
+                {% if user.is_power_user %}
+                <a href="{% url 'people:manage_own_permissions' %}" class="action-card">
+                    <div class="action-icon">⚙️</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage My Permissions</h3>
+                        <p class="action-desc">View and manage your own permissions</p>
+                    </div>
+                </a>
+                {% endif %}
             </div>
+            
+            <!-- Associated Clubs Section -->
+            {% if associated_clubs %}
+            <div class="associated-clubs-section" style="margin-top: 3rem;">
+                <h2 class="section-heading">Your Clubs</h2>
+                <div class="clubs-grid">
+                    {% for club_info in associated_clubs %}
+                    <div class="club-card">
+                        <div class="club-card-header">
+                            {% if club_info.club.logo %}
+                            <div class="club-logo-small">
+                                <img src="/media/{{ club_info.club.logo.name }}" alt="{{ club_info.club.name }}">
+                            </div>
+                            {% else %}
+                            <div class="club-logo-small-placeholder">
+                                <span>👥</span>
+                            </div>
+                            {% endif %}
+                            <div class="club-info-header">
+                                <h3 class="club-name">{{ club_info.club.name }}</h3>
+                                <span class="club-role-badge">{{ club_info.role|title }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="club-actions">
+                            {% if club_info.can_manage_info %}
+                            <a href="{% url 'clubs:edit_club' club_info.club.pk %}" class="club-action-btn">
+                                <span class="club-action-icon">⚙️</span>
+                                <span>Club Info</span>
+                            </a>
+                            {% endif %}
+                            
+                            {% if club_info.can_manage_members %}
+                            <a href="{% url 'clubs:manage_positions' club_info.club.pk %}" class="club-action-btn">
+                                <span class="club-action-icon">👥</span>
+                                <span>Members</span>
+                            </a>
+                            <a href="{% url 'clubs:manage_allowed_emails' club_info.club.pk %}" class="club-action-btn">
+                                <span class="club-action-icon">➕</span>
+                                <span>Add Members</span>
+                            </a>
+                            {% endif %}
+                            
+                            {% if club_info.can_manage_posts %}
+                            <a href="{% url 'clubs:manage_posts' club_info.club.pk %}" class="club-action-btn">
+                                <span class="club-action-icon">📝</span>
+                                <span>Posts</span>
+                            </a>
+                            {% endif %}
+                            
+                            <a href="{% url 'clubs:club_detail' club_info.club.pk %}" class="club-action-btn view-btn">
+                                <span class="club-action-icon">👁️</span>
+                                <span>View</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </section>
 </div>
@@ -457,6 +550,100 @@
     margin: 0 0 1.5rem 0;
 }
 
+/* Manage Permissions Banner */
+.manage-permissions-banner {
+    width: 100%;
+}
+
+.manage-permissions-button {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid var(--color-primary);
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 30%, transparent),
+                0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.manage-permissions-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, var(--color-primary), #764ba2, var(--color-primary));
+    border-radius: 16px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.manage-permissions-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px color-mix(in srgb, var(--color-primary) 40%, transparent),
+                0 0 0 3px color-mix(in srgb, var(--color-primary) 30%, transparent),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    border-color: var(--color-primary);
+}
+
+.manage-permissions-button:hover::before {
+    opacity: 1;
+}
+
+.manage-permissions-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.manage-permissions-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.manage-permissions-text {
+    flex: 1;
+}
+
+.manage-permissions-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.manage-permissions-desc {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.manage-permissions-arrow {
+    font-size: 2rem;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.manage-permissions-button:hover .manage-permissions-arrow {
+    transform: translateX(5px);
+}
+
 /* Permission Rules Card */
 .permission-rules-card {
     background: linear-gradient(135deg, 
@@ -468,11 +655,46 @@
     border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
+.permissions-toggle-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.permissions-toggle-btn:hover {
+    opacity: 0.8;
+}
+
+.permissions-toggle-btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.toggle-icon {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    transition: transform 0.3s ease;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.permissions-toggle-btn[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
+}
+
 .rules-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-primary);
-    margin: 0 0 1rem 0;
+    margin: 0;
 }
 
 .rules-content {
@@ -585,6 +807,30 @@
     .actions-grid {
         grid-template-columns: 1fr;
     }
+    
+    .manage-permissions-button {
+        padding: 1.5rem 1.25rem;
+    }
+    
+    .manage-permissions-content {
+        gap: 1rem;
+    }
+    
+    .manage-permissions-icon {
+        font-size: 2.5rem;
+    }
+    
+    .manage-permissions-title {
+        font-size: 1.25rem;
+    }
+    
+    .manage-permissions-desc {
+        font-size: 0.9rem;
+    }
+    
+    .manage-permissions-arrow {
+        font-size: 1.5rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -600,5 +846,180 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Associated Clubs Section */
+.associated-clubs-section {
+    margin-top: 3rem;
+}
+
+.clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.club-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.club-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    border-color: var(--color-primary);
+}
+
+.club-card-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.club-logo-small {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid var(--color-primary);
+    background: var(--bg-tertiary);
+}
+
+.club-logo-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.club-logo-small-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 2px dashed var(--border-color);
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.club-info-header {
+    flex: 1;
+    min-width: 0;
+}
+
+.club-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    word-wrap: break-word;
+}
+
+.club-role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.club-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+}
+
+.club-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    justify-content: center;
+    text-align: center;
+}
+
+.club-action-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateX(4px);
+}
+
+.club-action-btn.view-btn {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    border-color: var(--color-primary);
+}
+
+.club-action-btn.view-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.club-action-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.club-action-btn span:not(.club-action-icon) {
+    flex: 1;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .clubs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .club-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .club-action-btn {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .clubs-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
+
+<script>
+function togglePermissions() {
+    const content = document.getElementById('permissions-content');
+    const button = document.querySelector('.permissions-toggle-btn');
+    const icon = document.getElementById('permissions-toggle-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        button.setAttribute('aria-expanded', 'true');
+    } else {
+        content.style.display = 'none';
+        button.setAttribute('aria-expanded', 'false');
+    }
+}
+</script>
 {% endblock %}

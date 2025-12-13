@@ -8,14 +8,10 @@ from .models import Program, Course, CourseOutcome, ProgramOutcome, BLOOMS_CHOIC
 
 
 def check_course_access(user):
-    """Check if user has access level 3 or higher"""
+    """Check if user has manage_courses permission"""
     if not user.is_authenticated:
         return False
-    try:
-        access_level = int(user.access_level) if user.access_level else 0
-        return access_level >= 3
-    except (ValueError, TypeError):
-        return False
+    return user.has_permission('manage_courses')
 
 
 @login_required

@@ -19,10 +19,105 @@ def home(request):
     hero_tags = HeroTags.objects.filter(is_active=True).order_by('sl')
     # Use the first active feature card as the HoD highlight (editable via admin)
     hod_card = FeatureCard.objects.filter(is_active=True).order_by('sl_number').first()
+    
+    # Calculate lifetime_stats for BSc program (for PO, Blooms, K, P, A tables)
+    lifetime_stats = None
+    program_outcomes = None
+    try:
+        from academics.models import Program, ProgramOutcome, Course, CourseOutcome
+        
+        # Get BSc program
+        program = Program.objects.filter(name__icontains='BSc').first()
+        
+        if program:
+            # Get all Program Outcomes for the program and sort numerically
+            import re
+            pos_list = list(ProgramOutcome.objects.filter(program=program))
+            # Sort by extracting the numeric part from the code (e.g., "PO1" -> 1, "PO10" -> 10)
+            pos_list.sort(key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0)
+            program_outcomes = pos_list
+            
+            # Initialize lifetime statistics
+            lifetime_stats = {
+                'program_outcomes': {},  # PO1-PO12: {credits, marks}
+                'blooms': {},  # K1-K6: {credits, marks}
+                'knowledge': {},  # K1-K8: {credits, marks}
+                'problem': {},  # P1-P7: {credits, marks}
+                'activity': {},  # A1-A5: {credits, marks}
+            }
+            
+            # Get all courses for the program
+            courses = Course.objects.filter(program=program)
+            
+            for course in courses:
+                outcomes = course.outcomes.all()
+                course_credit = float(course.credit_hours)
+                
+                for outcome in outcomes:
+                    # Program Outcomes
+                    if outcome.program_outcome:
+                        po_code = outcome.program_outcome.code
+                        if po_code not in lifetime_stats['program_outcomes']:
+                            lifetime_stats['program_outcomes'][po_code] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['program_outcomes'][po_code]['credits'] += course_credit
+                        lifetime_stats['program_outcomes'][po_code]['marks'] += outcome.total_assessment_marks
+                    
+                    # Bloom's taxonomy
+                    blooms = outcome.blooms_level
+                    if blooms:
+                        if blooms not in lifetime_stats['blooms']:
+                            lifetime_stats['blooms'][blooms] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['blooms'][blooms]['credits'] += course_credit
+                        lifetime_stats['blooms'][blooms]['marks'] += outcome.total_assessment_marks
+                    
+                    # Knowledge profiles
+                    kp = outcome.knowledge_profile
+                    if kp:
+                        if kp not in lifetime_stats['knowledge']:
+                            lifetime_stats['knowledge'][kp] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['knowledge'][kp]['credits'] += course_credit
+                        lifetime_stats['knowledge'][kp]['marks'] += outcome.total_assessment_marks
+                    
+                    # Problem attributes
+                    pa = outcome.problem_attribute
+                    if pa:
+                        if pa not in lifetime_stats['problem']:
+                            lifetime_stats['problem'][pa] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['problem'][pa]['credits'] += course_credit
+                        lifetime_stats['problem'][pa]['marks'] += outcome.total_assessment_marks
+                    
+                    # Activity attributes
+                    aa = outcome.activity_attribute
+                    if aa:
+                        if aa not in lifetime_stats['activity']:
+                            lifetime_stats['activity'][aa] = {'credits': 0, 'marks': 0}
+                        lifetime_stats['activity'][aa]['credits'] += course_credit
+                        lifetime_stats['activity'][aa]['marks'] += outcome.total_assessment_marks
+            
+            # Calculate total marks for each category for percentage calculations
+            if lifetime_stats:
+                lifetime_stats['totals'] = {
+                    'program_outcomes': sum(data['marks'] for data in lifetime_stats['program_outcomes'].values()),
+                    'blooms': sum(data['marks'] for data in lifetime_stats['blooms'].values()),
+                    'knowledge': sum(data['marks'] for data in lifetime_stats['knowledge'].values()),
+                    'problem': sum(data['marks'] for data in lifetime_stats['problem'].values()),
+                    'activity': sum(data['marks'] for data in lifetime_stats['activity'].values()),
+                }
+    except ImportError:
+        # Academics app not available or models not migrated yet
+        lifetime_stats = None
+        program_outcomes = None
+    except Exception:
+        # Handle any other errors gracefully
+        lifetime_stats = None
+        program_outcomes = None
+    
     return render(request, 'home.html', {
         'feature_cards': feature_cards,
         'hero_tags': hero_tags,
-        'hod_card': hod_card
+        'hod_card': hod_card,
+        'lifetime_stats': lifetime_stats,
+        'program_outcomes': program_outcomes,
     })
 
 
@@ -145,7 +240,7 @@ def signup(request):
                     password=password,
                     allowed_email=allowed_email,
                     user_type=allowed_email.user_type,
-                    access_level=allowed_email.access_level,
+                    is_power_user=allowed_email.is_power_user,
                     first_name=fullname.split()[0] if fullname.split() else '',
                     last_name=' '.join(fullname.split()[1:]) if len(fullname.split()) > 1 else '',
                 )

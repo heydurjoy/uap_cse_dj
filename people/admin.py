@@ -1,20 +1,63 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from image_cropping import ImageCroppingMixin
-from .models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, PasswordResetToken
+from .models import (
+    AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, 
+    PasswordResetToken, Permission, UserPermission
+)
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'codename', 'category', 'is_active', 'priority']
+    list_filter = ['category', 'is_active', 'created_at']
+    search_fields = ['name', 'codename', 'description']
+    list_editable = ['is_active', 'priority']
+    readonly_fields = ['created_at']
+    ordering = ['category', 'priority', 'name']
+    
+    fieldsets = (
+        ('Permission Information', {
+            'fields': ('codename', 'name', 'description', 'category')
+        }),
+        ('Access Control', {
+            'fields': ('requires_role', 'priority', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',)
+        }),
+    )
+
+
+@admin.register(UserPermission)
+class UserPermissionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'permission', 'is_active', 'granted_by', 'granted_at', 'revoked_at']
+    list_filter = ['is_active', 'permission__category', 'granted_at', 'revoked_at']
+    search_fields = ['user__email', 'user__username', 'permission__name', 'permission__codename']
+    readonly_fields = ['granted_at', 'revoked_at']
+    ordering = ['-granted_at']
+    
+    fieldsets = (
+        ('Permission Grant', {
+            'fields': ('user', 'permission', 'is_active')
+        }),
+        ('Audit Trail', {
+            'fields': ('granted_by', 'granted_at', 'revoked_by', 'revoked_at', 'notes')
+        }),
+    )
 
 
 @admin.register(AllowedEmail)
 class AllowedEmailAdmin(admin.ModelAdmin):
-    list_display = ['email', 'user_type', 'access_level', 'is_active', 'is_blocked', 'created_at']
-    list_filter = ['user_type', 'access_level', 'is_active', 'is_blocked', 'created_at']
+    list_display = ['email', 'user_type', 'is_power_user', 'is_active', 'is_blocked', 'created_at']
+    list_filter = ['user_type', 'is_power_user', 'is_active', 'is_blocked', 'created_at']
     search_fields = ['email']
-    list_editable = ['is_active', 'is_blocked']
+    list_editable = ['is_active', 'is_blocked', 'is_power_user']
     readonly_fields = ['created_at', 'blocked_at']
     
     fieldsets = (
         ('Email Information', {
-            'fields': ('email', 'user_type', 'access_level')
+            'fields': ('email', 'user_type', 'is_power_user')
         }),
         ('Access Control', {
             'fields': ('is_active', 'is_blocked', 'blocked_at', 'block_reason')
@@ -64,14 +107,16 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
 
 @admin.register(BaseUser)
 class BaseUserAdmin(BaseUserAdmin):
-    list_display = ['email', 'username', 'user_type', 'access_level', 'is_active', 'date_joined']
-    list_filter = ['user_type', 'access_level', 'is_staff', 'is_superuser', 'is_active', 'date_joined']
+    list_display = ['email', 'username', 'user_type', 'is_power_user', 'is_active', 'date_joined']
+    list_filter = ['user_type', 'is_power_user', 'is_staff', 'is_superuser', 'is_active', 'date_joined']
     search_fields = ['email', 'username', 'first_name', 'last_name']
     readonly_fields = ['created_at', 'updated_at', 'date_joined', 'last_login']
+    # Keep Django's built-in user_permissions in filter_horizontal (from parent class)
+    # Our custom permissions are managed via UserPermission model
     
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Custom Fields', {
-            'fields': ('allowed_email', 'user_type', 'access_level', 'phone_number', 'profile_picture')
+            'fields': ('allowed_email', 'user_type', 'is_power_user', 'phone_number', 'profile_picture')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at')
@@ -80,7 +125,7 @@ class BaseUserAdmin(BaseUserAdmin):
     
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
         ('Custom Fields', {
-            'fields': ('allowed_email', 'user_type', 'access_level', 'phone_number', 'profile_picture')
+            'fields': ('allowed_email', 'user_type', 'is_power_user', 'phone_number', 'profile_picture')
         }),
     )
 

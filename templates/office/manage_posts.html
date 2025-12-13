@@ -15,7 +15,7 @@
         <div class="posts-toolbar">
             <div class="toolbar-left">
                 <form method="get" class="filter-form">
-                    {% if access_level >= 4 %}
+                    {% if can_manage_all %}
                     <select name="created_by" class="filter-select" onchange="this.form.submit()">
                         <option value="all" {% if created_by_filter == 'all' %}selected{% endif %}>All Posts</option>
                         <option value="own" {% if created_by_filter == 'own' %}selected{% endif %}>My Posts</option>
@@ -35,7 +35,7 @@
                         {% endfor %}
                     </select>
                     
-                    <input type="text" name="search" placeholder="Search posts..." value="{{ search_query }}" class="search-input">
+                    <input type="text" name="search" placeholder="Search..." value="{{ search_query }}" class="search-input" style="min-width: 150px;">
                     <button type="submit" class="filter-btn">Filter</button>
                     <a href="{% url 'office:manage_posts' %}" class="clear-btn">Clear</a>
                 </form>
@@ -43,7 +43,13 @@
             <div class="toolbar-right">
                 <button id="selectAllBtn" class="action-btn">Select All</button>
                 <a href="{% url 'office:create_post' %}" class="action-btn success">+ Create Post</a>
-                <button id="deleteSelectedBtn" class="action-btn danger" disabled>Delete Selected</button>
+                <button id="deleteSelectedBtn" class="action-btn danger" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.4rem;">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span id="deleteSelectedText">selected</span>
+                </button>
             </div>
         </div>
         
@@ -155,21 +161,21 @@
     background: var(--bg-primary);
     border-radius: 15px;
     box-shadow: 0 8px 25px var(--shadow);
-    padding: 2.5rem;
+    padding: 1.5rem;
     margin-bottom: 3rem;
 }
 
 .page-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     border-bottom: 2px solid var(--border-color);
-    padding-bottom: 1.5rem;
+    padding-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .page-header h1 {
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     color: var(--color-primary);
     margin: 0;
     text-align: center;
@@ -196,9 +202,9 @@
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
     background: var(--bg-secondary);
     border-radius: 10px;
     border: 1px solid var(--border-color);
@@ -207,24 +213,26 @@
 .toolbar-left, .toolbar-right {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
 .filter-form {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
 .filter-select, .search-input {
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     transition: border-color 0.3s ease;
+    min-height: 32px;
+    box-sizing: border-box;
 }
 
 .filter-select:focus, .search-input:focus {
@@ -233,17 +241,19 @@
 }
 
 .filter-btn, .clear-btn {
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    border-radius: 6px;
     border: none;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-height: 32px;
+    box-sizing: border-box;
 }
 
 .filter-btn {
@@ -270,17 +280,20 @@
 }
 
 .action-btn {
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    border-radius: 6px;
     border: none;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.4rem;
+    min-height: 32px;
+    box-sizing: border-box;
 }
 
 .action-btn.success {
@@ -548,12 +561,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateDeleteButton() {
         const selectedCount = Array.from(postCheckboxes).filter(cb => cb.checked).length;
+        const deleteSelectedText = document.getElementById('deleteSelectedText');
         if (deleteSelectedBtn) {
             deleteSelectedBtn.disabled = selectedCount === 0;
-            if (selectedCount > 0) {
-                deleteSelectedBtn.textContent = `Delete Selected (${selectedCount})`;
-            } else {
-                deleteSelectedBtn.textContent = 'Delete Selected';
+            if (deleteSelectedText) {
+                if (selectedCount > 0) {
+                    deleteSelectedText.textContent = `selected (${selectedCount})`;
+                } else {
+                    deleteSelectedText.textContent = 'selected';
+                }
             }
         }
     }

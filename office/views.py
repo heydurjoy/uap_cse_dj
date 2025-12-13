@@ -172,14 +172,11 @@ def post_detail(request, pk):
 
 
 def check_post_access(user):
-    """Check if user has access level 3 or higher"""
+    """Check if user has permission to create/manage posts"""
     if not user.is_authenticated:
         return False
-    try:
-        access_level = int(user.access_level) if user.access_level else 0
-        return access_level >= 3
-    except (ValueError, TypeError):
-        return False
+    # Users with post_notices or manage_all_posts can create posts
+    return user.has_permission('post_notices') or user.has_permission('manage_all_posts')
 
 
 @login_required
@@ -193,23 +190,24 @@ def manage_posts(request):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('people:user_profile')
     
-    # Get user access level
-    try:
-        access_level = int(request.user.access_level) if request.user.access_level else 0
-    except (ValueError, TypeError):
-        access_level = 0
+    # Check permissions
+    can_manage_all = request.user.has_permission('manage_all_posts')
+    can_post_notices = request.user.has_permission('post_notices')
     
     # Base queryset
-    if access_level >= 4:
-        # Level 4+ can see all posts
+    if can_manage_all:
+        # Users with manage_all_posts can see all posts
         posts = Post.objects.all()
-    else:
-        # Level 3 can only see their own posts
+    elif can_post_notices:
+        # Users with post_notices can only see their own posts
         posts = Post.objects.filter(created_by=request.user)
+    else:
+        # No permission - should not reach here due to check_post_access, but handle gracefully
+        posts = Post.objects.none()
     
-    # Filter by creator (only for level 4+)
+    # Filter by creator (only for users who can manage all)
     created_by_filter = request.GET.get('created_by', 'all')
-    if access_level >= 4:
+    if can_manage_all:
         if created_by_filter == 'own':
             posts = posts.filter(created_by=request.user)
     
@@ -239,7 +237,8 @@ def manage_posts(request):
     
     context = {
         'posts': posts,
-        'access_level': access_level,
+        'can_manage_all': can_manage_all,
+        'can_post_notices': can_post_notices,
         'created_by_filter': created_by_filter,
         'pinned_filter': pinned_filter,
         'post_type_filter': post_type_filter,
@@ -273,11 +272,8 @@ def create_post(request):
             post.is_pinned = request.POST.get('is_pinned') == 'on'
             post.created_by = request.user
             
-            # Get user access level
-            try:
-                access_level = int(request.user.access_level) if request.user.access_level else 0
-            except (ValueError, TypeError):
-                access_level = 0
+            # Check permissions
+            can_manage_all = request.user.has_permission('manage_all_posts')
             
             # Handle pinned posts limit - automatically unpin oldest if needed
             if post.is_pinned:
@@ -303,11 +299,6 @@ def create_post(request):
             return redirect('office:manage_posts')
         except Exception as e:
             messages.error(request, f'Error creating post: {str(e)}')
-            # Get user access level for error context
-            try:
-                access_level = int(request.user.access_level) if request.user.access_level else 0
-            except (ValueError, TypeError):
-                access_level = 0
             # Try to get post data from POST to repopulate form
             post_data = {
                 'post_type': request.POST.get('post_type', 'notice'),
@@ -316,24 +307,22 @@ def create_post(request):
                 'tags': request.POST.get('tags', ''),
                 'description': request.POST.get('description', ''),
             }
+            can_manage_all = request.user.has_permission('manage_all_posts')
             return render(request, 'office/create_post.html', {
                 'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
                 'post': post_data,
-                'access_level': access_level,
+                'can_manage_all': can_manage_all,
             })
     
-    # Get user access level
-    try:
-        access_level = int(request.user.access_level) if request.user.access_level else 0
-    except (ValueError, TypeError):
-        access_level = 0
+    # Check permissions
+    can_manage_all = request.user.has_permission('manage_all_posts')
     
     # Get post_type from GET parameter (for direct links to create notice)
     default_post_type = request.GET.get('post_type', 'notice')
     
     context = {
         'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
-        'access_level': access_level,
+        'can_manage_all': can_manage_all,
         'default_post_type': default_post_type,
     }
     return render(request, 'office/create_post.html', context)
@@ -353,12 +342,9 @@ def edit_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     
     # Check if user can edit this post
-    try:
-        access_level = int(request.user.access_level) if request.user.access_level else 0
-    except (ValueError, TypeError):
-        access_level = 0
+    can_manage_all = request.user.has_permission('manage_all_posts')
     
-    if access_level < 4 and post.created_by != request.user:
+    if not can_manage_all and post.created_by != request.user:
         messages.error(request, 'You can only edit your own posts.')
         return redirect('office:manage_posts')
     
@@ -433,12 +419,9 @@ def delete_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     
     # Check if user can delete this post
-    try:
-        access_level = int(request.user.access_level) if request.user.access_level else 0
-    except (ValueError, TypeError):
-        access_level = 0
+    can_manage_all = request.user.has_permission('manage_all_posts')
     
-    if access_level < 4 and post.created_by != request.user:
+    if not can_manage_all and post.created_by != request.user:
         messages.error(request, 'You can only delete your own posts.')
         return redirect('office:manage_posts')
     
@@ -465,10 +448,8 @@ def delete_posts(request):
         return JsonResponse({'success': False, 'error': 'You do not have permission to delete posts.'}, status=403)
     
     # Get user access level
-    try:
-        access_level = int(request.user.access_level) if request.user.access_level else 0
-    except (ValueError, TypeError):
-        access_level = 0
+    # Check permissions
+    can_manage_all = request.user.has_permission('manage_all_posts')
     
     # Get post IDs from request
     post_ids = request.POST.getlist('post_ids[]')
@@ -484,8 +465,9 @@ def delete_posts(request):
     posts = Post.objects.filter(pk__in=post_ids)
     
     # Filter by permission
-    if access_level < 4:
-        # Level 3 can only delete their own posts
+    can_manage_all = request.user.has_permission('manage_all_posts')
+    if not can_manage_all:
+        # Users without manage_all_posts can only delete their own posts
         posts = posts.filter(created_by=request.user)
         # Check if all requested posts are owned by user
         if posts.count() != len(post_ids):
@@ -506,12 +488,10 @@ def delete_posts(request):
 # ==============================================================================
 
 def check_routine_access(user):
-    """Check if user has access to manage routines (Level 3+)"""
-    try:
-        access_level = int(user.access_level) if user.access_level else 0
-        return access_level >= 3
-    except (ValueError, TypeError):
+    """Check if user has post_routines permission"""
+    if not user.is_authenticated:
         return False
+    return user.has_permission('post_routines')
 
 
 def routine_list(request):
@@ -991,12 +971,10 @@ def get_available_slots(request):
 # ==============================================================================
 
 def check_admission_result_access(user):
-    """Check if user has access to manage admission results (Level 3+)"""
-    try:
-        access_level = int(user.access_level) if user.access_level else 0
-        return access_level >= 3
-    except (ValueError, TypeError):
+    """Check if user has post_admission_results permission"""
+    if not user.is_authenticated:
         return False
+    return user.has_permission('post_admission_results')
 
 
 @login_required

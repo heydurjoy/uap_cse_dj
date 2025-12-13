@@ -52,7 +52,7 @@
                             <input type="text" name="tags" id="tags" placeholder="e.g., urgent, academic, deadline" value="{% if post and post.tags %}{{ post.tags }}{% endif %}">
                         </div>
                         
-                        {% if access_level >= 4 %}
+                        {% if can_manage_all %}
                         <div class="form-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" name="is_pinned" id="is_pinned">

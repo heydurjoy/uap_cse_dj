@@ -11,18 +11,15 @@ from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TY
 
 
 def check_club_access(user):
-    """Check if user has access level 4+ and is Faculty or Officer"""
+    """Check if user has manage_club_settings permission and is Faculty or Officer"""
     if not user.is_authenticated:
         return False
-    try:
-        access_level = int(user.access_level) if user.access_level else 0
-        if access_level < 4:
-            return False
-        # Check if user is Faculty or Officer
-        user_type = user.user_type
-        return user_type and user_type in ['faculty', 'officer']
-    except (ValueError, TypeError):
+    # Check permission
+    if not user.has_permission('manage_club_settings'):
         return False
+    # Check if user is Faculty or Officer
+    user_type = user.user_type
+    return user_type and user_type in ['faculty', 'officer']
 
 
 def check_club_convener_access(user, club):
@@ -80,9 +77,13 @@ def manage_clubs(request):
     # Order by serial number, then name
     clubs = clubs.order_by('sl', 'name')
     
+    # Check if user can create/delete clubs (only Faculty/Officers with manage_club_settings permission)
+    can_create_delete = check_club_access(request.user)
+    
     context = {
         'clubs': clubs,
         'search_query': search_query,
+        'can_create_delete': can_create_delete,
     }
     
     return render(request, 'clubs/manage_clubs.html', context)
@@ -529,7 +530,7 @@ def add_club_position(request, pk):
                     email=new_member_email,
                     defaults={
                         'user_type': 'club_member',
-                        'access_level': '1',
+                        'is_power_user': False,
                         'is_active': True,
                         'is_blocked': False,
                         'created_by': request.user,
@@ -554,7 +555,7 @@ def add_club_position(request, pk):
                     email=new_member_email,
                     password=hashed_password,
                     user_type='club_member',
-                    access_level='1',
+                    is_power_user=False,
                     allowed_email=allowed_email,
                     is_active=True,
                     is_staff=False,
@@ -1138,7 +1139,7 @@ def manage_club_allowed_emails(request, pk):
     from people.models import AllowedEmail
     allowed_emails = AllowedEmail.objects.filter(
         user_type='club_member',
-        access_level='1',
+        is_power_user=False,
         created_by=request.user  # Only show emails created by current user
     ).order_by('-created_at')
     
@@ -1189,11 +1190,11 @@ def create_club_allowed_email(request, pk):
                     'form_data': request.POST,
                 })
             
-            # Create allowed email - fixed to club_member type and level 1
+            # Create allowed email - fixed to club_member type
             allowed_email = AllowedEmail.objects.create(
                 email=email,
                 user_type='club_member',
-                access_level='1',  # Lowest access level - Club Member
+                is_power_user=False,
                 is_active=True,
                 is_blocked=False,
                 created_by=request.user,  # Track who created this email
@@ -1227,7 +1228,7 @@ def delete_club_allowed_email(request, pk, email_pk):
         return redirect('people:user_profile')
     
     from people.models import AllowedEmail
-    allowed_email = get_object_or_404(AllowedEmail, pk=email_pk, user_type='club_member', access_level='1')
+    allowed_email = get_object_or_404(AllowedEmail, pk=email_pk, user_type='club_member', is_power_user=False)
     
     # Check if the current user is the creator
     if allowed_email.created_by != request.user:

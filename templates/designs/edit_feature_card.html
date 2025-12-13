@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Feature Card - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-feature-card-page">
+        <div class="page-header">
+            <a href="{% url 'designs:manage_feature_cards' %}" class="back-link">← Back to Feature Cards</a>
+            <h1>Edit Feature Card</h1>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            {% csrf_token %}
+            
+            <div style="display: grid; gap: 1.5rem;">
+                <div>
+                    <label for="sl_number" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Serial Number
+                    </label>
+                    <input type="number" name="sl_number" id="sl_number" value="{{ card.sl_number }}" min="0" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                </div>
+                
+                <div>
+                    <label for="caption" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Caption <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="caption" id="caption" value="{{ card.caption }}" maxlength="200" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                </div>
+                
+                <div>
+                    <label for="title" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Title <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="title" id="title" value="{{ card.title }}" maxlength="200" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                </div>
+                
+                <div>
+                    <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Description <span style="color: #dc3545;">*</span>
+                    </label>
+                    <textarea name="description" id="description" required style="width: 100%; min-height: 300px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">{{ card.description }}</textarea>
+                </div>
+                
+                <div>
+                    <label for="picture" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Picture <span style="color: var(--text-secondary); font-weight: normal;">(leave empty to keep current)</span>
+                    </label>
+                    {% if card.picture %}
+                        <div style="margin-bottom: 0.5rem;">
+                            <img src="/media/{{ card.picture.name }}" alt="{{ card.caption }}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="picture" id="picture" accept="image/*" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary);">
+                </div>
+                
+                <div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="is_active" id="is_active" {% if card.is_active %}checked{% endif %}>
+                        <span style="font-weight: 600; color: var(--text-primary);">Active (show on website)</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color); display: flex; gap: 1rem;">
+                <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem;">
+                    Update Feature Card
+                </button>
+                <a href="{% url 'designs:manage_feature_cards' %}" class="btn-secondary" style="padding: 0.75rem 2rem; text-decoration: none; display: inline-block;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+<script>
+    CKEDITOR.replace('description', {
+        height: 300,
+        toolbar: 'full',
+    });
+</script>
+{% endblock %}
+

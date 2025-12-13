@@ -46,7 +46,7 @@ class Command(BaseCommand):
                     email=email,
                     password=password,
                     user_type='officer',
-                    access_level='2',  # General User access level
+                    is_power_user=False,
                     first_name=name.split()[0] if name.split() else '',
                 )
                 

@@ -4,18 +4,15 @@ from .models import Club, ClubPosition, ClubPost, ClubPosition
 
 
 def check_club_access(user):
-    """Check if user has access level 4+ and is Faculty or Officer"""
+    """Check if user has manage_club_settings permission and is Faculty or Officer"""
     if not user.is_authenticated:
         return False
-    try:
-        access_level = int(user.access_level) if user.access_level else 0
-        if access_level < 4:
-            return False
-        # Check if user is Faculty or Officer
-        user_type = user.user_type
-        return user_type and user_type in ['faculty', 'officer']
-    except (ValueError, TypeError):
+    # Check permission
+    if not user.has_permission('manage_club_settings'):
         return False
+    # Check if user is Faculty or Officer
+    user_type = user.user_type
+    return user_type and user_type in ['faculty', 'officer']
 
 
 @admin.register(Club)

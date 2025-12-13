@@ -11,20 +11,159 @@ import io
 import os
 
 
+class Permission(models.Model):
+    """Defines available permissions in the system"""
+    CATEGORY_CHOICES = [
+        ('office', 'Office'),
+        ('clubs', 'Clubs'),
+        ('designs', 'Designs'),
+        ('users', 'User Management'),
+        ('academics', 'Academics'),
+    ]
+    
+    codename = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Unique permission codename (e.g., 'post_notices')"
+    )
+    
+    name = models.CharField(
+        max_length=255,
+        help_text="Human-readable permission name"
+    )
+    
+    description = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Detailed description of what this permission allows"
+    )
+    
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Permission category for organization"
+    )
+    
+    requires_role = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of user_types that can have this permission (empty = any role)"
+    )
+    
+    priority = models.PositiveIntegerField(
+        default=100,
+        help_text="Display priority (lower = more important)"
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this permission is currently active"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    
+    class Meta:
+        verbose_name = 'Permission'
+        verbose_name_plural = 'Permissions'
+        ordering = ['category', 'priority', 'name']
+        indexes = [
+            models.Index(fields=['codename']),
+            models.Index(fields=['category', 'is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.codename})"
+
+
+class UserPermission(models.Model):
+    """Tracks permissions granted to users with full audit trail"""
+    user = models.ForeignKey(
+        'BaseUser',
+        on_delete=models.CASCADE,
+        related_name='granted_permissions',
+        help_text="User who has this permission"
+    )
+    
+    permission = models.ForeignKey(
+        Permission,
+        on_delete=models.CASCADE,
+        related_name='user_grants',
+        help_text="Permission being granted"
+    )
+    
+    granted_by = models.ForeignKey(
+        'BaseUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='permissions_granted',
+        help_text="User who granted this permission"
+    )
+    
+    granted_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this permission was granted"
+    )
+    
+    revoked_by = models.ForeignKey(
+        'BaseUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='permissions_revoked',
+        help_text="User who revoked this permission"
+    )
+    
+    revoked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When this permission was revoked"
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this permission grant is currently active"
+    )
+    
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500,
+        help_text="Optional notes about why this permission was granted/revoked"
+    )
+    
+    class Meta:
+        verbose_name = 'User Permission'
+        verbose_name_plural = 'User Permissions'
+        ordering = ['-granted_at']
+        # Ensure only one active permission grant per user+permission
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'permission'],
+                condition=models.Q(is_active=True),
+                name='unique_active_user_permission'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+            models.Index(fields=['permission', 'is_active']),
+            models.Index(fields=['granted_by', 'granted_at']),
+        ]
+    
+    def __str__(self):
+        status = "Active" if self.is_active else "Revoked"
+        return f"{self.user.email} - {self.permission.name} ({status})"
+
+
 class AllowedEmail(models.Model):
     USER_TYPE_CHOICES = [
         ('faculty', 'Faculty'),
         ('staff', 'Staff'),
         ('officer', 'Officer'),
         ('club_member', 'Club Member'),
-    ]
-    
-    ACCESS_LEVEL_CHOICES = [
-        ('5', 'Head'),           # highest access
-        ('4', 'Super Admin'),    # highest access
-        ('3', 'Course Access'),  # medium access
-        ('2', 'General User'),   # lower access
-        ('1', 'Club Member'),     # lowest access
     ]
     
     email = models.EmailField(
@@ -39,11 +178,9 @@ class AllowedEmail(models.Model):
         help_text="Type of user this email belongs to"
     )
     
-    access_level = models.CharField(
-        max_length=1,
-        choices=ACCESS_LEVEL_CHOICES,
-        default='2',
-        help_text="Access level for this user"
+    is_power_user = models.BooleanField(
+        default=False,
+        help_text="Whether this email should create a power user account (can grant permissions)"
     )
     
     is_active = models.BooleanField(
@@ -100,14 +237,6 @@ class BaseUser(AbstractUser):
         ('club_member', 'Club Member'),
     ]
     
-    ACCESS_LEVEL_CHOICES = [
-        ('5', 'Head'),
-        ('4', 'Super Admin'),
-        ('3', 'Course Access'),
-        ('2', 'General User'),
-        ('1', 'Club Member'),
-    ]
-    
     allowed_email = models.OneToOneField(
         AllowedEmail,
         on_delete=models.CASCADE,
@@ -125,12 +254,9 @@ class BaseUser(AbstractUser):
         help_text="Type of user (synced from AllowedEmail, optional for superusers)"
     )
     
-    access_level = models.CharField(
-        max_length=1,
-        choices=ACCESS_LEVEL_CHOICES,
-        blank=True,
-        null=True,
-        help_text="Access level (synced from AllowedEmail, optional for superusers)"
+    is_power_user = models.BooleanField(
+        default=False,
+        help_text="Whether this user can grant permissions to other users"
     )
     
     phone_number = models.CharField(
@@ -158,16 +284,42 @@ class BaseUser(AbstractUser):
     )
     
     def save(self, *args, **kwargs):
-        # Sync user_type and access_level from allowed_email if provided
+        # Sync user_type and is_power_user from allowed_email if provided
         if self.allowed_email:
             if not self.user_type:
                 self.user_type = self.allowed_email.user_type
-            if not self.access_level:
-                self.access_level = self.allowed_email.access_level
+            if not self.is_power_user:
+                self.is_power_user = self.allowed_email.is_power_user
             # Also sync email if not set
             if not self.email:
                 self.email = self.allowed_email.email
         super().save(*args, **kwargs)
+    
+    def has_permission(self, permission_codename):
+        """Check if user has a specific permission"""
+        # Check if user exists and is active
+        if not self or not self.is_active:
+            return False
+        # Superusers have all permissions
+        if self.is_superuser:
+            return True
+        # Check for granted permission
+        return UserPermission.objects.filter(
+            user=self,
+            permission__codename=permission_codename,
+            is_active=True
+        ).exists()
+    
+    def get_all_permissions(self):
+        """Get all active permissions for this user"""
+        return UserPermission.objects.filter(
+            user=self,
+            is_active=True
+        ).select_related('permission', 'granted_by')
+    
+    def can_grant_permissions(self):
+        """Check if user can grant permissions to others"""
+        return self.is_power_user and self.has_permission('manage_user_permissions')
     
     class Meta:
         verbose_name = 'Base User'
@@ -313,6 +465,41 @@ class Faculty(models.Model):
         blank=True,
         null=True,
         help_text="Faculty routine with rich text"
+    )
+    
+    is_head = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is the head of department"
+    )
+    
+    is_dept_proctor = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is the department proctor"
+    )
+    
+    is_bsc_admission_coordinator = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is the BSc admission coordinator"
+    )
+    
+    is_mcse_admission_coordinator = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is the MCSE admission coordinator"
+    )
+    
+    cv = models.FileField(
+        upload_to='faculty_cvs/',
+        null=True,
+        blank=True,
+        help_text="Faculty CV/resume document"
     )
     
     class Meta:

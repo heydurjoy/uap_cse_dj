@@ -3,6 +3,37 @@
 from django.db import migrations
 
 
+def seed_permissions(apps, schema_editor):
+    """Seed initial permissions from permissions.py definitions"""
+    Permission = apps.get_model('people', 'Permission')
+    
+    # Import permission definitions
+    from people.permissions import PERMISSION_DEFINITIONS
+    
+    # Create permissions (idempotent - won't create duplicates)
+    for perm_def in PERMISSION_DEFINITIONS:
+        Permission.objects.get_or_create(
+            codename=perm_def['codename'],
+            defaults={
+                'name': perm_def['name'],
+                'description': perm_def.get('description', ''),
+                'category': perm_def.get('category', ''),
+                'requires_role': perm_def.get('requires_role', []),
+                'priority': perm_def.get('priority', 100),
+                'is_active': True,
+            }
+        )
+
+
+def reverse_seed_permissions(apps, schema_editor):
+    """Remove seeded permissions (optional - for rollback)"""
+    Permission = apps.get_model('people', 'Permission')
+    from people.permissions import PERMISSION_DEFINITIONS
+    
+    codenames = [perm_def['codename'] for perm_def in PERMISSION_DEFINITIONS]
+    Permission.objects.filter(codename__in=codenames).delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,4 +41,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(seed_permissions, reverse_seed_permissions),
     ]

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load academics_filters %}
+{% load user_filters %}
 
 {% block title %}Home{% endblock %}
 
@@ -581,6 +583,271 @@
         </div>
     </div>
 </section>
+
+<!-- PO, Blooms, K, P, A Calculation Tables Section -->
+{% if lifetime_stats %}
+<section class="po-stats-section" style="padding: 4rem 0; background: var(--bg-secondary);">
+    <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+        <div class="po-stats-header" style="text-align: center; margin-bottom: 3rem;">
+            <p class="eyebrow" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 0.5rem 0;">Program Outcomes</p>
+            <h2 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 2rem; font-weight: 700;">You Should Know</h2>
+            <p class="subtitle" style="color: var(--text-secondary); font-size: 1rem; max-width: 800px; margin: 0 auto;">
+                <strong>Program Learning Outcomes (PLOs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. PLOs are attained through <strong>Course Learning Outcomes (CLOs)</strong>, where each CLO maps to a specific PLO. We measure your progress using <strong>Bloom's Taxonomy across all 3 domains</strong> (Cognitive K1-K6, Affective A1-A5, Psychomotor P1-P5) and measuring tools <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive development in all domains throughout your 4-year journey.
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <h3 style="margin: 0; color: var(--text-primary); font-size: 1.8rem; font-weight: 700; line-height: 1.3;">
+                The marks distribution of your 4-year BSc in CSE Program is as follows:
+            </h3>
+        </div>
+
+        <div class="po-stats-tables" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+            <!-- Bloom's Taxonomy Section - Appears First -->
+            <div style="grid-column: 1 / -1; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.3rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Bloom's Taxonomy Levels</h3>
+            </div>
+            
+            <!-- Bloom's Taxonomy - Split into 3 Compact Cards -->
+            <div class="blooms-cards-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; grid-column: 1 / -1;">
+                <!-- Cognitive Domain Card -->
+                <div class="stats-table-wrapper blooms-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px var(--shadow);">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--color-primary); font-size: 0.95rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">Cognitive (K1-K6)</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                    <th style="padding: 0.4rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Level</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Cr</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Mk</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for level in "K1,K2,K3,K4,K5,K6"|split_string:"," %}
+                                {% with data=lifetime_stats.blooms|get_item:level %}
+                                {% with total=lifetime_stats.totals.blooms %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.4rem; color: var(--text-primary); font-size: 0.75rem;"><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Affective Domain Card -->
+                <div class="stats-table-wrapper blooms-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px var(--shadow);">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--color-primary); font-size: 0.95rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">Affective (A1-A5)</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                    <th style="padding: 0.4rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Level</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Cr</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Mk</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for level in "A1,A2,A3,A4,A5"|split_string:"," %}
+                                {% with data=lifetime_stats.blooms|get_item:level %}
+                                {% with total=lifetime_stats.totals.blooms %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.4rem; color: var(--text-primary); font-size: 0.75rem;"><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Psychomotor Domain Card -->
+                <div class="stats-table-wrapper blooms-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px var(--shadow);">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--color-primary); font-size: 0.95rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">Psychomotor (P1-P5)</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                    <th style="padding: 0.4rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Level</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Cr</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Mk</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for level in "P1,P2,P3,P4,P5"|split_string:"," %}
+                                {% with data=lifetime_stats.blooms|get_item:level %}
+                                {% with total=lifetime_stats.totals.blooms %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.4rem; color: var(--text-primary); font-size: 0.75rem;"><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program Outcomes Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Program Learning Outcomes (PLOs)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">PLO & Title</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if program_outcomes %}
+                                {% for po in program_outcomes %}
+                                {% with data=lifetime_stats.program_outcomes|get_item:po.code %}
+                                {% with total=lifetime_stats.totals.program_outcomes %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ po.code|po_to_plo }}:</strong> {{ po.title }}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            {% else %}
+                                {% for po_num in "1,2,3,4,5,6,7,8,9,10,11,12"|split_string:"," %}
+                                {% with po_code="PO"|add:po_num %}
+                                {% with data=lifetime_stats.program_outcomes|get_item:po_code %}
+                                {% with total=lifetime_stats.totals.program_outcomes %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ po_code|po_to_plo }}:</strong> -</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Knowledge Profiles Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Knowledge Profiles (K)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Profile</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for k in "K1,K2,K3,K4,K5,K6,K7,K8"|split_string:"," %}
+                            {% with data=lifetime_stats.knowledge|get_item:k %}
+                            {% with total=lifetime_stats.totals.knowledge %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ k }}:</strong> {{ k|get_kp_display }}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Problem Attributes Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Problem Attributes (P)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Attribute</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in "P1,P2,P3,P4,P5,P6,P7"|split_string:"," %}
+                            {% with data=lifetime_stats.problem|get_item:p %}
+                            {% with total=lifetime_stats.totals.problem %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ p }}:</strong> {{ p|get_pa_display }}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity Attributes Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Activity Attributes (A)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Attribute</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in "A1,A2,A3,A4,A5"|split_string:"," %}
+                            {% with data=lifetime_stats.activity|get_item:a %}
+                            {% with total=lifetime_stats.totals.activity %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ a }}:</strong> {{ a|get_a_display }}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Highlight Video Section -->
 <section class="mvpeo-video-section">
@@ -2340,6 +2607,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     to {
         opacity: 1;
+    }
+}
+
+/* PO Stats Section Styles */
+.po-stats-section {
+    scroll-margin-top: 2rem;
+}
+
+.po-stats-tables {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.po-stats-tables::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.stats-table-wrapper {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-table-wrapper:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--shadow-lg) !important;
+}
+
+.stats-table tbody tr:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+@media (max-width: 768px) {
+    .po-stats-tables {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    .blooms-cards-container {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    .stats-table-wrapper {
+        padding: 1rem !important;
+    }
+    
+    .stats-table {
+        font-size: 0.9rem;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 0.5rem !important;
+    }
+    
+    .po-stats-header h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .po-stats-header .subtitle {
+        font-size: 0.9rem !important;
     }
 }
 </style>

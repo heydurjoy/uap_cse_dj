@@ -75,3 +75,65 @@ def greeting_name(user):
     
     return user.email
 
+
+@register.filter
+def get_item(dictionary, key):
+    """Get an item from a dictionary using a variable key"""
+    if dictionary is None:
+        return None
+    return dictionary.get(key)
+
+
+@register.filter
+def in_list(value, arg):
+    """Check if value is in the given list/set"""
+    if arg is None:
+        return False
+    return value in arg
+
+
+@register.filter(name='call')
+def call_method(obj, method_name):
+    """Call a method on an object with optional arguments"""
+    if obj is None:
+        return False
+    method = getattr(obj, method_name, None)
+    if method and callable(method):
+        # For has_permission, we need to pass the permission codename
+        # This filter will be used like: user.has_permission|call:'permission_code'
+        return method
+    return False
+
+
+@register.filter
+def has_permission(user, permission_code):
+    """Check if user has a specific permission (including superuser privileges)"""
+    if not user:
+        return False
+    # Check if user has the has_permission method
+    if not hasattr(user, 'has_permission'):
+        return False
+    # Call the method and ensure it returns a boolean
+    try:
+        result = user.has_permission(permission_code)
+        return bool(result)
+    except Exception:
+        return False
+
+
+@register.filter
+def has_granted_permission(user, permission_code):
+    """Check if user has been explicitly granted a permission (ignores superuser status)"""
+    if not user:
+        return False
+    # Only check explicitly granted permissions, ignore superuser status
+    from people.models import UserPermission
+    try:
+        return UserPermission.objects.filter(
+            user=user,
+            permission__codename=permission_code,
+            is_active=True
+        ).exists()
+    except Exception:
+        return False
+

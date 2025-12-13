@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_filters %}
+
+{% block title %}Manage User Permissions - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="user-profile-page">
+        <div class="profile-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1 class="page-title">Manage Users & Permissions</h1>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs-container" style="margin-bottom: 2rem; border-bottom: 2px solid var(--border-color);">
+            <div class="tabs" style="display: flex; gap: 0.5rem;">
+                <a 
+                    href="{% url 'people:manage_user_permissions_list' %}?tab=permissions{% if search_query %}&search={{ search_query }}{% endif %}{% if user_type_filter != 'all' %}&user_type={{ user_type_filter }}{% endif %}"
+                    class="tab-link {% if active_tab == 'permissions' %}active{% endif %}"
+                    style="padding: 1rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if active_tab == 'permissions' %}var(--color-primary){% else %}transparent{% endif %}; font-weight: {% if active_tab == 'permissions' %}600{% else %}400{% endif %}; transition: all 0.3s;"
+                >
+                    Manage Permissions
+                </a>
+                <a 
+                    href="{% url 'people:manage_user_permissions_list' %}?tab=allowed_emails{% if search_query %}&search={{ search_query }}{% endif %}{% if user_type_filter != 'all' %}&user_type={{ user_type_filter }}{% endif %}"
+                    class="tab-link {% if active_tab == 'allowed_emails' %}active{% endif %}"
+                    style="padding: 1rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if active_tab == 'allowed_emails' %}var(--color-primary){% else %}transparent{% endif %}; font-weight: {% if active_tab == 'allowed_emails' %}600{% else %}400{% endif %}; transition: all 0.3s;"
+                >
+                    Manage Allowed Emails
+                </a>
+            </div>
+        </div>
+        
+        <!-- Search and Filter Section -->
+        <div class="search-section" style="margin-bottom: 1.5rem;">
+            <form method="get" action="{% url 'people:manage_user_permissions_list' %}" id="search-form" class="search-form" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <!-- User Type Filter -->
+                <select 
+                    name="user_type" 
+                    id="user_type_filter"
+                    class="filter-select"
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);"
+                >
+                    {% for value, label in user_type_choices %}
+                        <option value="{{ value }}" {% if user_type_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Search Input -->
+                <input 
+                    type="text" 
+                    name="search" 
+                    id="search_input"
+                    placeholder="{% if active_tab == 'permissions' %}Search by email, username, or name...{% else %}Search by email...{% endif %}" 
+                    value="{{ search_query }}"
+                    class="search-input"
+                    style="padding: 0.75rem; flex: 1; min-width: 250px; max-width: 500px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);"
+                >
+                {% if search_query or user_type_filter != 'all' %}
+                    <a href="{% url 'people:manage_user_permissions_list' %}?tab={{ active_tab }}" class="btn-secondary" style="padding: 0.75rem 1.5rem; text-decoration: none; white-space: nowrap;">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+        
+        <!-- Permissions Tab Content -->
+        {% if active_tab == 'permissions' %}
+        <div class="users-list">
+            {% if users %}
+                <div class="users-table-container" style="background: var(--bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                    <table class="users-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border-bottom: 2px solid var(--border-color);">
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Name</th>
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Email</th>
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Type</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Power User</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Permissions</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr class="user-row" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                                    <td style="padding: 1rem; color: var(--text-primary);">
+                                        <strong>{{ user.get_full_name|default:user.email }}</strong>
+                                    </td>
+                                    <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                        {{ user.email }}
+                                    </td>
+                                    <td style="padding: 1rem;">
+                                        <span style="padding: 0.25rem 0.75rem; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+                                            {% if user.user_type %}
+                                                {{ user.user_type|title }}
+                                            {% else %}
+                                                General
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        {% if user.is_power_user %}
+                                            <span style="color: #28a745; font-weight: 600;">✓</span>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        <span style="color: var(--color-primary); font-weight: 600;">
+                                            {{ user_permission_counts|get_item:user.id|default:0 }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        <a 
+                                            href="{% url 'people:manage_user_permissions' user.id %}" 
+                                            class="btn-link"
+                                            style="padding: 0.5rem 1rem; text-decoration: none; color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; display: inline-block;"
+                                        >
+                                            Manage
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if users|length >= 100 %}
+                    <p style="margin-top: 1rem; color: var(--text-secondary); font-style: italic; text-align: center;">
+                        Showing first 100 results. Use filters to narrow down the list.
+                    </p>
+                {% endif %}
+            {% else %}
+                <div class="no-results" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No users found.</p>
+                    {% if search_query %}
+                        <p>Try a different search term.</p>
+                    {% else %}
+                        <p>No active users in the system.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Allowed Emails Tab Content -->
+        {% if active_tab == 'allowed_emails' %}
+        <!-- Hidden CSRF token for JavaScript -->
+        {% csrf_token %}
+        
+        <div class="allowed-emails-list">
+            <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+                    Manage allowed emails for user signups. Includes all user types including club members.
+                </p>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button id="selectAllEmailsBtn" class="btn-secondary" style="padding: 0.75rem 1.5rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; white-space: nowrap;">
+                        Select All
+                    </button>
+                    <button id="deleteSelectedEmailsBtn" class="btn-danger" style="padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #dc3545; color: white; cursor: pointer; white-space: nowrap;" disabled>
+                        Delete Selected
+                    </button>
+                    <a href="{% url 'people:create_allowed_email' %}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; white-space: nowrap;">
+                        + Add Allowed Email
+                    </a>
+                </div>
+            </div>
+            
+            {% if allowed_emails %}
+                <div class="emails-table-container" style="background: var(--bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                    <table class="emails-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border-bottom: 2px solid var(--border-color);">
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary); width: 50px;">
+                                    <input type="checkbox" id="selectAllEmailsCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
+                                </th>
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Email</th>
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">User Type</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Power User</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Status</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Account Created</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for email in allowed_emails %}
+                                <tr class="email-row" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                                    <td style="padding: 1rem; text-align: center;">
+                                        <input type="checkbox" class="email-checkbox" value="{{ email.id }}" style="width: 18px; height: 18px; cursor: pointer;">
+                                    </td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">
+                                        <strong>{{ email.email }}</strong>
+                                    </td>
+                                    <td style="padding: 1rem;">
+                                        <span style="padding: 0.25rem 0.75rem; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+                                            {{ email.user_type|title }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        {% if email.is_power_user %}
+                                            <span style="color: #28a745; font-weight: 600;">✓</span>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        {% if email.is_blocked %}
+                                            <span style="color: #dc3545; font-weight: 600;">Blocked</span>
+                                        {% elif not email.is_active %}
+                                            <span style="color: #ffc107; font-weight: 600;">Inactive</span>
+                                        {% else %}
+                                            <span style="color: #28a745; font-weight: 600;">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                                        {% if email.base_user %}
+                                            <span style="color: #28a745;">✓ Yes</span>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">— No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        <a 
+                                            href="{% url 'people:edit_allowed_email' email.id %}" 
+                                            class="btn-link"
+                                            style="padding: 0.5rem 1rem; text-decoration: none; color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; display: inline-block;"
+                                        >
+                                            Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if allowed_emails|length >= 100 %}
+                    <p style="margin-top: 1rem; color: var(--text-secondary); font-style: italic; text-align: center;">
+                        Showing first 100 results. Use filters to narrow down the list.
+                    </p>
+                {% endif %}
+            {% else %}
+                <div class="no-results" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No allowed emails found.</p>
+                    {% if search_query %}
+                        <p>Try a different search term.</p>
+                    {% else %}
+                        <p>No allowed emails in the system.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+    .tab-link:hover {
+        color: var(--color-primary);
+        background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+    }
+    
+    .user-row:hover,
+    .email-row:hover {
+        background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary)) !important;
+    }
+    
+    .btn-link:hover {
+        background: var(--color-primary);
+        color: white !important;
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--glow-shadow);
+    }
+    
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-danger:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    @media (max-width: 768px) {
+        .users-table-container,
+        .emails-table-container {
+            overflow-x: auto;
+        }
+        
+        .users-table,
+        .emails-table {
+            min-width: 600px;
+        }
+        
+        .users-table th,
+        .users-table td,
+        .emails-table th,
+        .emails-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .tabs {
+            flex-direction: column;
+        }
+        
+        .tab-link {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    // Real-time search functionality
+    (function() {
+        let searchTimeout;
+        const searchInput = document.getElementById('search_input');
+        const userTypeFilter = document.getElementById('user_type_filter');
+        const searchForm = document.getElementById('search-form');
+        
+        // Debounced search on input
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    searchForm.submit();
+                }, 500); // Wait 500ms after user stops typing
+            });
+        }
+        
+        // Auto-submit on filter change
+        if (userTypeFilter) {
+            userTypeFilter.addEventListener('change', function() {
+                searchForm.submit();
+            });
+        }
+    })();
+    
+    // Bulk delete functionality for allowed emails
+    (function() {
+        const selectAllCheckbox = document.getElementById('selectAllEmailsCheckbox');
+        const selectAllBtn = document.getElementById('selectAllEmailsBtn');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedEmailsBtn');
+        const emailCheckboxes = document.querySelectorAll('.email-checkbox');
+        
+        // Update delete button state
+        function updateDeleteButton() {
+            const selectedCount = Array.from(emailCheckboxes).filter(cb => cb.checked).length;
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.disabled = selectedCount === 0;
+                if (selectedCount > 0) {
+                    deleteSelectedBtn.textContent = `Delete Selected (${selectedCount})`;
+                } else {
+                    deleteSelectedBtn.textContent = 'Delete Selected';
+                }
+            }
+            
+            // Update select all checkbox
+            if (selectAllCheckbox && emailCheckboxes.length > 0) {
+                selectAllCheckbox.checked = Array.from(emailCheckboxes).every(cb => cb.checked);
+                selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < emailCheckboxes.length;
+            }
+        }
+        
+        // Select all checkbox
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                emailCheckboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                updateDeleteButton();
+            });
+        }
+        
+        // Individual checkboxes
+        emailCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateDeleteButton);
+        });
+        
+        // Select all button
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                const allChecked = Array.from(emailCheckboxes).every(cb => cb.checked);
+                emailCheckboxes.forEach(cb => {
+                    cb.checked = !allChecked;
+                });
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = !allChecked;
+                }
+                updateDeleteButton();
+            });
+        }
+        
+        // Delete selected button
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', function() {
+                const selectedIds = Array.from(emailCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one email to delete.');
+                    return;
+                }
+                
+                if (!confirm(`Are you sure you want to delete ${selectedIds.length} allowed email(s)? This action cannot be undone.`)) {
+                    return;
+                }
+                
+                // Create form data
+                const formData = new FormData();
+                selectedIds.forEach(id => {
+                    formData.append('email_ids[]', id);
+                });
+                
+                // Send delete request
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+                fetch('{% url "people:bulk_delete_allowed_emails" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to delete allowed emails'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            });
+        }
+        
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Initialize button state
+        updateDeleteButton();
+    })();
+</script>
+{% endblock %}

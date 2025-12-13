@@ -6,6 +6,11 @@ app_name = 'designs'
 urlpatterns = [
     path('feature-cards/', views.feature_cards_list, name='feature_cards_list'),
     path('feature-cards/<int:pk>/', views.feature_card_detail, name='feature_card_detail'),
+    path('manage-feature-cards/', views.manage_feature_cards, name='manage_feature_cards'),
+    path('manage-feature-cards/create/', views.create_feature_card, name='create_feature_card'),
+    path('manage-feature-cards/<int:pk>/edit/', views.edit_feature_card, name='edit_feature_card'),
+    path('manage-feature-cards/<int:pk>/delete/', views.delete_feature_card, name='delete_feature_card'),
+    path('manage-head-message/', views.manage_head_message, name='manage_head_message'),
     path('admission/<int:pk>/', views.admission_element_detail, name='admission_element_detail'),
 ]
 
