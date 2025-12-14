@@ -13,7 +13,7 @@
             <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
             <h1 class="admission-title">{{ element.title }}</h1>
         </div>
-        
+
         <div class="admission-content">
             <div class="admission-rich-content">
                 {{ element.content|safe }}
@@ -34,7 +34,7 @@
             {% endif %}
 
             {% if program and courses %}
-            <div class="program-courses-section">
+               <div class="program-courses-section">
                 <h2 class="courses-section-title">Curriculum & Course Learning Outcomes</h2>
                 <p class="courses-section-subtitle">Complete list of courses for {{ program.name }}</p>
 
@@ -61,235 +61,281 @@
                 {% if lifetime_stats %}
                 <div class="you-should-know-content" id="youShouldKnowContent" style="display: none;">
                     <div class="ys-know-intro">
-                        <h3>Program Learning Outcomes (PLOs) - Washington Accord</h3>
-                        <p><strong>Program Learning Outcomes (PLOs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. PLOs are attained through <strong>Course Learning Outcomes (CLOs)</strong>, where each CLO maps to a specific PLO. We measure your progress using <strong>Bloom's Taxonomy (K1-K6)</strong>, <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive skill development throughout your 4-year journey.</p>
-                    </div>
 
-                    <div class="definitions-grid">
-                        <div class="definition-card">
-                            <h4>Bloom's Taxonomy (K1-K6)</h4>
-                            <ul class="definition-list">
-                                <li><strong>K1:</strong> Remember - Recall facts and basic concepts</li>
-                                <li><strong>K2:</strong> Understand - Explain ideas and concepts</li>
-                                <li><strong>K3:</strong> Apply - Use information in new situations</li>
-                                <li><strong>K4:</strong> Analyze - Draw connections among ideas</li>
-                                <li><strong>K5:</strong> Evaluate - Justify a stand or decision</li>
-                                <li><strong>K6:</strong> Create - Produce new or original work</li>
-                            </ul>
-                        </div>
+                     <!-- PO, Blooms, K, P, A Calculation Tables Section -->
+                      <div class="po-stats-section" style="padding: 4rem 0; background: var(--bg-secondary);">
+                       <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+        <div class="po-stats-header" style="text-align: center; margin-bottom: 3rem;">
+            <p class="eyebrow" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 0.5rem 0;">Program Outcomes</p>
+            <h2 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 2rem; font-weight: 700;">You Should Know</h2>
+            <p class="subtitle" style="color: var(--text-secondary); font-size: 1rem; max-width: 800px; margin: 0 auto;">
+                <strong>Program Learning Outcomes (PLOs)</strong> are the most important aspect of your engineering education, aligned with the Washington Accord standards. These are high-level competencies you'll achieve upon graduation. PLOs are attained through <strong>Course Learning Outcomes (CLOs)</strong>, where each CLO maps to a specific PLO. We measure your progress using <strong>Bloom's Taxonomy across all 3 domains</strong> (Cognitive K1-K6, Affective A1-A5, Psychomotor P1-P5) and measuring tools <strong>Knowledge Profiles (K1-K8)</strong>, <strong>Problem Attributes (P1-P7)</strong>, and <strong>Activity Attributes (A1-A5)</strong> to ensure comprehensive development in all domains throughout your 4-year journey.
+            </p>
+        </div>
 
-                        <div class="definition-card">
-                            <h4>Knowledge Profiles (K1-K8)</h4>
-                            <ul class="definition-list">
-                                <li><strong>K1:</strong> Natural Sciences (Physics, Chemistry, Biology)</li>
-                                <li><strong>K2:</strong> Math/Stats (Analytical tools)</li>
-                                <li><strong>K3:</strong> Engineering Fundamentals</li>
-                                <li><strong>K4:</strong> Specialist Knowledge</li>
-                                <li><strong>K5:</strong> Design Support</li>
-                                <li><strong>K6:</strong> Engineering Practice</li>
-                                <li><strong>K7:</strong> Society & Ethics</li>
-                                <li><strong>K8:</strong> Research Literature</li>
-                            </ul>
-                        </div>
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <h3 style="margin: 0; color: var(--text-primary); font-size: 1.8rem; font-weight: 700; line-height: 1.3;">
+                The marks distribution of your 4-year BSc in CSE Program is as follows:
+            </h3>
+        </div>
 
-                        <div class="definition-card">
-                            <h4>Problem Attributes (P1-P7)</h4>
-                            <ul class="definition-list">
-                                <li><strong>P1:</strong> In-Depth Knowledge Required</li>
-                                <li><strong>P2:</strong> Wide-Ranging/Conflicting Requirements</li>
-                                <li><strong>P3:</strong> No Obvious Solution</li>
-                                <li><strong>P4:</strong> Infrequently Encountered</li>
-                                <li><strong>P5:</strong> Outside Standards/Codes</li>
-                                <li><strong>P6:</strong> Diverse Stakeholder Needs</li>
-                                <li><strong>P7:</strong> Many Interdependent Parts</li>
-                            </ul>
-                        </div>
+        <div class="po-stats-tables" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+            <!-- Bloom's Taxonomy Section - Appears First -->
+            <div style="grid-column: 1 / -1; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.3rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Bloom's Taxonomy Levels</h3>
+            </div>
 
-                        <div class="definition-card">
-                            <h4>Activity Attributes (A1-A5)</h4>
-                            <ul class="definition-list">
-                                <li><strong>A1:</strong> Diverse Resource Use</li>
-                                <li><strong>A2:</strong> Resolve Significant Conflicts</li>
-                                <li><strong>A3:</strong> Creative Use of Principles</li>
-                                <li><strong>A4:</strong> Significant Consequences</li>
-                                <li><strong>A5:</strong> Beyond Previous Experience</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="lifetime-stats-section">
-                        <h3>Your 4-Year Journey: Credits & Marks Distribution</h3>
-
-                        <div class="stats-tables">
-                            <div class="stats-table-wrapper po-table-highlight">
-                                <h4>Program Learning Outcomes (PLOs) - Washington Accord</h4>
-                                <table class="stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>PLO & Title</th>
-                                            <th>Credits</th>
-                                            <th>Marks</th>
-                                            <th>% of Marks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% if program_outcomes %}
-                                        {% for po in program_outcomes %}
-                                        {% with data=lifetime_stats.program_outcomes|get_item:po.code %}
-                                        {% with total=lifetime_stats.totals.program_outcomes %}
-                                        <tr>
-                                            <td><strong>{{ po.code|po_to_plo }}:</strong> {{ po.title }}</td>
-                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
-                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
-                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
-                                        </tr>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endfor %}
-                                        {% else %}
-                                        {% for po_num in "1,2,3,4,5,6,7,8,9,10,11,12"|split_string:"," %}
-                                        {% with po_code="PO"|add:po_num %}
-                                        {% with data=lifetime_stats.program_outcomes|get_item:po_code %}
-                                        {% with total=lifetime_stats.totals.program_outcomes %}
-                                        <tr>
-                                            <td><strong>{{ po_code|po_to_plo }}:</strong> -</td>
-                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
-                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
-                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
-                                        </tr>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endfor %}
-                                        {% endif %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="stats-table-wrapper">
-                                <h4>Bloom's Taxonomy Levels</h4>
-                                <table class="stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Level</th>
-                                            <th>Credits</th>
-                                            <th>Marks</th>
-                                            <th>% of Marks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for level in "K1,K2,K3,K4,K5,K6"|split_string:"," %}
-                                        {% with data=lifetime_stats.blooms|get_item:level %}
-                                        {% with total=lifetime_stats.totals.blooms %}
-                                        <tr>
-                                            <td><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
-                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
-                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
-                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
-                                        </tr>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="stats-table-wrapper">
-                                <h4>Knowledge Profiles</h4>
-                                <table class="stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Profile</th>
-                                            <th>Credits</th>
-                                            <th>Marks</th>
-                                            <th>% of Marks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for k in "K1,K2,K3,K4,K5,K6,K7,K8"|split_string:"," %}
-                                        {% with data=lifetime_stats.knowledge|get_item:k %}
-                                        {% with total=lifetime_stats.totals.knowledge %}
-                                        <tr>
-                                            <td><strong>{{ k }}:</strong> {{ k|get_kp_display }}</td>
-                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
-                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
-                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
-                                        </tr>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="stats-table-wrapper">
-                                <h4>Problem Attributes</h4>
-                                <table class="stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Attribute</th>
-                                            <th>Credits</th>
-                                            <th>Marks</th>
-                                            <th>% of Marks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for p in "P1,P2,P3,P4,P5,P6,P7"|split_string:"," %}
-                                        {% with data=lifetime_stats.problem|get_item:p %}
-                                        {% with total=lifetime_stats.totals.problem %}
-                                        <tr>
-                                            <td><strong>{{ p }}:</strong> {{ p|get_pa_display }}</td>
-                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
-                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
-                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
-                                        </tr>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="stats-table-wrapper">
-                                <h4>Activity Attributes</h4>
-                                <table class="stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Attribute</th>
-                                            <th>Credits</th>
-                                            <th>Marks</th>
-                                            <th>% of Marks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for a in "A1,A2,A3,A4,A5"|split_string:"," %}
-                                        {% with data=lifetime_stats.activity|get_item:a %}
-                                        {% with total=lifetime_stats.totals.activity %}
-                                        <tr>
-                                            <td><strong>{{ a }}:</strong> {{ a|get_a_display }}</td>
-                                            <td>{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
-                                            <td>{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
-                                            <td>{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
-                                        </tr>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <!-- Bloom's Taxonomy - Split into 3 Compact Cards -->
+            <div class="blooms-cards-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; grid-column: 1 / -1;">
+                <!-- Cognitive Domain Card -->
+                <div class="stats-table-wrapper blooms-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px var(--shadow);">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--color-primary); font-size: 0.95rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">Cognitive (K1-K6)</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                    <th style="padding: 0.4rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Level</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Cr</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Mk</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for level in "K1,K2,K3,K4,K5,K6"|split_string:"," %}
+                                {% with data=lifetime_stats.blooms|get_item:level %}
+                                {% with total=lifetime_stats.totals.blooms %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.4rem; color: var(--text-primary); font-size: 0.75rem;"><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                {% endif %}
+
+                <!-- Affective Domain Card -->
+                <div class="stats-table-wrapper blooms-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px var(--shadow);">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--color-primary); font-size: 0.95rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">Affective (A1-A5)</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                    <th style="padding: 0.4rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Level</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Cr</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Mk</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for level in "A1,A2,A3,A4,A5"|split_string:"," %}
+                                {% with data=lifetime_stats.blooms|get_item:level %}
+                                {% with total=lifetime_stats.totals.blooms %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.4rem; color: var(--text-primary); font-size: 0.75rem;"><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Psychomotor Domain Card -->
+                <div class="stats-table-wrapper blooms-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px var(--shadow);">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--color-primary); font-size: 0.95rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">Psychomotor (P1-P5)</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                    <th style="padding: 0.4rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Level</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Cr</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">Mk</th>
+                                    <th style="padding: 0.4rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-size: 0.8rem;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for level in "P1,P2,P3,P4,P5"|split_string:"," %}
+                                {% with data=lifetime_stats.blooms|get_item:level %}
+                                {% with total=lifetime_stats.totals.blooms %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.4rem; color: var(--text-primary); font-size: 0.75rem;"><strong>{{ level }}:</strong> {{ level|get_blooms_display }}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.4rem; text-align: center; color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program Outcomes Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Program Learning Outcomes (PLOs)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">PLO & Title</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if program_outcomes %}
+                                {% for po in program_outcomes %}
+                                {% with data=lifetime_stats.program_outcomes|get_item:po.code %}
+                                {% with total=lifetime_stats.totals.program_outcomes %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ po.code|po_to_plo }}:</strong> {{ po.title }}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            {% else %}
+                                {% for po_num in "1,2,3,4,5,6,7,8,9,10,11,12"|split_string:"," %}
+                                {% with po_code="PO"|add:po_num %}
+                                {% with data=lifetime_stats.program_outcomes|get_item:po_code %}
+                                {% with total=lifetime_stats.totals.program_outcomes %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ po_code|po_to_plo }}:</strong> -</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Knowledge Profiles Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Knowledge Profiles (K)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Profile</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for k in "K1,K2,K3,K4,K5,K6,K7,K8"|split_string:"," %}
+                            {% with data=lifetime_stats.knowledge|get_item:k %}
+                            {% with total=lifetime_stats.totals.knowledge %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ k }}:</strong> {{ k|get_kp_display }}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Problem Attributes Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Problem Attributes (P)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Attribute</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in "P1,P2,P3,P4,P5,P6,P7"|split_string:"," %}
+                            {% with data=lifetime_stats.problem|get_item:p %}
+                            {% with total=lifetime_stats.totals.problem %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ p }}:</strong> {{ p|get_pa_display }}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity Attributes Table -->
+            <div class="stats-table-wrapper" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px var(--shadow);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">Activity Attributes (A)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="stats-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Attribute</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Credits</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">Marks</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color);">% of Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in "A1,A2,A3,A4,A5"|split_string:"," %}
+                            {% with data=lifetime_stats.activity|get_item:a %}
+                            {% with total=lifetime_stats.totals.activity %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 0.75rem; color: var(--text-primary);"><strong>{{ a }}:</strong> {{ a|get_a_display }}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.credits|floatformat:1 }}{% else %}0.0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--text-secondary);">{% if data %}{{ data.marks }}{% else %}0{% endif %}</td>
+                                <td style="padding: 0.75rem; text-align: center; color: var(--color-primary); font-weight: 600;">{% if data and total > 0 %}{{ data.marks|mul:100|div:total|floatformat:1 }}%{% else %}0.0%{% endif %}</td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+{% endif %}
+                    </div>
+                </div>
 
               {% regroup courses by year_semester as courses_by_semester %}
 
-{% for semester_group in courses_by_semester %}
-<div class="course-semester-group" data-semester="{{ semester_group.grouper }}">
+              {% for semester_group in courses_by_semester %}
+              <div class="course-semester-group" data-semester="{{ semester_group.grouper }}">
 
-    <h3 class="course-semester-title">
-        {{ semester_group.list.0.get_year_semester_display }}
-    </h3>
+                <h3 class="course-semester-title">
+                  {{ semester_group.list.0.get_year_semester_display }}
+                     </h3>
 
     {# 🔥 Sort by course_type BEFORE regrouping — the KEY fix #}
    {% with sorted_courses=semester_group.list|sort_by_type %}
@@ -377,8 +423,8 @@
         {% endfor %}
     {% endwith %}
 
-</div>
-{% endfor %}
+                      </div>
+                    {% endfor %}
 
             </div>
             {% endif %}
@@ -1239,275 +1285,132 @@
     margin-bottom: 1.5rem;
     font-weight: 700;
 }
+/* PO Stats Section Styles */
+.po-stats-section {
+    scroll-margin-top: 2rem;
+}
 
-/* ---------------------------------------- */
-/* 🔥 FIXED RESPONSIVE STATS TABLE SECTION  */
-/* ---------------------------------------- */
-
-.stats-tables {
+.po-stats-tables {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
-    border-collapse: collapse;
 }
 
-/* make wrapper scrollable when needed */
 .stats-table-wrapper {
-    background: var(--bg-primary);
-    padding: 1.5rem;
-    border-radius: 12px;
-    border: 0;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    overflow-x: visible;
+    width: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden; /* DESKTOP: prevent scroll */
 }
 
-.stats-table-wrapper.po-table-highlight {
-    border: 2px solid var(--color-primary);
-    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
+.stats-table-wrapper:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--shadow-lg) !important;
 }
-
-.stats-table-wrapper h4 {
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-}
-
 
 .stats-table {
-    width: 100%;
-    min-width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 0.8rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-}
-
-.stats-table thead {
-    background: var(--bg-tertiary);
+    width: 100%; /* DESKTOP: full width */
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    table-layout: auto; /* DESKTOP: automatic column widths */
 }
 
 .stats-table th,
 .stats-table td {
-    padding: 0.5rem 0.6rem;
-    border-right: 0;
-}
-
-.stats-table td:first-child {
-    min-width: 180px;
-    max-width: 280px;
-    font-size: 0.75rem;
+    padding: 1rem;
+    text-align: left;
 }
 
 .stats-table tbody tr:hover {
-    background: var(--bg-secondary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
 }
 
-/* ---------------------------------------- */
-/* 📱 RESPONSIVE BREAKPOINTS                */
-/* ---------------------------------------- */
-
-/* Tablets and medium screens */
-@media (max-width: 900px) {
-    .stats-tables {
-        grid-template-columns: 1fr; /* 🔥 stacks tables vertically */
-        gap: 1.5rem;
-        overflow-x: auto !important; /* horizontal scroll */
-        -webkit-overflow-scrolling: touch;
-    }
+/* Blooms Cards Container */
+.blooms-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
 }
 
-/* Mobile screens */
-@media (max-width: 600px) {
-
-    .stats-table-wrapper {
-        padding: 1rem;
-    }
-
-    .stats-table {
-        min-width: 480px; /* tighter but readable */
-        font-size: 0.75rem;
-    }
-
-    .stats-table th,
-    .stats-table td {
-        padding: 0.4rem 0.45rem;
-    }
-
-    .stats-table td:first-child {
-        min-width: 140px;
-        max-width: 200px;
-    }
+/* PO Stats Header */
+.po-stats-header h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
-/* Extra small screens */
-@media (max-width: 420px) {
-
-    .stats-table {
-        min-width: 420px; /* smallest usable width */
-    }
-
-    .stats-table th,
-    .stats-table td {
-        padding: 0.35rem;
-    }
+.po-stats-header .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
 }
 
-/* =====================================================
-   RESPONSIVE — SEMESTER FILTER + YOU SHOULD KNOW
-===================================================== */
-
-/* Tablet (≤1024px) */
-@media (max-width: 1024px) {
-    .semester-filter-pills {
-        gap: 0.6rem;
-        padding: 0.85rem;
-    }
-
-    .semester-pill,
-    .you-should-know-btn-pill {
-        padding: 0.55rem 1.1rem;
-        font-size: 0.85rem;
-    }
-
-    .ys-know-intro h3 {
-        font-size: 1.35rem;
-    }
-
-    .ys-know-intro p {
-        font-size: 0.95rem;
-    }
-}
-
-/* Mobile landscape (≤768px) */
+/* MOBILE SCROLL */
 @media (max-width: 768px) {
-    .semester-filter-pills {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5rem;
+
+    .po-stats-tables {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
     }
 
-    .semester-pill,
-    .you-should-know-btn-pill {
-        padding: 0.5rem 1rem;
-        font-size: 0.83rem;
-        margin: 0;
+    .blooms-cards-container {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
     }
 
-    .you-should-know-content {
-        padding: 1.25rem;
-    }
-
-    .ys-know-intro h3 {
-        font-size: 1.25rem;
-    }
-
-    .definition-card {
-        padding: 1rem;
-    }
-
-    .definition-list li {
-        font-size: 0.85rem;
-    }
-}
-
-/* Mobile portrait (≤600px) */
-@media (max-width: 600px) {
-
-    /* Pills stack nicer */
-    .semester-filter-pills {
-        gap: 0.45rem;
-        padding: 0.6rem;
-    }
-
-    .semester-pill,
-    .you-should-know-btn-pill {
-        padding: 0.45rem 0.9rem;
-        font-size: 0.8rem;
-    }
-
-    .you-should-know-btn-pill .toggle-icon {
-        width: 14px;
-        height: 14px;
-    }
-
-    /* Definitions become 1-column */
-    .definitions-grid {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
-    }
-
-    /* Stats tables become 1-column */
-    .stats-tables {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
+    /* MOBILE: allow horizontal scroll */
     .stats-table-wrapper {
-        padding: 1rem;
+        width: 100%;
+        overflow-x: auto; /* only mobile scroll */
+        -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+        padding: 1rem !important;
+    }
+
+    .stats-table {
+        min-width: 900px; /* triggers scroll on mobile only */
+        font-size: 0.9rem;
     }
 
     .stats-table th,
     .stats-table td {
-        font-size: 0.7rem;
-        padding: 0.45rem;
+        padding: 0.5rem !important;
+        white-space: nowrap; /* prevent wrapping */
+    }
+
+    .po-stats-header h2 {
+        font-size: 1.5rem !important;
+    }
+
+    .po-stats-header .subtitle {
+        font-size: 0.9rem !important;
     }
 }
 
-/* Small devices (≤420px) */
-@media (max-width: 420px) {
-
-    /* Pills even smaller */
-    .semester-pill,
-    .you-should-know-btn-pill {
-        padding: 0.4rem 0.75rem;
-        font-size: 0.75rem;
+@media (max-width: 480px) {
+    .po-stats-section {
+        padding: 1rem 0.5rem;
     }
 
-    .you-should-know-btn-pill::before {
-        opacity: 0.7;
+    .po-stats-header h2 {
+        font-size: 1.25rem !important;
     }
 
-    .definition-card h4 {
-        font-size: 0.95rem;
+    .po-stats-header .subtitle {
+        font-size: 0.85rem !important;
     }
-
-    .definition-list li {
-        font-size: 0.8rem;
-    }
-
-    .stats-table-wrapper {
-        padding: 0.75rem;
-    }
-
-    .stats-table {
-        font-size: 0.65rem;
-    }
-
-    .stats-table td,
-    .stats-table th {
-        padding: 0.35rem;
+}
+@media (max-width: 1024px) {
+    .courses-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
     }
 }
 
-/* Ultra small (≤350px) */
-@media (max-width: 350px) {
-    .semester-filter-pills {
-        gap: 0.3rem;
+@media (max-width: 768px) {
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
+}
 
-    .semester-pill,
-    .you-should-know-btn-pill {
-        padding: 0.35rem 0.65rem;
-        font-size: 0.72rem;
-    }
-
-    .stats-table td:first-child {
-        min-width: auto;
+@media (max-width: 480px) {
+    .courses-grid {
+        grid-template-columns: 1fr !important;
     }
 }
 

@@ -428,3 +428,99 @@ def reset_password(request, token):
 def system_documentation(request):
     """Display comprehensive system documentation"""
     return render(request, 'system_documentation.html')
+
+
+
+from django.shortcuts import render
+
+def credits(request):
+
+    contributors = [
+        {
+            "name": "Tahiya Zareen Hiya",
+            "id": "22201038",
+            "role": "Frontend Development",
+            "reflection": "I feel really excited and honored to be part of this journey. It’s been a great opportunity to apply my skills in HTML, CSS, JavaScript and responsive design while also learning how to integrate user-friendly features and maintain a consistent design system.",
+            "link": " https://tahiya07.github.io/Tahiya.view/",
+            "image": "images/profile - Tahiya Zareen.jpg"
+        },
+        {
+            "name": "Marzan Ahmed",
+            "id": "22201055",
+            "role": "Clubs",
+            "reflection": "It felt great to contribute to a real departmental website & collaborate with the whole team. I learned a lot throughout the process & it was rewarding to see our work come together into something useful for our department. I am always grateful for this opportunity.",
+            "link": "https://marzzzsiam.github.io/Marzan_Ahmed/",
+            "image": "images/IMG_7460 - Marzan Ahmed.jpeg"
+        },
+        {
+            "name": "Md Sahriar Asif",
+            "id": "22201111",
+            "role": "Backend developer for Faculty module (password reset, Google Scholar API integration, profile updates)",
+            "reflection": "Learned a bunch of new stuff along the way. Low-key a pretty cool experience.",
+            "link": "https://drive.google.com/open?id=1099PSCBPOcugBac_Tcq0P_JwgfJE-4li",
+            "image": "images/20231220_154235 - Md. Sahriar Asif.jpg"
+        },
+        {
+            "name": "Tasnim Abrar Sajin",
+            "id": "22201119",
+            "role": "Some frontend design, allowed email functionality",
+            "reflection": "I feel so great to work on this website. This was a new experience for me, and I enjoyed it.",
+            "link": "https://drive.google.com/open?id=1fhgzOmi3Z6EYhttGYlkcnByrDADvG4jz",
+            "image": "images/Sajin - Tasnim Abrar Sajin.jpg"
+        },
+        {
+            "name": "Md Istiak Ahamed Nabil",
+            "id": "22201133",
+            "role": "Backend, admin panel, teachers section",
+            "reflection": "It was a great experience and an excellent opportunity to be a part of this. I would also like to thank our course teacher for providing us with this opportunity.",
+            "link": "https://drive.google.com/open?id=1sZLtApHY6IyM1t_O4IuDgihZGy5DqowD",
+            "image": "images/PXL_20250505_105704355.MP~3 - Md. Istiak Ahammed (Nabil).jpg"
+        },
+        {
+            "name": "Md. Akif Hossain",
+            "id": "22201029",
+            "role": "Backend Development for Alumni Stories section",
+            "reflection": "I feel honored to have been a part of this journey, as it allowed me to contribute meaningfully to the department while enhancing my technical skills.",
+            "link": "https://drive.google.com/open?id=1--GDaF2sS7Cfask7C6cgdd5AZQ5UgdEw",
+            "image": "images/WhatsApp Image 2023-09-14 at 21.10.50 - Md. Akif Hossain.jpg"
+        },
+        {
+            "name": "Ibrahim Hasan",
+            "id": "22201142",
+            "role": "Academic area, role-based access control, dynamic facts & figures",
+            "reflection": "This journey has played an important role in my learning and growth. I gained valuable knowledge, improved my skills, and built confidence through hands-on experience.",
+            "link": "https://drive.google.com/open?id=1ZaC1psjiu1wozN3oS3kPMdEdC0Ebs-LK",
+            "image": "images/IMG_3970 - Ibrahim Hasan.jpeg"
+        },
+        {
+            "name": "Rabea Sultana Shazia",
+            "id": "22201053",
+            "role": "Alumni section",
+            "reflection": "Great experience.",
+            "link": "https://drive.google.com/open?id=1NoTIgSNaiOr4nfO-l29HwO3TumSq0ARa",
+            "image": "images/inbound3834883613428923307 - Rabea Sultana Shazia.jpg"
+        },
+        {
+            "name": "Faizun Nesa Orin",
+            "id": "22201139",
+            "role": "Backend functionality for academic areas, CRUD for prerequisite courses",
+            "reflection": "It was a valuable and rewarding experience that enhanced my technical skills and gave me practical exposure to real-world web development.",
+            "link": "https://drive.google.com/open?id=1_oBZPeyyb4qk6HPTlYTTduob6e0Gnvr_",
+            "image": "images/FullSizeRender_Original - Faizun Nesa.jpeg"
+        },
+        {
+            "name": "Fabia Tasnim",
+            "id": "22201044",
+            "role": "Fullstack (Frontend & Backend) of Alumni Association module, PDF upload & preview, download mechanism",
+            "reflection": "Being part of this journey has been truly rewarding. Special thanks to our mentor Durjoy Mistry for continuous guidance and support.",
+            "link": "https://drive.google.com/open?id=1U6v1_kXJYgjcUPtMnHF4vb-93ntVUvIg",
+            "image": "images/IMG-20250101-WA0012 - Fabia Tasnim.jpg"
+        },
+    ]
+
+    context = {
+        "contributors": contributors
+    }
+
+    return render(request, 'credits.html', context)
+

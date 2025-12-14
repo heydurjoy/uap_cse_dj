@@ -12,7 +12,7 @@
             <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
             <h1 class="courses-title">All Courses</h1>
         </div>
-        
+
         <div class="courses-content">
             <!-- Search and Filter Section -->
             <div class="courses-filters">
@@ -1295,21 +1295,21 @@
 // Semester filter functionality
 document.addEventListener('DOMContentLoaded', function() {
     const semesterPillGroups = document.querySelectorAll('.semester-filter-pills');
-    
+
     semesterPillGroups.forEach(pillGroup => {
         const pills = pillGroup.querySelectorAll('.semester-pill');
         const programId = pillGroup.getAttribute('data-program');
         const programSection = pillGroup.closest('.program-section');
         const semesterGroups = programSection ? programSection.querySelectorAll('.course-semester-group') : [];
-        
+
         pills.forEach(pill => {
             pill.addEventListener('click', function() {
                 // Update active state
                 pills.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
-                
+
                 const selectedSemester = this.getAttribute('data-semester');
-                
+
                 // Show/hide semester groups
                 semesterGroups.forEach(group => {
                     if (selectedSemester === 'all' || group.getAttribute('data-semester') === selectedSemester) {
@@ -1320,20 +1320,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
-        
+
         // Add event listener for "You Should Know" button
         const youShouldKnowBtn = pillGroup.querySelector('.you-should-know-btn-pill');
         const youShouldKnowContent = programSection ? programSection.querySelector('.you-should-know-content') : null;
-        
+
         if (youShouldKnowBtn && youShouldKnowContent) {
             youShouldKnowBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const isHidden = youShouldKnowContent.style.display === 'none' ||
                                youShouldKnowContent.style.display === '' ||
                                window.getComputedStyle(youShouldKnowContent).display === 'none';
-                
+
                 if (isHidden) {
                     youShouldKnowContent.style.display = 'block';
                     youShouldKnowBtn.classList.add('active');
@@ -1347,4 +1347,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-

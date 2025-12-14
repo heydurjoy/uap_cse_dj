@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Credits - UAP CSE Website{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="credits-hero">
+        <h1>Project Credits</h1>
+        <p>Meet the team members who contributed to building the UAP CSE departmental website. Each member played a vital role in bringing this project to life.</p>
+    </section>
+ <svg class="background-svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgba(255,255,255,0.05);" ></stop>
+                <stop offset="100%" style="stop-color:rgba(255,255,255,0.1);" ></stop>
+            </linearGradient>
+        </defs>
+     <rect width="100%" height="100%" fill="url(#grad)" ></rect>
+    </svg>
+  <section class="credits-grid">
+    {% for contributor in contributors %}
+    <div class="credit-card">
+        <div class="credit-image">
+           <img src="{% static contributor.image|default:'images/placeholder.png' %}" alt="{{ contributor.name }}">
+
+        </div>
+        <h2>{{ contributor.name }}</h2>
+        <p><strong>ID:</strong> {{ contributor.id }}</p>
+        <p><strong>Role:</strong> {{ contributor.role }}</p>
+        <p><strong>Reflection:</strong> {{ contributor.reflection }}</p>
+        <a href="{{ contributor.link }}" target="_blank">Portfolio / Work Link</a>
+    </div>
+    {% endfor %}
+</section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.credits-hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.credits-hero h1 {
+    font-size: 2.8rem;
+    margin-bottom: 1rem;
+}
+
+.credits-hero p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.credits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+.credit-card {
+    background: rgba(255, 255, 255, 0.05);  /* very subtle white */
+    backdrop-filter: blur(20px) saturate(150%); /* strong blur + saturation */
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* subtle frosted border */
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-primary);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15); /* soft shadow for depth */
+    transition: all 0.5s ease;
+}
+
+/* Hover effect: lift + stronger glow */
+.credit-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 20px var(--color-primary), 0 0 40px rgba(0,0,0,0.25);
+    background: rgba(255, 255, 255, 0.08); /* slightly brighter on hover */
+}
+.background-svg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+}
+
+/* Name Gradient Animation */
+.credit-card h2 {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background-position 0.5s ease;
+    background-size: 200% 100%;
+}
+.credit-card:hover h2 {
+    background-position: 100% 0;
+}
+
+.credit-card p {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.credit-card a {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .credits-hero h1 {
+        font-size: 2rem;
+    }
+
+    .credits-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.credit-image {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--color-primary);
+
+    /* Neon Glow */
+    box-shadow: 0 0 8px var(--color-primary), 0 0 15px var(--color-primary, rgba(6, 182, 212, 0.6));
+    transition: box-shadow 0.3s ease;
+}
+
+/* Optional: Intensify glow on hover */
+.credit-card:hover .credit-image {
+    box-shadow: 0 0 15px var(--color-primary), 0 0 25px var(--color-primary, rgba(6, 182, 212, 0.8));
+}
+
+.credit-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+</style>
+{% endblock %}
