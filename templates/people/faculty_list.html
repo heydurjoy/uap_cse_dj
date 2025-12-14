@@ -42,18 +42,30 @@
                 <div class="faculty-grid" data-view="grid">
                     {% for faculty in faculty_list %}
                     <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                        {% if faculty.bio %}
+                            <div class="faculty-bio-bubble">
+                                <div class="bubble-content">
+                                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                                </div>
+                                <div class="bubble-tail"></div>
+                            </div>
+                        {% endif %}
                         <div class="faculty-card">
                             <div class="faculty-card-image">
                                 <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
-                            </div>
-                            <div class="faculty-card-body">
-                                <h3 class="faculty-name">{{ faculty.name }}</h3>
-                                {% if faculty.designation %}
-                                    <p class="faculty-designation">{{ faculty.designation }}</p>
-                                {% endif %}
-                                {% if faculty.bio %}
-                                    <p class="faculty-bio">{{ faculty.bio|truncatewords:20 }}</p>
-                                {% endif %}
+                                <div class="faculty-card-overlay">
+                                    <div class="faculty-card-info">
+                                        <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                        <div class="faculty-meta">
+                                            {% if faculty.designation %}
+                                                <span class="faculty-designation">{{ faculty.designation }}</span>
+                                            {% endif %}
+                                            {% if faculty.citation %}
+                                                <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </a>
@@ -77,21 +89,33 @@
                 <div class="faculty-grid" data-view="grid">
                     {% for faculty in faculty_list %}
                     <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                        {% if faculty.bio %}
+                            <div class="faculty-bio-bubble">
+                                <div class="bubble-content">
+                                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                                </div>
+                                <div class="bubble-tail"></div>
+                            </div>
+                        {% endif %}
                         <div class="faculty-card former-card">
                             <div class="faculty-card-image">
                                 <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
-                            </div>
-                            <div class="faculty-card-body">
-                                <h3 class="faculty-name">{{ faculty.name }}</h3>
-                                {% if faculty.designation %}
-                                    <p class="faculty-designation">{{ faculty.designation }}</p>
-                                {% endif %}
-                                {% if faculty.last_office_date %}
-                                    <p class="former-date">Service Period: Until {{ faculty.last_office_date|date:"F Y" }}</p>
-                                {% endif %}
-                                {% if faculty.bio %}
-                                    <p class="faculty-bio">{{ faculty.bio }}</p>
-                                {% endif %}
+                                <div class="faculty-card-overlay">
+                                    <div class="faculty-card-info">
+                                        <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                        <div class="faculty-meta">
+                                            {% if faculty.designation %}
+                                                <span class="faculty-designation">{{ faculty.designation }}</span>
+                                            {% endif %}
+                                            {% if faculty.citation %}
+                                                <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if faculty.last_office_date %}
+                                            <p class="former-date">Until {{ faculty.last_office_date|date:"F Y" }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </a>
@@ -182,6 +206,7 @@
 
 .designation-group {
     margin-bottom: 4rem;
+    overflow: visible;
 }
 
 .designation-title {
@@ -198,6 +223,27 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.25rem;
     transition: all 0.3s ease;
+    overflow: visible;
+}
+
+/* Apple-like interaction: scale down other cards when one is hovered */
+.faculty-grid[data-view="grid"]:hover .faculty-card-link:not(:hover) {
+    transform: scale(0.92);
+    opacity: 0.6;
+    filter: blur(2px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset for list view - no scaling effect */
+.faculty-grid[data-view="list"]:hover .faculty-card-link:not(:hover) {
+    transform: none;
+    opacity: 1;
+    filter: none;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-link:hover {
+    transform: translateY(-2px);
+    z-index: 10;
 }
 
 
@@ -271,84 +317,104 @@
     text-overflow: ellipsis;
 }
 
-.faculty-grid[data-view="list"] .faculty-bio {
+.faculty-grid[data-view="list"] .faculty-card-image {
+    min-height: 80px;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-overlay {
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.faculty-grid[data-view="list"] .faculty-name {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 1;
+}
+
+.faculty-grid[data-view="list"] .faculty-meta {
+    gap: 0.5rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-designation {
+    font-size: 0.7rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-citation {
+    font-size: 0.65rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-bio-bubble {
     display: none;
 }
 
 .faculty-grid[data-view="list"] .former-date {
-    font-size: 0.7rem;
-    color: var(--color-primary);
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.75);
     font-weight: 500;
-    margin: 0.15rem 0;
+    margin: 0.2rem 0 0 0;
     font-style: italic;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .faculty-card-link {
     text-decoration: none;
     color: inherit;
     display: block;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center bottom;
+    transform-style: preserve-3d;
+    will-change: transform;
+    position: relative;
+    overflow: visible;
+    perspective: 1200px;
+    perspective-origin: 50% 100%;
 }
 
-/* Default short tile state */
+/* Default card state - image takes most of the space */
 .faculty-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: 16px;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: center;
     position: relative;
     overflow: hidden;
     cursor: pointer;
     height: 100%;
-    min-height: 180px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Expanded tile on hover */
-.faculty-card-link:hover .faculty-card {
-    transform: scale(1.08);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-    border-color: var(--color-primary);
-    z-index: 10;
     min-height: 280px;
-    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
 }
 
+/* Apple-like hover: scale up and tilt the card backward (leaning back) - straight, no side rotation */
 .faculty-card-link:hover {
-    transform: translateY(-4px);
-    z-index: 5;
+    transform: scale(1.08) translateY(-8px) rotateX(12deg) rotateY(0deg) rotateZ(0deg);
+    z-index: 100;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Short tile - compact circular image */
-.faculty-card-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-bottom: 0.75rem;
-    flex-shrink: 0;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 3px solid var(--border-color);
-    background: var(--bg-tertiary);
-}
-
-/* Expanded tile on hover - larger image */
-.faculty-card-link:hover .faculty-card-image {
-    width: 140px;
-    height: 140px;
+.faculty-card-link:hover .faculty-card {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     border-color: var(--color-primary);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    margin-bottom: 1rem;
+    border-width: 2px;
+}
+
+/* Image container - takes up most of the card */
+.faculty-card-image {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faculty-card-image img {
@@ -360,85 +426,175 @@
 
 .faculty-card-link:hover .faculty-card-image img {
     transform: scale(1.05);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Short tile - minimal body */
-.faculty-card-body {
-    width: 100%;
-    flex: 1;
+/* Overlay with gradient for text readability */
+.faculty-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.25rem 1rem 1rem 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faculty-card-link:hover .faculty-card-overlay {
+    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* Card info container */
+.faculty-card-info {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 0.4rem;
+    position: relative;
 }
 
-/* Expanded tile on hover - show more content */
-.faculty-card-link:hover .faculty-card-body {
-    gap: 0.75rem;
-}
-
-/* Short tile - compact text */
+/* Name styling - white text on dark overlay */
 .faculty-name {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     margin: 0;
-    color: var(--text-primary);
+    color: white;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Expanded tile on hover - larger name */
-.faculty-card-link:hover .faculty-name {
-    font-size: 1.15rem;
-    -webkit-line-clamp: 3;
-}
-
-/* Short tile - small designation */
-.faculty-designation {
-    font-size: 0.85rem;
-    color: var(--color-primary);
-    margin: 0;
-    font-weight: 500;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    line-height: 1.3;
+    line-height: 1.2;
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Expanded tile on hover - larger designation */
+.faculty-card-link:hover .faculty-name {
+    font-size: 1.2rem;
+}
+
+/* Meta info row - designation and citations side by side */
+.faculty-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.faculty-designation {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 .faculty-card-link:hover .faculty-designation {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
-/* Short tile - hide bio */
-.faculty-bio {
-    display: none;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+/* Citations styling */
+.faculty-citation {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.faculty-card-link:hover .faculty-citation {
+    font-size: 0.8rem;
+}
+
+/* Glass-style chat bubble for bio - starts hidden behind/under the card */
+.faculty-bio-bubble {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-top: 0;
+    transform: translateX(-50%) translateY(-20px) translateZ(-30px) rotateX(15deg) scale(0.85);
+    transform-origin: center top;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 99;
+    min-width: 220px;
+    max-width: 300px;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+    transform-style: preserve-3d;
+}
+
+/* Reveal bubble falling from behind the card as it tilts back */
+.faculty-card-link:hover .faculty-bio-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(12px) translateZ(0) rotateX(0deg) scale(1);
+    pointer-events: auto;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1001;
+}
+
+/* Enhanced frosted glass morphism bubble content */
+.bubble-content {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(30px) saturate(200%) brightness(1.1);
+    -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 0.9rem 1.1rem;
+    position: relative;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    /* Additional frosted effect layers */
+    background-image: 
+        linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+}
+
+/* Chat bubble tail pointing up to the card */
+.bubble-tail {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid rgba(255, 255, 255, 0.85);
+    filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+}
+
+.bubble-tail::before {
+    content: '';
+    position: absolute;
+    bottom: -11px;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Bio text inside bubble - smaller and darker for visibility */
+.faculty-bio-text {
+    font-size: 0.75rem;
+    color: rgba(30, 30, 30, 0.9);
     margin: 0;
     line-height: 1.5;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-}
-
-/* Expanded tile on hover - show bio */
-.faculty-card-link:hover .faculty-bio {
-    display: block;
-    opacity: 1;
-    max-height: 100px;
-    margin-top: 0.5rem;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    font-weight: 400;
 }
 
 .no-faculty {
@@ -493,11 +649,12 @@
 }
 
 .former-date {
-    font-size: 0.85rem;
-    color: var(--color-primary);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
-    margin: 0.25rem 0 0.5rem 0;
+    margin: 0.3rem 0 0 0;
     font-style: italic;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -530,24 +687,50 @@
     
     /* Adjust card sizing for mobile */
     .faculty-grid[data-view="grid"] .faculty-card {
-        min-height: 160px;
-    }
-    
-    .faculty-card-link:hover .faculty-card {
         min-height: 240px;
     }
     
-    /* Adjust image position for mobile - move down and slightly left */
     .faculty-grid[data-view="grid"] .faculty-card-image {
-        margin-top: 0.5rem;
-        margin-left: -0.3rem;
-        margin-bottom: 0.75rem;
+        min-height: 240px;
     }
     
-    .faculty-card-link:hover .faculty-grid[data-view="grid"] .faculty-card-image {
-        margin-top: 0.75rem;
-        margin-left: -0.3rem;
-        margin-bottom: 1rem;
+    .faculty-card-overlay {
+        padding: 1rem 0.75rem 0.75rem 0.75rem;
+    }
+    
+    .faculty-name {
+        font-size: 1rem;
+    }
+    
+    .faculty-card-link:hover .faculty-name {
+        font-size: 1.1rem;
+    }
+    
+    /* Less dramatic scaling on mobile for better performance */
+    .faculty-grid[data-view="grid"]:hover .faculty-card-link:not(:hover) {
+        transform: scale(0.95);
+        opacity: 0.7;
+        filter: blur(1px);
+    }
+    
+    .faculty-card-link:hover {
+        transform: scale(1.05) translateY(-4px);
+    }
+    
+    /* Adjust bubble size on mobile */
+    .faculty-bio-bubble {
+        min-width: 180px;
+        max-width: 240px;
+        margin-top: 8px;
+    }
+    
+    .bubble-content {
+        padding: 0.75rem 1rem;
+    }
+    
+    .faculty-bio-text {
+        font-size: 0.7rem;
+        -webkit-line-clamp: 3;
     }
     
     .faculty-grid[data-view="list"] {

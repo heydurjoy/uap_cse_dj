@@ -73,3 +73,4 @@ class Command(BaseCommand):
             f'\nCompleted! Created: {created_count}, Updated: {updated_count}, Skipped: {skipped_count}'
         ))
 
+

@@ -50,3 +50,4 @@ class Command(BaseCommand):
                 self.style.SUCCESS('\n✓ All power users are already synced.')
             )
 
+
