@@ -234,6 +234,7 @@
                                 {% if member.type == 'convener' or member.type == 'faculty' or member.club_member_pk %}
                                 </a>
                                 {% else %}
+                                    </a>
                                 </div>
                                 {% endif %}
                                 {% endfor %}
@@ -258,10 +259,9 @@
                     </div>
                 </div>
             </div>
-            
-        </div>
     </section>
 </div>
+
 
 <!-- Post Modal -->
 <div id="postModal" class="post-modal">
@@ -1285,4 +1285,3 @@ document.addEventListener('keydown', function(e) {
     </div>
 </div>
 {% endblock %}
-
