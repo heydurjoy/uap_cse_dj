@@ -557,6 +557,13 @@
     overflow: hidden;
 }
 
+/* Make table scrollable on small screens */
+.admission-rich-content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Table cells */
 .admission-rich-content table th,
 .admission-rich-content table td {
     padding: 0.75rem 1rem;
@@ -564,11 +571,22 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Header */
 .admission-rich-content table th {
     background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
     font-weight: 600;
     color: var(--color-primary);
 }
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .admission-rich-content table th,
+    .admission-rich-content table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
 
 .admission-rich-content blockquote {
     border-left: 4px solid var(--color-primary);

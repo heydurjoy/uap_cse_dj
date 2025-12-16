@@ -19,16 +19,19 @@ def home(request):
     hero_tags = HeroTags.objects.filter(is_active=True).order_by('sl')
     # Use the first active feature card as the HoD highlight (editable via admin)
     hod_card = FeatureCard.objects.filter(is_active=True).order_by('sl_number').first()
-    
+
+    # Check if stats should be hidden
+    show_stats = request.GET.get('stats', 'show').lower() != 'none'
+
     # Calculate lifetime_stats for BSc program (for PO, Blooms, K, P, A tables)
     lifetime_stats = None
     program_outcomes = None
     try:
         from academics.models import Program, ProgramOutcome, Course, CourseOutcome
-        
+
         # Get BSc program
         program = Program.objects.filter(name__icontains='BSc').first()
-        
+
         if program:
             # Get all Program Outcomes for the program and sort numerically
             import re
@@ -36,7 +39,7 @@ def home(request):
             # Sort by extracting the numeric part from the code (e.g., "PO1" -> 1, "PO10" -> 10)
             pos_list.sort(key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0)
             program_outcomes = pos_list
-            
+
             # Initialize lifetime statistics
             lifetime_stats = {
                 'program_outcomes': {},  # PO1-PO12: {credits, marks}
@@ -45,14 +48,14 @@ def home(request):
                 'problem': {},  # P1-P7: {credits, marks}
                 'activity': {},  # A1-A5: {credits, marks}
             }
-            
+
             # Get all courses for the program
             courses = Course.objects.filter(program=program)
-            
+
             for course in courses:
                 outcomes = course.outcomes.all()
                 course_credit = float(course.credit_hours)
-                
+
                 for outcome in outcomes:
                     # Program Outcomes
                     if outcome.program_outcome:
@@ -61,7 +64,7 @@ def home(request):
                             lifetime_stats['program_outcomes'][po_code] = {'credits': 0, 'marks': 0}
                         lifetime_stats['program_outcomes'][po_code]['credits'] += course_credit
                         lifetime_stats['program_outcomes'][po_code]['marks'] += outcome.total_assessment_marks
-                    
+
                     # Bloom's taxonomy
                     blooms = outcome.blooms_level
                     if blooms:
@@ -69,7 +72,7 @@ def home(request):
                             lifetime_stats['blooms'][blooms] = {'credits': 0, 'marks': 0}
                         lifetime_stats['blooms'][blooms]['credits'] += course_credit
                         lifetime_stats['blooms'][blooms]['marks'] += outcome.total_assessment_marks
-                    
+
                     # Knowledge profiles
                     kp = outcome.knowledge_profile
                     if kp:
@@ -77,7 +80,7 @@ def home(request):
                             lifetime_stats['knowledge'][kp] = {'credits': 0, 'marks': 0}
                         lifetime_stats['knowledge'][kp]['credits'] += course_credit
                         lifetime_stats['knowledge'][kp]['marks'] += outcome.total_assessment_marks
-                    
+
                     # Problem attributes
                     pa = outcome.problem_attribute
                     if pa:
@@ -85,7 +88,7 @@ def home(request):
                             lifetime_stats['problem'][pa] = {'credits': 0, 'marks': 0}
                         lifetime_stats['problem'][pa]['credits'] += course_credit
                         lifetime_stats['problem'][pa]['marks'] += outcome.total_assessment_marks
-                    
+
                     # Activity attributes
                     aa = outcome.activity_attribute
                     if aa:
@@ -93,7 +96,7 @@ def home(request):
                             lifetime_stats['activity'][aa] = {'credits': 0, 'marks': 0}
                         lifetime_stats['activity'][aa]['credits'] += course_credit
                         lifetime_stats['activity'][aa]['marks'] += outcome.total_assessment_marks
-            
+
             # Calculate total marks for each category for percentage calculations
             if lifetime_stats:
                 lifetime_stats['totals'] = {
@@ -111,7 +114,7 @@ def home(request):
         # Handle any other errors gracefully
         lifetime_stats = None
         program_outcomes = None
-    
+
     return render(request, 'home.html', {
         'feature_cards': feature_cards,
         'hero_tags': hero_tags,
@@ -434,55 +437,54 @@ def system_documentation(request):
 from django.shortcuts import render
 
 def credits(request):
-
     contributors = [
         {
             "name": "Tahiya Zareen Hiya",
             "id": "22201038",
             "role": "Frontend Development",
-            "reflection": "I feel really excited and honored to be part of this journey. It’s been a great opportunity to apply my skills in HTML, CSS, JavaScript and responsive design while also learning how to integrate user-friendly features and maintain a consistent design system.",
-            "link": " https://tahiya07.github.io/Tahiya.view/",
+            "reflection": "I feel really excited and honored to be part of this journey. I'm really thankful to Durjoy Mistry sir, the Mastermind of this website for giving me this great opportunity to apply my skills  while also learning how to integrate user-friendly features and maintain a consistent design system.",
+            "link": "https://tahiya07.github.io/Tahiya.view/",
             "image": "images/profile - Tahiya Zareen.jpg"
         },
         {
-            "name": "Marzan Ahmed",
-            "id": "22201055",
-            "role": "Clubs",
-            "reflection": "It felt great to contribute to a real departmental website & collaborate with the whole team. I learned a lot throughout the process & it was rewarding to see our work come together into something useful for our department. I am always grateful for this opportunity.",
-            "link": "https://marzzzsiam.github.io/Marzan_Ahmed/",
-            "image": "images/IMG_7460 - Marzan Ahmed.jpeg"
+            "name": "Junaid Hossain",
+            "id": "22201017",
+            "role": "Backend development for the Club section",
+            "reflection": "Felt good to work on a project that will be used by so many people in the future.",
+            "link": "https://junhossain.github.io/Portfolio/",
+            "image": "images/profile-junaid-hossain.jpg"
         },
         {
-            "name": "Md Sahriar Asif",
-            "id": "22201111",
-            "role": "Backend developer for Faculty module (password reset, Google Scholar API integration, profile updates)",
-            "reflection": "Learned a bunch of new stuff along the way. Low-key a pretty cool experience.",
-            "link": "https://drive.google.com/open?id=1099PSCBPOcugBac_Tcq0P_JwgfJE-4li",
-            "image": "images/20231220_154235 - Md. Sahriar Asif.jpg"
+            "name": "Wasikul Hasan Fahim",
+            "id": "22201037",
+            "role": "Alumni section development",
+            "reflection": "Great to be part of this project",
+            "link": "https://wasikul-fahim.github.io/Wasikul_Portfolio/index.html",
+            "image": "images/IMG_3194 - Wasikul Hasan Fahim.jpeg"
         },
         {
-            "name": "Tasnim Abrar Sajin",
-            "id": "22201119",
-            "role": "Some frontend design, allowed email functionality",
-            "reflection": "I feel so great to work on this website. This was a new experience for me, and I enjoyed it.",
-            "link": "https://drive.google.com/open?id=1fhgzOmi3Z6EYhttGYlkcnByrDADvG4jz",
-            "image": "images/Sajin - Tasnim Abrar Sajin.jpg"
+            "name": "Yeamin Bhuiyan",
+            "id": "22201056",
+            "role": "Some role here",  # fill in the actual role
+            "reflection": "Reflection goes here",  # fill in the reflection
+            "link": "#",
+            "image": "images/profile-yeamin-bhuiyan.jpg"
         },
         {
-            "name": "Md Istiak Ahamed Nabil",
-            "id": "22201133",
-            "role": "Backend, admin panel, teachers section",
-            "reflection": "It was a great experience and an excellent opportunity to be a part of this. I would also like to thank our course teacher for providing us with this opportunity.",
-            "link": "https://drive.google.com/open?id=1sZLtApHY6IyM1t_O4IuDgihZGy5DqowD",
-            "image": "images/PXL_20250505_105704355.MP~3 - Md. Istiak Ahammed (Nabil).jpg"
+            "name": "Lubaba Hasan",
+            "id": "22201057",
+            "role": "Some role here",
+            "reflection": "Reflection goes here",
+            "link": "#",
+            "image": "images/profile-lubaba-hasan.jpg"
         },
         {
-            "name": "Md. Akif Hossain",
-            "id": "22201029",
-            "role": "Backend Development for Alumni Stories section",
-            "reflection": "I feel honored to have been a part of this journey, as it allowed me to contribute meaningfully to the department while enhancing my technical skills.",
-            "link": "https://drive.google.com/open?id=1--GDaF2sS7Cfask7C6cgdd5AZQ5UgdEw",
-            "image": "images/WhatsApp Image 2023-09-14 at 21.10.50 - Md. Akif Hossain.jpg"
+            "name": "Tasnia Sami",
+            "id": "22201058",
+            "role": "Some role here",
+            "reflection": "Reflection goes here",
+            "link": "#",
+            "image": "images/profile-tasnia-sami.jpg"
         },
         {
             "name": "Ibrahim Hasan",
@@ -493,28 +495,52 @@ def credits(request):
             "image": "images/IMG_3970 - Ibrahim Hasan.jpeg"
         },
         {
-            "name": "Rabea Sultana Shazia",
-            "id": "22201053",
-            "role": "Alumni section",
-            "reflection": "Great experience.",
-            "link": "https://drive.google.com/open?id=1NoTIgSNaiOr4nfO-l29HwO3TumSq0ARa",
-            "image": "images/inbound3834883613428923307 - Rabea Sultana Shazia.jpg"
-        },
-        {
-            "name": "Faizun Nesa Orin",
-            "id": "22201139",
-            "role": "Backend functionality for academic areas, CRUD for prerequisite courses",
-            "reflection": "It was a valuable and rewarding experience that enhanced my technical skills and gave me practical exposure to real-world web development.",
-            "link": "https://drive.google.com/open?id=1_oBZPeyyb4qk6HPTlYTTduob6e0Gnvr_",
-            "image": "images/FullSizeRender_Original - Faizun Nesa.jpeg"
-        },
-        {
             "name": "Fabia Tasnim",
             "id": "22201044",
             "role": "Fullstack (Frontend & Backend) of Alumni Association module, PDF upload & preview, download mechanism",
             "reflection": "Being part of this journey has been truly rewarding. Special thanks to our mentor Durjoy Mistry for continuous guidance and support.",
             "link": "https://drive.google.com/open?id=1U6v1_kXJYgjcUPtMnHF4vb-93ntVUvIg",
             "image": "images/IMG-20250101-WA0012 - Fabia Tasnim.jpg"
+        },
+        {
+            "name": "Md Sahriar Asif",
+            "id": "22201111",
+            "role": "Backend developer for Faculty module (password reset, Google Scholar API integration, profile updates)",
+            "reflection": "Learned a bunch of new stuff along the way. Low-key a pretty cool experience.",
+            "link": "https://md-sahriar-asif.github.io/Portfolio/",
+            "image": "images/20231220_154235 - Md. Sahriar Asif.jpg"
+        },
+        {
+            "name": "Taj Mohammad Anim",
+            "id": "22201036",
+            "role": "Implementing Chatbot",
+            "reflection": "Building a university website is already a big project—and my role in creating the chatbot is a very important one. It’s a learning journey, and I’m genuinely glad to be a part of it.",
+            "link": "https://anim36.github.io/My-PORTFOLIO1/",
+            "image": "images/Anim (2) - Taj Mohammad Anim.jpg"
+        },
+        {
+            "name": "Rabea Sultana Shazia",
+            "id": "22201053",
+            "role": "Alumni section",
+            "reflection": "Great experience.I'm honoured to be a part of this making thanks to Durjoy Mistry sir for the opportunity.",
+            "link": "https://drive.google.com/open?id=1NoTIgSNaiOr4nfO-l29HwO3TumSq0ARa",
+            "image": "images/inbound3834883613428923307 - Rabea Sultana Shazia.jpg"
+        },
+        {
+            "name": "Marzan Ahmed",
+            "id": "22201055",
+            "role": "Clubs",
+            "reflection": "It felt great to contribute to a real departmental website & collaborate with the whole team. I learned a lot throughout the process & it was rewarding to see our work come together into something useful for our department. I am always grateful for this opportunity.",
+            "link": "https://marzzzsiam.github.io/Marzan_Ahmed/",
+            "image": "images/IMG_7460 - Marzan Ahmed.jpeg"
+        },
+        {
+            "name": "Md. Akif Hossain",
+            "id": "22201029",
+            "role": "Backend Development for Alumni Stories section",
+            "reflection": "I feel honored to have been a part of this journey, as it allowed me to contribute meaningfully to the department while enhancing my technical skills.",
+            "link": "https://drive.google.com/open?id=1--GDaF2sS7Cfask7C6cgdd5AZQ5UgdEw",
+            "image": "images/WhatsApp Image 2023-09-14 at 21.10.50 - Md. Akif Hossain.jpg"
         },
     ]
 

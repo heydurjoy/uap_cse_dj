@@ -5,39 +5,59 @@
 
 {% block content %}
 <div class="container">
+
+    <!-- HERO -->
     <section class="credits-hero">
         <h1>Project Credits</h1>
-        <p>Meet the team members who contributed to building the UAP CSE departmental website. Each member played a vital role in bringing this project to life.</p>
+        <p>
+            Meet the team members who contributed to building the UAP CSE departmental website.
+            Each member played a vital role in bringing this project to life.
+        </p>
     </section>
- <svg class="background-svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-        <defs>
-            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgba(255,255,255,0.05);" ></stop>
-                <stop offset="100%" style="stop-color:rgba(255,255,255,0.1);" ></stop>
-            </linearGradient>
-        </defs>
-     <rect width="100%" height="100%" fill="url(#grad)" ></rect>
-    </svg>
-  <section class="credits-grid">
-    {% for contributor in contributors %}
-    <div class="credit-card">
-        <div class="credit-image">
-           <img src="{% static contributor.image|default:'images/placeholder.png' %}" alt="{{ contributor.name }}">
+
+    <!-- CREDITS GRID -->
+    <section class="credits-grid">
+
+        {% for contributor in contributors %}
+        <div class="credits-card-container">
+
+            <article class="credits-card">
+
+                <div class="credits-card-image">
+                    <img src="{% static contributor.image|default:'images/placeholder.png' %}" alt="{{ contributor.name }}">
+
+                    <!-- Overlay -->
+                    <div class="credits-card-overlay">
+                        <div class="credits-card-info">
+                            <h3 class="credits-name">{{ contributor.name }}</h3>
+                            <p class="credits-role">Role: {{ contributor.role }}</p>
+                            <p class="credits-id">ID: {{ contributor.id }}</p>
+                            {% if contributor.reflection %}
+                            <p class="credits-reflection">"{{ contributor.reflection }}"</p>
+                            {% endif %}
+                            {% if contributor.link %}
+                            <a href="{{ contributor.link }}" target="_blank" class="credits-portfolio-btn">Portfolio</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </article>
 
         </div>
-        <h2>{{ contributor.name }}</h2>
-        <p><strong>ID:</strong> {{ contributor.id }}</p>
-        <p><strong>Role:</strong> {{ contributor.role }}</p>
-        <p><strong>Reflection:</strong> {{ contributor.reflection }}</p>
-        <a href="{{ contributor.link }}" target="_blank">Portfolio / Work Link</a>
-    </div>
-    {% endfor %}
-</section>
+        {% endfor %}
+
+    </section>
+
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+
+/* =========================
+   CONTAINER & HERO
+   ========================= */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -55,99 +75,189 @@
 }
 
 .credits-hero p {
-    font-size: 1.1rem;
+    max-width: 720px;
+    margin: 0 auto;
     color: var(--text-secondary);
+    line-height: 1.6;
 }
 
+/* =========================
+   GRID
+   ========================= */
 .credits-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-.credit-card {
-    background: rgba(255, 255, 255, 0.05);  /* very subtle white */
-    backdrop-filter: blur(20px) saturate(150%); /* strong blur + saturation */
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.1); /* subtle frosted border */
-    border-radius: 20px;
-    padding: 2rem 1.5rem;
-    text-align: center;
-    color: var(--text-primary);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15); /* soft shadow for depth */
-    transition: all 0.5s ease;
+    /* 4 columns on large screens */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
 }
 
-/* Hover effect: lift + stronger glow */
-.credit-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 0 20px var(--color-primary), 0 0 40px rgba(0,0,0,0.25);
-    background: rgba(255, 255, 255, 0.08); /* slightly brighter on hover */
-}
-.background-svg {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
+/* Responsive: reduce columns on smaller screens */
+@media (max-width: 1024px) {
+    .credits-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on medium screens */
+    }
 }
 
-/* Name Gradient Animation */
-.credit-card h2 {
-    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    transition: background-position 0.5s ease;
-    background-size: 200% 100%;
-}
-.credit-card:hover h2 {
-    background-position: 100% 0;
+@media (max-width: 768px) {
+    .credits-grid {
+        grid-template-columns: 1fr; /* 1 card per row on small screens */
+    }
 }
 
-.credit-card p {
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-    line-height: 1.5;
+
+/* Scale down other cards */
+.credits-grid:hover .credits-card-container:not(:hover) .credits-card {
+    transform: scale(0.92);
+    opacity: 0.6;
+    filter: blur(2px);
 }
 
-.credit-card a {
+/* =========================
+   CARD CONTAINER & LINK
+   ========================= */
+.credits-card-container {
+    transition: all 0.3s ease;
+}
+
+.credits-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: none;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.credits-card-container:hover .credits-card {
+    transform: scale(1.05) rotateX(8deg);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+}
+
+/* =========================
+   IMAGE
+   ========================= */
+.credits-card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.credits-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.5s ease;
+}
+
+.credits-card-container:hover .credits-card-image img {
+    transform: scale(1.05);
+}
+
+/* =========================
+   OVERLAY
+   ========================= */
+.credits-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.85) 0%,
+        rgba(0, 0, 0, 0.6) 45%,
+        rgba(0, 0, 0, 0) 100%
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.25rem;
+
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.credits-card-container:hover .credits-card-overlay {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* =========================
+   BUTTON
+   ========================= */
+.credits-portfolio-btn {
     display: inline-block;
     margin-top: 0.5rem;
-    color: var(--color-primary);
-    text-decoration: underline;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px; /* pill-shaped */
+    border: 2px solid var(--color-primary); /* dynamic border */
+    background: transparent;
+    color: var(--color-primary); /* dynamic text color */
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Hover effect: subtle neon glow */
+.credits-portfolio-btn:hover {
+    color: #fff; /* optional text change on hover */
+    box-shadow:
+        0 0 6px var(--color-primary, #fff),
+        0 0 12px var(--color-primary, #fff),
+        0 0 18px rgba(var(--color-primary-rgb, 255, 255, 255), 0.4);
+    transform: translateY(-2px);
+}
+
+
+/* =========================
+   TEXT
+   ========================= */
+.credits-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.credits-name {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.credits-role,
+.credits-id,
+.credits-reflection {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.credits-id {
+    font-size: 0.7rem;
+    font-style: italic;
+}
+
+.credits-reflection {
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
 @media (max-width: 768px) {
     .credits-hero h1 {
         font-size: 2rem;
     }
-
     .credits-grid {
         grid-template-columns: 1fr;
     }
 }
-.credit-image {
-    width: 200px;
-    height: 200px;
-    margin: 0 auto 1.5rem;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--color-primary);
-
-    /* Neon Glow */
-    box-shadow: 0 0 8px var(--color-primary), 0 0 15px var(--color-primary, rgba(6, 182, 212, 0.6));
-    transition: box-shadow 0.3s ease;
-}
-
-/* Optional: Intensify glow on hover */
-.credit-card:hover .credit-image {
-    box-shadow: 0 0 15px var(--color-primary), 0 0 25px var(--color-primary, rgba(6, 182, 212, 0.8));
-}
-
-.credit-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
 </style>
 {% endblock %}

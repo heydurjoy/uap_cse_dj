@@ -412,17 +412,8 @@
     font-weight: 700;
     color: var(--color-primary);
     text-shadow: 0 0 10px color-mix(in srgb, var(--color-primary) 40%, transparent);
-    animation: citationPulse 2s ease-in-out infinite;
 }
 
-@keyframes citationPulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
 
 .info-label {
     font-size: 0.7rem;
@@ -769,31 +760,91 @@
     }
 }
 
-/* Content Tabs */
+/* Base content styling */
 .faculty-about-content,
 .faculty-research-content,
 .faculty-routine-content {
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word; /* long words wrap */
+    overflow-wrap: break-word;
     font-size: 1.05rem;
     line-height: 1.9;
     color: var(--text-primary);
+    padding: 0 1rem; /* prevent touching edges */
 }
 
+/* Paragraph spacing */
 .faculty-about-content p,
 .faculty-research-content p,
 .faculty-routine-content p {
-    color: var(--text-primary);
-    margin: 0 0 1.25rem 0;
+    margin: 0 0 1rem 0; /* slightly smaller margin for mobile */
 }
 
+/* Remove bottom margin for last paragraph */
 .faculty-about-content p:last-child,
 .faculty-research-content p:last-child,
 .faculty-routine-content p:last-child {
     margin-bottom: 0;
 }
 
+/* Make tables scrollable and responsive */
+.faculty-about-content table,
+.faculty-research-content table,
+.faculty-routine-content table {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+/* Table cells adjust */
+.faculty-about-content table th,
+.faculty-about-content table td,
+.faculty-research-content table th,
+.faculty-research-content table td,
+.faculty-routine-content table th,
+.faculty-routine-content table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    word-break: break-word;
+}
+/* Make tables scrollable on small screens only */
+@media (max-width: 768px) {
+    .faculty-about-content table,
+    .faculty-research-content table,
+    .faculty-routine-content table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+    }
+
+    .faculty-about-content table th,
+    .faculty-about-content table td,
+    .faculty-research-content table th,
+    .faculty-research-content table td,
+    .faculty-routine-content table th,
+    .faculty-routine-content table td {
+        white-space: nowrap; /* keep content in one line inside the scrollable table */
+    }
+}
+
+/* Optional: add some padding for mobile */
+@media (max-width: 480px) {
+    .faculty-about-content,
+    .faculty-research-content,
+    .faculty-routine-content {
+        padding: 0 0.5rem;
+    }
+}
+
+/* No content message */
 .no-content {
     text-align: center;
-    padding: 3rem;
+    padding: 3rem 1rem;
     color: var(--text-secondary);
     font-size: 1.1rem;
 }
