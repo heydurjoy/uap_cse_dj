@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from designs.models import FeatureCard, HeroTags
-from people.models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, PasswordResetToken
+from people.models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, PasswordResetToken, Contributor
 
 
 def home(request):
@@ -437,115 +437,44 @@ def system_documentation(request):
 from django.shortcuts import render
 
 def credits(request):
-    contributors = [
-        {
-            "name": "Tahiya Zareen Hiya",
-            "id": "22201038",
-            "role": "Frontend Development",
-            "reflection": "I feel really excited and honored to be part of this journey. I'm really thankful to Durjoy Mistry sir, the Mastermind of this website for giving me this great opportunity to apply my skills  while also learning how to integrate user-friendly features and maintain a consistent design system.",
-            "link": "https://tahiya07.github.io/Tahiya.view/",
-            "image": "images/profile - Tahiya Zareen.jpg"
-        },
-        {
-            "name": "Junaid Hossain",
-            "id": "22201017",
-            "role": "Backend development for the Club section",
-            "reflection": "Felt good to work on a project that will be used by so many people in the future.",
-            "link": "https://junhossain.github.io/Portfolio/",
-            "image": "images/profile-junaid-hossain.jpg"
-        },
-        {
-            "name": "Wasikul Hasan Fahim",
-            "id": "22201037",
-            "role": "Alumni section development",
-            "reflection": "Great to be part of this project",
-            "link": "https://wasikul-fahim.github.io/Wasikul_Portfolio/index.html",
-            "image": "images/IMG_3194 - Wasikul Hasan Fahim.jpeg"
-        },
-        {
-            "name": "Yeamin Bhuiyan",
-            "id": "22201056",
-            "role": "Some role here",  # fill in the actual role
-            "reflection": "Reflection goes here",  # fill in the reflection
-            "link": "#",
-            "image": "images/profile-yeamin-bhuiyan.jpg"
-        },
-        {
-            "name": "Lubaba Hasan",
-            "id": "22201057",
-            "role": "Some role here",
-            "reflection": "Reflection goes here",
-            "link": "#",
-            "image": "images/profile-lubaba-hasan.jpg"
-        },
-        {
-            "name": "Tasnia Sami",
-            "id": "22201058",
-            "role": "Some role here",
-            "reflection": "Reflection goes here",
-            "link": "#",
-            "image": "images/profile-tasnia-sami.jpg"
-        },
-        {
-            "name": "Ibrahim Hasan",
-            "id": "22201142",
-            "role": "Academic area, role-based access control, dynamic facts & figures",
-            "reflection": "This journey has played an important role in my learning and growth. I gained valuable knowledge, improved my skills, and built confidence through hands-on experience.",
-            "link": "https://drive.google.com/open?id=1ZaC1psjiu1wozN3oS3kPMdEdC0Ebs-LK",
-            "image": "images/IMG_3970 - Ibrahim Hasan.jpeg"
-        },
-        {
-            "name": "Fabia Tasnim",
-            "id": "22201044",
-            "role": "Fullstack (Frontend & Backend) of Alumni Association module, PDF upload & preview, download mechanism",
-            "reflection": "Being part of this journey has been truly rewarding. Special thanks to our mentor Durjoy Mistry for continuous guidance and support.",
-            "link": "https://drive.google.com/open?id=1U6v1_kXJYgjcUPtMnHF4vb-93ntVUvIg",
-            "image": "images/IMG-20250101-WA0012 - Fabia Tasnim.jpg"
-        },
-        {
-            "name": "Md Sahriar Asif",
-            "id": "22201111",
-            "role": "Backend developer for Faculty module (password reset, Google Scholar API integration, profile updates)",
-            "reflection": "Learned a bunch of new stuff along the way. Low-key a pretty cool experience.",
-            "link": "https://md-sahriar-asif.github.io/Portfolio/",
-            "image": "images/20231220_154235 - Md. Sahriar Asif.jpg"
-        },
-        {
-            "name": "Taj Mohammad Anim",
-            "id": "22201036",
-            "role": "Implementing Chatbot",
-            "reflection": "Building a university website is already a big project—and my role in creating the chatbot is a very important one. It’s a learning journey, and I’m genuinely glad to be a part of it.",
-            "link": "https://anim36.github.io/My-PORTFOLIO1/",
-            "image": "images/Anim (2) - Taj Mohammad Anim.jpg"
-        },
-        {
-            "name": "Rabea Sultana Shazia",
-            "id": "22201053",
-            "role": "Alumni section",
-            "reflection": "Great experience.I'm honoured to be a part of this making thanks to Durjoy Mistry sir for the opportunity.",
-            "link": "https://drive.google.com/open?id=1NoTIgSNaiOr4nfO-l29HwO3TumSq0ARa",
-            "image": "images/inbound3834883613428923307 - Rabea Sultana Shazia.jpg"
-        },
-        {
-            "name": "Marzan Ahmed",
-            "id": "22201055",
-            "role": "Clubs",
-            "reflection": "It felt great to contribute to a real departmental website & collaborate with the whole team. I learned a lot throughout the process & it was rewarding to see our work come together into something useful for our department. I am always grateful for this opportunity.",
-            "link": "https://marzzzsiam.github.io/Marzan_Ahmed/",
-            "image": "images/IMG_7460 - Marzan Ahmed.jpeg"
-        },
-        {
-            "name": "Md. Akif Hossain",
-            "id": "22201029",
-            "role": "Backend Development for Alumni Stories section",
-            "reflection": "I feel honored to have been a part of this journey, as it allowed me to contribute meaningfully to the department while enhancing my technical skills.",
-            "link": "https://drive.google.com/open?id=1--GDaF2sS7Cfask7C6cgdd5AZQ5UgdEw",
-            "image": "images/WhatsApp Image 2023-09-14 at 21.10.50 - Md. Akif Hossain.jpg"
-        },
-    ]
+    # Query contributors from database, grouped by project_type
+    final_contributors = Contributor.objects.filter(project_type='final').order_by('order', 'name')
+    course_contributors = Contributor.objects.filter(project_type='course').order_by('order', 'name')
+    
+    # Introductory text about the project
+    intro_text = """Project Credits & Acknowledgement
+
+This website is a token of love from UAPIANS.
+It was built at zero (0.00) taka cost, driven purely by passion and commitment—no one was asked or paid to do this work.
+
+The idea of developing the department website originated from my role as a course teacher of CSE 301: Object-Oriented Programming II (Visual and Web Programming). Over several semesters, I explored the possibility of building a real, usable system as part of the course coursework, so that students could learn by contributing to a live project rather than a simulated assignment.
+
+During this period, I worked closely with multiple batches of students. Together, we experimented with designs, features, and early implementations. While these efforts showed promising results and strong learning outcomes, the project could not be completed within the constraints of a course timeline.
+
+Later, I took the initiative to restart the project from scratch. I handled the core planning, architecture, and a major portion of the development myself, and subsequently collaborated with Tahiya, who played a key role in completing, refining, and deploying the final system.
+
+Final Development & Deployment
+
+Durjoy Mistry – Concept, system architecture, major development, technical supervision, integration, and final approval
+
+Tahiya – Final implementation, feature completion, testing, optimization, and deployment
+
+This phase resulted in the fully functional version of the UAP CSE website currently in use.
+
+Course-Based Development (Initial Attempts)
+
+The following students contributed during the course-based development phase of CSE 301. Their work involved idea exploration, UI concepts, feature trials, and prototype-level implementations.
+
+These contributions were part of an academic learning process and helped shape the understanding that informed the final rebuild.
+
+Closing Note
+
+This project stands as a reflection of what students and teachers can create together when driven by ownership rather than obligation."""
 
     context = {
-        "contributors": contributors
+        "intro_text": intro_text,
+        "final_contributors": final_contributors,
+        "course_contributors": course_contributors,
     }
 
     return render(request, 'credits.html', context)

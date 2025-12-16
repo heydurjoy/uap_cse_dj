@@ -4,81 +4,352 @@
 {% block title %}Credits - UAP CSE Website{% endblock %}
 
 {% block content %}
-<div class="container">
-
-    <!-- HERO -->
+<div class="credits-page">
+    <!-- CELEBRATORY HERO -->
     <section class="credits-hero">
-        <h1>Project Credits</h1>
-        <p>
-            Meet the team members who contributed to building the UAP CSE departmental website.
-            Each member played a vital role in bringing this project to life.
-        </p>
-    </section>
-
-    <!-- CREDITS GRID -->
-    <section class="credits-grid">
-
-        {% for contributor in contributors %}
-        <div class="credits-card-container">
-
-            <article class="credits-card">
-
-                <div class="credits-card-image">
-                    <img src="{% static contributor.image|default:'images/placeholder.png' %}" alt="{{ contributor.name }}">
-
-                    <!-- Overlay -->
-                    <div class="credits-card-overlay">
-                        <div class="credits-card-info">
-                            <h3 class="credits-name">{{ contributor.name }}</h3>
-                            <p class="credits-role">Role: {{ contributor.role }}</p>
-                            <p class="credits-id">ID: {{ contributor.id }}</p>
-                            {% if contributor.reflection %}
-                            <p class="credits-reflection">"{{ contributor.reflection }}"</p>
-                            {% endif %}
-                            {% if contributor.link %}
-                            <a href="{{ contributor.link }}" target="_blank" class="credits-portfolio-btn">Portfolio</a>
-                            {% endif %}
-                        </div>
-                    </div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="title-main">🎉 Built with Love</span>
+                <span class="title-sub">by UAPIANS</span>
+            </h1>
+            <p class="hero-tagline">A token of passion • Zero cost • Pure dedication</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">{{ final_contributors|length|add:course_contributors|length }}</span>
+                    <span class="stat-label">Contributors</span>
                 </div>
-
-            </article>
-
+                <div class="stat-item">
+                    <span class="stat-number">0.00</span>
+                    <span class="stat-label">Taka Cost</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Passion</span>
+                </div>
+            </div>
         </div>
-        {% endfor %}
-
+        <div class="confetti-container"></div>
     </section>
 
+    <!-- CONCISE INTRO -->
+    <section class="credits-intro">
+        <div class="intro-card">
+            <p class="intro-text">
+                This website was born from <strong>CSE 301: Object-Oriented Programming II</strong>, 
+                where students learned by building a real, live project. After multiple semesters of 
+                exploration, the project was rebuilt from scratch with passion and commitment—no one 
+                was asked or paid. This is what students and teachers can create together when driven 
+                by ownership rather than obligation.
+            </p>
+        </div>
+    </section>
+
+    <!-- FINAL DEVELOPMENT & DEPLOYMENT -->
+    {% if final_contributors %}
+    <section class="credits-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="title-icon">🚀</span>
+                Final Development & Deployment
+            </h2>
+            <p class="section-description">The team that brought it all together</p>
+        </div>
+        <div class="credits-grid">
+            {% for contributor in final_contributors %}
+            <div class="contributor-card">
+                <div class="card-image-wrapper">
+                    {% if contributor.photo %}
+                    <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="card-image">
+                    {% else %}
+                    <div class="card-image-placeholder">
+                        <span class="placeholder-icon">👤</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-badge">⭐</div>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-name">{{ contributor.name }}</h3>
+                    <p class="card-role">{{ contributor.role|truncatewords:12 }}</p>
+                    {% if contributor.student_id %}
+                    <span class="card-id">{{ contributor.student_id }}</span>
+                    {% endif %}
+                    {% if contributor.lines_added or contributor.lines_deleted or contributor.number_of_commits %}
+                    <div class="card-stats">
+                        {% if contributor.number_of_commits %}
+                        <span class="stat-badge">💾 {{ contributor.number_of_commits }}</span>
+                        {% endif %}
+                        {% if contributor.lines_added %}
+                        <span class="stat-badge">➕ {{ contributor.lines_added }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% if contributor.portfolio_link %}
+                    <a href="{{ contributor.portfolio_link }}" target="_blank" class="card-link">
+                        Portfolio →
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- COURSE-BASED DEVELOPMENT -->
+    {% if course_contributors %}
+    <section class="credits-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="title-icon">🎓</span>
+                Course-Based Development
+            </h2>
+            <p class="section-description">Students who explored, experimented, and learned</p>
+        </div>
+        <div class="credits-grid course-grid">
+            {% for contributor in course_contributors %}
+            <div class="contributor-card course-card">
+                <div class="card-image-wrapper">
+                    {% if contributor.photo %}
+                    <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="card-image">
+                    {% else %}
+                    <div class="card-image-placeholder">
+                        <span class="placeholder-icon">👤</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-content">
+                    <h3 class="card-name">{{ contributor.name }}</h3>
+                    <p class="card-role">{{ contributor.role|truncatewords:8 }}</p>
+                    {% if contributor.student_id %}
+                    <span class="card-id">{{ contributor.student_id }}</span>
+                    {% endif %}
+                    {% if contributor.portfolio_link %}
+                    <a href="{{ contributor.portfolio_link }}" target="_blank" class="card-link">
+                        Portfolio →
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- CLOSING MESSAGE -->
+    <section class="credits-closing">
+        <div class="closing-card">
+            <p class="closing-text">
+                <span class="closing-icon">💝</span>
+                This project stands as a reflection of what students and teachers can create together 
+                when driven by ownership rather than obligation.
+            </p>
+        </div>
+    </section>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-
 /* =========================
-   CONTAINER & HERO
+   PAGE CONTAINER
    ========================= */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+.credits-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    padding: 2rem 1rem;
 }
 
+/* =========================
+   CELEBRATORY HERO
+   ========================= */
 .credits-hero {
+    position: relative;
+    text-align: center;
+    padding: 4rem 1rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.title-main {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--color-primary), #ff6b9d, #c44569);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+}
+
+.title-sub {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+@keyframes gradient-shift {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(20deg); }
+}
+
+.hero-tagline {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Confetti Animation */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.confetti-container::before,
+.confetti-container::after {
+    content: '🎉';
+    position: absolute;
+    font-size: 2rem;
+    animation: confetti-fall 3s ease-in-out infinite;
+    opacity: 0.3;
+}
+
+.confetti-container::before {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.confetti-container::after {
+    right: 20%;
+    animation-delay: 1.5s;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        transform: translateY(400px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* =========================
+   INTRO CARD
+   ========================= */
+.credits-intro {
+    max-width: 900px;
+    margin: 0 auto 4rem;
+}
+
+.intro-card {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 20px;
+    border: 2px solid rgba(var(--color-primary-rgb, 255, 255, 255), 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.intro-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin: 0;
+    text-align: center;
+}
+
+.intro-text strong {
+    color: var(--color-primary);
+}
+
+/* =========================
+   SECTIONS
+   ========================= */
+.credits-section {
+    max-width: 1400px;
+    margin: 0 auto 5rem;
+    padding: 0 1rem;
+}
+
+.section-header {
     text-align: center;
     margin-bottom: 3rem;
 }
 
-.credits-hero h1 {
-    font-size: 2.8rem;
-    margin-bottom: 1rem;
+.section-title {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-.credits-hero p {
-    max-width: 720px;
-    margin: 0 auto;
+.title-icon {
+    font-size: 2rem;
+    animation: bounce 2s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.section-description {
+    font-size: 1.1rem;
     color: var(--text-secondary);
-    line-height: 1.6;
+    margin: 0;
 }
 
 /* =========================
@@ -86,177 +357,251 @@
    ========================= */
 .credits-grid {
     display: grid;
-    /* 4 columns on large screens */
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.course-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
 }
 
-/* Responsive: reduce columns on smaller screens */
-@media (max-width: 1024px) {
-    .credits-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on medium screens */
-    }
-}
-
 @media (max-width: 768px) {
-    .credits-grid {
-        grid-template-columns: 1fr; /* 1 card per row on small screens */
+    .credits-grid,
+    .course-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
     }
 }
 
-
-/* Scale down other cards */
-.credits-grid:hover .credits-card-container:not(:hover) .credits-card {
-    transform: scale(0.92);
-    opacity: 0.6;
-    filter: blur(2px);
-}
-
 /* =========================
-   CARD CONTAINER & LINK
+   CONTRIBUTOR CARDS
    ========================= */
-.credits-card-container {
-    transition: all 0.3s ease;
-}
-
-.credits-card {
+.contributor-card {
     background: var(--bg-secondary);
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: none;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 2px solid transparent;
+    position: relative;
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
 }
 
-.credits-card-container:hover .credits-card {
-    transform: scale(1.05) rotateX(8deg);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+.contributor-card:nth-child(1) { animation-delay: 0.1s; }
+.contributor-card:nth-child(2) { animation-delay: 0.2s; }
+.contributor-card:nth-child(3) { animation-delay: 0.3s; }
+.contributor-card:nth-child(4) { animation-delay: 0.4s; }
+.contributor-card:nth-child(5) { animation-delay: 0.5s; }
+.contributor-card:nth-child(6) { animation-delay: 0.6s; }
+.contributor-card:nth-child(7) { animation-delay: 0.7s; }
+.contributor-card:nth-child(8) { animation-delay: 0.8s; }
+.contributor-card:nth-child(n+9) { animation-delay: 0.9s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* =========================
-   IMAGE
-   ========================= */
-.credits-card-image {
+.contributor-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--color-primary);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2),
+                0 0 20px rgba(var(--color-primary-rgb, 255, 255, 255), 0.1);
+}
+
+.card-image-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 3 / 4;
     overflow: hidden;
-    border-radius: 16px;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
 }
 
-.credits-card-image img {
+.card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
     transition: transform 0.5s ease;
 }
 
-.credits-card-container:hover .credits-card-image img {
-    transform: scale(1.05);
+.contributor-card:hover .card-image {
+    transform: scale(1.1);
 }
 
-/* =========================
-   OVERLAY
-   ========================= */
-.credits-card-overlay {
+.card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 255, 255, 255), 0.1), rgba(var(--color-primary-rgb, 255, 255, 255), 0.05));
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    opacity: 0.3;
+}
+
+.card-badge {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.85) 0%,
-        rgba(0, 0, 0, 0.6) 45%,
-        rgba(0, 0, 0, 0) 100%
-    );
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 1.25rem;
-
-    opacity: 0;
-    transform: translateY(12px);
-    pointer-events: none;
-
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    animation: pulse 2s ease infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
 }
 
-.credits-card-container:hover .credits-card-overlay {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
 }
 
-/* =========================
-   BUTTON
-   ========================= */
-.credits-portfolio-btn {
-    display: inline-block;
-    margin-top: 0.5rem;
-    padding: 0.5rem 1.5rem;
-    border-radius: 50px; /* pill-shaped */
-    border: 2px solid var(--color-primary); /* dynamic border */
-    background: transparent;
-    color: var(--color-primary); /* dynamic text color */
-    font-weight: 600;
-    text-decoration: none;
-    text-align: center;
-    transition: all 0.3s ease, box-shadow 0.3s ease;
+.card-content {
+    padding: 1.5rem;
 }
 
-/* Hover effect: subtle neon glow */
-.credits-portfolio-btn:hover {
-    color: #fff; /* optional text change on hover */
-    box-shadow:
-        0 0 6px var(--color-primary, #fff),
-        0 0 12px var(--color-primary, #fff),
-        0 0 18px rgba(var(--color-primary-rgb, 255, 255, 255), 0.4);
-    transform: translateY(-2px);
-}
-
-
-/* =========================
-   TEXT
-   ========================= */
-.credits-card-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
-.credits-name {
-    color: #fff;
-    font-size: 1.1rem;
+.card-name {
+    font-size: 1.2rem;
     font-weight: 700;
-    margin: 0;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
 }
 
-.credits-role,
-.credits-id,
-.credits-reflection {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.85rem;
-    margin: 0;
+.card-role {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
 }
 
-.credits-id {
-    font-size: 0.7rem;
-    font-style: italic;
-}
-
-.credits-reflection {
+.card-id {
+    display: inline-block;
     font-size: 0.75rem;
-    font-style: italic;
-    margin-top: 0.25rem;
+    color: var(--text-secondary);
+    background: rgba(var(--color-primary-rgb, 255, 255, 255), 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+}
+
+.card-stats {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.stat-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(var(--color-primary-rgb, 255, 255, 255), 0.15);
+    border-radius: 8px;
+    color: var(--text-primary);
+}
+
+.card-link {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.card-link:hover {
+    transform: translateX(4px);
+    text-decoration: underline;
+}
+
+/* Course cards - smaller */
+.course-card .card-content {
+    padding: 1rem;
+}
+
+.course-card .card-name {
+    font-size: 1rem;
+}
+
+.course-card .card-role {
+    font-size: 0.85rem;
+}
+
+/* =========================
+   CLOSING MESSAGE
+   ========================= */
+.credits-closing {
+    max-width: 800px;
+    margin: 4rem auto 2rem;
+    padding: 0 1rem;
+}
+
+.closing-card {
+    background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 255, 255, 255), 0.1), rgba(var(--color-primary-rgb, 255, 255, 255), 0.05));
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    border: 2px solid rgba(var(--color-primary-rgb, 255, 255, 255), 0.2);
+}
+
+.closing-text {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.closing-icon {
+    font-size: 2rem;
+    animation: heartbeat 1.5s ease infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 /* =========================
    RESPONSIVE
    ========================= */
 @media (max-width: 768px) {
-    .credits-hero h1 {
+    .credits-hero {
+        padding: 2rem 1rem;
+    }
+    
+    .hero-stats {
+        gap: 2rem;
+    }
+    
+    .stat-number {
         font-size: 2rem;
     }
-    .credits-grid {
-        grid-template-columns: 1fr;
+    
+    .intro-card {
+        padding: 1.5rem;
+    }
+    
+    .intro-text {
+        font-size: 1rem;
+    }
+    
+    .closing-text {
+        font-size: 1rem;
+        flex-direction: column;
     }
 }
 </style>

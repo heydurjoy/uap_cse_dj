@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from image_cropping import ImageCroppingMixin
 from .models import (
     AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, 
-    PasswordResetToken, Permission, UserPermission
+    PasswordResetToken, Permission, UserPermission, Contributor
 )
 
 
@@ -219,3 +219,32 @@ class ClubMemberAdmin(admin.ModelAdmin):
             'fields': ('profile_pic', 'about')
         }),
     )
+
+
+@admin.register(Contributor)
+class ContributorAdmin(admin.ModelAdmin):
+    list_display = ['name', 'student_id', 'role', 'project_type', 'order', 'number_of_commits', 'lines_added']
+    list_filter = ['project_type', 'created_at']
+    search_fields = ['name', 'student_id', 'role']
+    list_editable = ['order']
+    ordering = ['project_type', 'order', 'name']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'student_id', 'role', 'reflection')
+        }),
+        ('Project Info', {
+            'fields': ('project_type', 'order')
+        }),
+        ('Contribution Metrics', {
+            'fields': ('lines_added', 'lines_deleted', 'number_of_commits')
+        }),
+        ('Profile', {
+            'fields': ('photo', 'portfolio_link')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']

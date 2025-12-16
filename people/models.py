@@ -918,3 +918,94 @@ class PasswordResetToken(models.Model):
             token=token,
             expires_at=expires_at
         )
+
+
+class Contributor(models.Model):
+    """Model to store project contributors and their contributions"""
+    PROJECT_TYPE_CHOICES = [
+        ('final', 'Final Development & Deployment'),
+        ('course', 'Course-Based Development'),
+    ]
+    
+    name = models.CharField(
+        max_length=255,
+        help_text="Full name of the contributor"
+    )
+    
+    student_id = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Student ID (nullable)"
+    )
+    
+    role = models.CharField(
+        max_length=255,
+        help_text="Contributor's role in the project"
+    )
+    
+    reflection = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Optional reflection text from the contributor"
+    )
+    
+    portfolio_link = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Portfolio or personal website URL"
+    )
+    
+    photo = models.ImageField(
+        upload_to='contributor_photos/',
+        blank=True,
+        null=True,
+        help_text="Profile photo of the contributor"
+    )
+    
+    project_type = models.CharField(
+        max_length=20,
+        choices=PROJECT_TYPE_CHOICES,
+        help_text="Type of project contribution"
+    )
+    
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order for custom sorting within each project_type"
+    )
+    
+    lines_added = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Number of lines added (contribution metric)"
+    )
+    
+    lines_deleted = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Number of lines deleted (contribution metric)"
+    )
+    
+    number_of_commits = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Number of commits (contribution metric)"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this contributor was added"
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="Last update date"
+    )
+    
+    class Meta:
+        verbose_name = 'Contributor'
+        verbose_name_plural = 'Contributors'
+        ordering = ['project_type', 'order', 'name']
+    
+    def __str__(self):
+        return f'{self.name} - {self.get_project_type_display()}'
