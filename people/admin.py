@@ -223,15 +223,15 @@ class ClubMemberAdmin(admin.ModelAdmin):
 
 @admin.register(Contributor)
 class ContributorAdmin(admin.ModelAdmin):
-    list_display = ['name', 'student_id', 'role', 'project_type', 'order', 'number_of_commits', 'lines_added']
+    list_display = ['name', 'student_id', 'github_username', 'role', 'project_type', 'order', 'number_of_commits', 'lines_added']
     list_filter = ['project_type', 'created_at']
-    search_fields = ['name', 'student_id', 'role']
+    search_fields = ['name', 'student_id', 'github_username', 'role']
     list_editable = ['order']
     ordering = ['project_type', 'order', 'name']
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'student_id', 'role', 'reflection')
+            'fields': ('name', 'student_id', 'github_username', 'role', 'reflection')
         }),
         ('Project Info', {
             'fields': ('project_type', 'order')

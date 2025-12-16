@@ -56,6 +56,16 @@ class Command(BaseCommand):
                 'order': 1,
             },
             {
+                'name': 'Tahiya Zareen Hiya',
+                'student_id': '22201038',
+                'role': 'Course-based development contributions',
+                'reflection': 'I feel really excited and honored to be part of this journey. I\'m really thankful to Durjoy Mistry sir, the Mastermind of this website for giving me this great opportunity to apply my skills  while also learning how to integrate user-friendly features and maintain a consistent design system.',
+                'portfolio_link': 'https://tahiya07.github.io/Tahiya.view/',
+                'image': 'images/profile - Tahiya Zareen.jpg',
+                'project_type': 'course',
+                'order': 2,
+            },
+            {
                 'name': 'Junaid Hossain',
                 'student_id': '22201017',
                 'role': 'Backend development for the Club section',
@@ -63,7 +73,17 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://junhossain.github.io/Portfolio/',
                 'image': 'images/profile-junaid-hossain.jpg',
                 'project_type': 'course',
-                'order': 2,
+                'order': 3,
+            },
+            {
+                'name': 'Junaid Hossain',
+                'student_id': '22201017',
+                'role': 'Backend development for the Club section',
+                'reflection': 'Felt good to work on a project that will be used by so many people in the future.',
+                'portfolio_link': 'https://junhossain.github.io/Portfolio/',
+                'image': 'images/profile-junaid-hossain.jpg',
+                'project_type': 'course',
+                'order': 3,
             },
             {
                 'name': 'Wasikul Hasan Fahim',
@@ -73,7 +93,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://wasikul-fahim.github.io/Wasikul_Portfolio/index.html',
                 'image': 'images/IMG_3194 - Wasikul Hasan Fahim.jpeg',
                 'project_type': 'course',
-                'order': 3,
+                'order': 4,
             },
             {
                 'name': 'Yeamin Bhuiyan',
@@ -83,7 +103,7 @@ class Command(BaseCommand):
                 'portfolio_link': None,
                 'image': 'images/profile-yeamin-bhuiyan.jpg',
                 'project_type': 'course',
-                'order': 4,
+                'order': 5,
             },
             {
                 'name': 'Lubaba Hasan',
@@ -93,7 +113,7 @@ class Command(BaseCommand):
                 'portfolio_link': None,
                 'image': 'images/profile-lubaba-hasan.jpg',
                 'project_type': 'course',
-                'order': 5,
+                'order': 6,
             },
             {
                 'name': 'Tasnia Sami',
@@ -103,7 +123,7 @@ class Command(BaseCommand):
                 'portfolio_link': None,
                 'image': 'images/profile-tasnia-sami.jpg',
                 'project_type': 'course',
-                'order': 6,
+                'order': 7,
             },
             {
                 'name': 'Ibrahim Hasan',
@@ -113,7 +133,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://drive.google.com/open?id=1ZaC1psjiu1wozN3oS3kPMdEdC0Ebs-LK',
                 'image': 'images/IMG_3970 - Ibrahim Hasan.jpeg',
                 'project_type': 'course',
-                'order': 7,
+                'order': 8,
             },
             {
                 'name': 'Fabia Tasnim',
@@ -123,7 +143,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://drive.google.com/open?id=1U6v1_kXJYgjcUPtMnHF4vb-93ntVUvIg',
                 'image': 'images/IMG-20250101-WA0012 - Fabia Tasnim.jpg',
                 'project_type': 'course',
-                'order': 8,
+                'order': 9,
             },
             {
                 'name': 'Md Sahriar Asif',
@@ -133,7 +153,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://md-sahriar-asif.github.io/Portfolio/',
                 'image': 'images/20231220_154235 - Md. Sahriar Asif.jpg',
                 'project_type': 'course',
-                'order': 9,
+                'order': 10,
             },
             {
                 'name': 'Taj Mohammad Anim',
@@ -143,7 +163,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://anim36.github.io/My-PORTFOLIO1/',
                 'image': 'images/Anim (2) - Taj Mohammad Anim.jpg',
                 'project_type': 'course',
-                'order': 10,
+                'order': 11,
             },
             {
                 'name': 'Rabea Sultana Shazia',
@@ -153,7 +173,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://drive.google.com/open?id=1NoTIgSNaiOr4nfO-l29HwO3TumSq0ARa',
                 'image': 'images/inbound3834883613428923307 - Rabea Sultana Shazia.jpg',
                 'project_type': 'course',
-                'order': 11,
+                'order': 12,
             },
             {
                 'name': 'Marzan Ahmed',
@@ -163,7 +183,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://marzzzsiam.github.io/Marzan_Ahmed/',
                 'image': 'images/IMG_7460 - Marzan Ahmed.jpeg',
                 'project_type': 'course',
-                'order': 12,
+                'order': 13,
             },
             {
                 'name': 'Md. Akif Hossain',
@@ -173,7 +193,7 @@ class Command(BaseCommand):
                 'portfolio_link': 'https://drive.google.com/open?id=1--GDaF2sS7Cfask7C6cgdd5AZQ5UgdEw',
                 'image': 'images/WhatsApp Image 2023-09-14 at 21.10.50 - Md. Akif Hossain.jpg',
                 'project_type': 'course',
-                'order': 13,
+                'order': 14,
             },
         ]
         

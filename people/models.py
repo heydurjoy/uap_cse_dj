@@ -933,10 +933,17 @@ class Contributor(models.Model):
     )
     
     student_id = models.CharField(
-        max_length=20,
+        max_length=50,
         blank=True,
         null=True,
         help_text="Student ID (nullable)"
+    )
+    
+    github_username = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="GitHub username (nullable)"
     )
     
     role = models.CharField(
