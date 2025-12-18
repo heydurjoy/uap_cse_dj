@@ -721,6 +721,10 @@ body {
     animation: subtle-pulse 4s ease-in-out infinite;
     transition: transform 0.3s ease;
 }
+.nav-love-btn:active .nav-heart {
+    transform: scale(1.4);
+    transition: transform 0.12s ease;
+}
 
 .nav-love-btn:hover .nav-heart {
     animation: heartbeat-subtle 1s ease-in-out infinite;

@@ -99,6 +99,7 @@
             <a href="{% url 'credits' %}" class="nav-love-btn" title="Made with ❤ by UAPians">
                 <span class="nav-heart">❤</span>
             </a>
+            <audio id="popSound" src="{% static 'images/pop-331049.mp3' %}" preload="auto"></audio>
             <ul class="nav-menu" id="navMenu">
                 <li class="mobile-top-bar">
                     <div class="mobile-top-bar-content">
@@ -323,7 +324,42 @@
     <script src="{% static 'js/dropdown.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/navbar-scroll.js' %}"></script>
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+<script>
+document.querySelectorAll('.nav-love-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const link = this.href;
+        const sound = document.getElementById('popSound');
+
+        if (sound) {
+            sound.currentTime = 0;
+
+            // play immediately
+            const playPromise = sound.play();
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        // navigate after tiny delay so sound is audible
+                        setTimeout(() => {
+                            window.location.href = link;
+                        }, 100); // 100ms should be enough
+                    })
+                    .catch(err => {
+                        console.log("Playback failed:", err);
+                        // fallback navigation
+                        window.location.href = link;
+                    });
+            }
+        } else {
+            window.location.href = link;
+        }
+    });
+});
+
+</script>
+    {% endblock %}
 </body>
 </html>
 

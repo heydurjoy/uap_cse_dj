@@ -13,16 +13,16 @@
   <span class="glowing-heart">❤️</span>
 <audio id="popSound" src="{% static 'images/pop-331049.mp3' %}" preload="auto"></audio></span> by UAPians
             </h1>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <span class="stat-number">0.00</span>
-                    <span class="stat-label">cost</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">100%</span>
-                    <span class="stat-label">passion</span>
-                </div>
-            </div>
+         <div class="hero-stats">
+    <span class="stat-number">0.00Tk</span>
+    <span class="stat-label">Cost</span>
+
+    <span class="stat-separator">|</span>
+
+    <span class="stat-number">100%</span>
+    <span class="stat-label">Passion</span>
+</div>
+
         </div>
     </section>
 
@@ -414,82 +414,40 @@
         border: 1px solid var(--border-color-light);
     }
 
-    .intro-text {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: var(--text-primary);
-        margin: 0;
-        text-align: center;
-        animation: textGlow 4s ease-in-out infinite;
+ .intro-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin: 0;
+    text-align: center;
+    animation: textGlowStrong 4s ease-in-out infinite;
+}
+
+.intro-text strong {
+    color: var(--color-primary);
+    font-weight: 600;
+    animation: textGlowStrong 4s ease-in-out infinite;
+}
+@keyframes textGlowStrong {
+    0%, 100% {
+        text-shadow:
+            0 0 1px var(--color-primary),
+            0 0 3px var(--glow-shadow);
     }
 
-    .intro-text strong {
-        color: var(--color-primary);
-        font-weight: 600;
-        animation: textGlowStrong 4s ease-in-out infinite;
+    33% {
+        text-shadow:
+            0 0 1px var(--text-secondary),
+            0 0 3px var(--shadow-md);
     }
 
-    @keyframes textGlow {
-        0%, 100% {
-            text-shadow:
-                0 0 10px rgba(6, 182, 212, 0.5),
-                0 0 20px rgba(6, 182, 212, 0.3),
-                0 0 30px rgba(6, 182, 212, 0.2);
-        }
-        25% {
-            text-shadow:
-                0 0 10px rgba(155, 126, 216, 0.5),
-                0 0 20px rgba(155, 126, 216, 0.3),
-                0 0 30px rgba(155, 126, 216, 0.2);
-        }
-        50% {
-            text-shadow:
-                0 0 10px rgba(122, 184, 232, 0.5),
-                0 0 20px rgba(122, 184, 232, 0.3),
-                0 0 30px rgba(122, 184, 232, 0.2);
-        }
-        75% {
-            text-shadow:
-                0 0 10px rgba(255, 107, 180, 0.5),
-                0 0 20px rgba(255, 107, 180, 0.3),
-                0 0 30px rgba(255, 107, 180, 0.2);
-        }
+    66% {
+        text-shadow:
+            0 0 1px var(--text-tertiary),
+            0 0 3px var(--shadow);
     }
+}
 
-    @keyframes textGlowStrong {
-        0%, 100% {
-            text-shadow:
-                0 0 15px rgba(6, 182, 212, 0.8),
-                0 0 25px rgba(6, 182, 212, 0.6),
-                0 0 35px rgba(6, 182, 212, 0.4),
-                0 0 45px rgba(6, 182, 212, 0.2);
-            color: #06b6d4;
-        }
-        25% {
-            text-shadow:
-                0 0 15px rgba(155, 126, 216, 0.8),
-                0 0 25px rgba(155, 126, 216, 0.6),
-                0 0 35px rgba(155, 126, 216, 0.4),
-                0 0 45px rgba(155, 126, 216, 0.2);
-            color: #9b7ed8;
-        }
-        50% {
-            text-shadow:
-                0 0 15px rgba(122, 184, 232, 0.8),
-                0 0 25px rgba(122, 184, 232, 0.6),
-                0 0 35px rgba(122, 184, 232, 0.4),
-                0 0 45px rgba(122, 184, 232, 0.2);
-            color: #7ab8e8;
-        }
-        75% {
-            text-shadow:
-                0 0 15px rgba(255, 107, 180, 0.8),
-                0 0 25px rgba(255, 107, 180, 0.6),
-                0 0 35px rgba(255, 107, 180, 0.4),
-                0 0 45px rgba(255, 107, 180, 0.2);
-            color: #ff6bb4;
-        }
-    }
 
     /* Final Description Container */
     .final-description-container {
@@ -564,13 +522,7 @@
     .hero-title {
         font-size: clamp(2rem, 5vw, 3.5rem);
         margin-bottom: 2rem;
-         animation: colorFade 3s ease-in-out infinite;
-}
 
-@keyframes colorFade {
-    0%, 100% { color:var(--text-primary); }       /* Primary color */
-    33% { color: var(--color-primary-hover); }     /* Hover color */
-    66% { color: var(--text-secondary); }         /* Secondary text color */
 }
 
 
@@ -587,9 +539,15 @@
 .glowing-heart {
     display: inline-block;
     cursor: pointer;
-    animation: heartBeat 1.5s infinite, colorFade 3s ease-in-out infinite;
-    text-shadow: 0 0 10px rgba(233, 30, 99, 0.4);
-    position: relative;
+    animation: heartBeat 1.5s infinite;
+     color: #e91e63;
+    text-shadow:
+        0 0 1px #e91e63,     /* inner bright core */
+        0 0 3px #e91e63,     /* small bright glow */
+        0 0 6px #e91e63,     /* medium glow */
+        0 0 10px #ec407a,    /* lighter outer glow */
+        0 0 15px #f06292,    /* soft diffuse glow */
+        0 0 20px #f48fb1;    /* faint outermost halo */
 }
 
 /* Heart beat */
@@ -654,17 +612,27 @@
         display: flex;
         justify-content: center;
         gap: 3rem;
-    }
+    align-items: center;    /* center horizontally */
 
+    }
+.stat-separator {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin: 0 0.8rem;
+    color: var(--text-secondary);
+}
     .stat-number {
         font-size: 2.5rem;
-        font-weight: 800;
+        font-weight: 600;
         display: block;
-       animation: colorFade 3s ease-in-out infinite;
+      color:  var(--color-primary-hover);
 }
 
     .stat-label {
-        animation: colorFade 3s ease-in-out infinite;
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: var(--text-secondary);
     }
 
     /* Grid Layouts - Compact Design */
