@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Academic Calendar - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="create-academic-calendar-page">
+        <div class="page-header">
+            <a href="{% url 'designs:manage_academic_calendars' %}" class="back-link">← Back to Academic Calendars</a>
+            <h1>Create Academic Calendar</h1>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color); max-width: 600px; margin: 0 auto;">
+            {% csrf_token %}
+            
+            <div style="display: grid; gap: 1.5rem;">
+                <div>
+                    <label for="year" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Academic Year/Term <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="year" id="year" value="{{ calendar_data.year }}" maxlength="100" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    <small style="color: var(--text-secondary);">Enter the academic year or term (e.g., "2025" or "Spring 2025")</small>
+                </div>
+                
+                <div>
+                    <label for="pdf" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        PDF File <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="file" name="pdf" id="pdf" accept=".pdf" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    <small style="color: var(--text-secondary);">Upload the academic calendar PDF file</small>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                        Create Calendar
+                    </button>
+                    <a href="{% url 'designs:manage_academic_calendars' %}" class="btn-secondary" style="flex: 1; padding: 0.75rem 1.5rem; text-align: center; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<style>
+.create-academic-calendar-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+</style>
+{% endblock %}
+

@@ -2,8 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Max
+from django.http import FileResponse, HttpResponse
 from ckeditor.fields import RichTextField
-from .models import FeatureCard, AdmissionElement
+from .models import FeatureCard, AdmissionElement, AcademicCalendar
 
 
 def feature_cards_list(request):
@@ -372,3 +373,148 @@ def admission_element_detail(request, pk):
     }
     
     return render(request, 'designs/admission_element_detail.html', context)
+
+
+def academic_calendar_view(request):
+    """Public view - Display the latest academic calendar"""
+    latest_calendar = AcademicCalendar.objects.order_by('-created_at').first()
+    all_calendars = AcademicCalendar.objects.order_by('-created_at')
+    
+    context = {
+        'latest_calendar': latest_calendar,
+        'all_calendars': all_calendars,
+    }
+    return render(request, 'designs/academic_calendar.html', context)
+
+
+def serve_academic_calendar_pdf(request, pk):
+    """
+    Serve academic calendar PDF with proper headers for iframe embedding.
+    Public access - no authentication required.
+    """
+    calendar = get_object_or_404(AcademicCalendar, pk=pk)
+    
+    if not calendar.pdf:
+        return HttpResponse("PDF not found", status=404)
+    
+    try:
+        # Get the file path
+        file_path = calendar.pdf.path
+        
+        # Serve the file with proper headers
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type='application/pdf'
+        )
+        response['Content-Disposition'] = f'inline; filename="{calendar.pdf.name}"'
+        response['X-Content-Type-Options'] = 'nosniff'
+        
+        # Allow iframe embedding from same origin
+        response['X-Frame-Options'] = 'SAMEORIGIN'
+        
+        return response
+    except FileNotFoundError:
+        return HttpResponse("PDF file not found on server", status=404)
+    except Exception as e:
+        return HttpResponse(f"Error serving PDF: {str(e)}", status=500)
+
+
+@login_required
+def manage_academic_calendars(request):
+    """Manage academic calendars - only for users with manage_academic_calendars permission"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to manage academic calendars.')
+        return redirect('people:user_profile')
+    
+    calendars = AcademicCalendar.objects.order_by('-created_at')
+    
+    context = {
+        'calendars': calendars,
+    }
+    return render(request, 'designs/manage_academic_calendars.html', context)
+
+
+@login_required
+def create_academic_calendar(request):
+    """Create a new academic calendar"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to create academic calendars.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        try:
+            calendar = AcademicCalendar()
+            calendar.year = request.POST.get('year', '').strip()
+            
+            if 'pdf' in request.FILES:
+                calendar.pdf = request.FILES['pdf']
+            else:
+                messages.error(request, 'PDF file is required.')
+                return render(request, 'designs/create_academic_calendar.html', {
+                    'calendar_data': request.POST,
+                })
+            
+            calendar.full_clean()
+            calendar.save()
+            
+            messages.success(request, f'Academic calendar for {calendar.year} created successfully!')
+            return redirect('designs:manage_academic_calendars')
+        except Exception as e:
+            messages.error(request, f'Error creating academic calendar: {str(e)}')
+            return render(request, 'designs/create_academic_calendar.html', {
+                'calendar_data': request.POST,
+            })
+    
+    return render(request, 'designs/create_academic_calendar.html')
+
+
+@login_required
+def edit_academic_calendar(request, pk):
+    """Edit an existing academic calendar"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to edit academic calendars.')
+        return redirect('people:user_profile')
+    
+    calendar = get_object_or_404(AcademicCalendar, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            calendar.year = request.POST.get('year', '').strip()
+            
+            # Handle PDF upload (only if new file provided)
+            if 'pdf' in request.FILES:
+                calendar.pdf = request.FILES['pdf']
+            
+            calendar.full_clean()
+            calendar.save()
+            
+            messages.success(request, f'Academic calendar for {calendar.year} updated successfully!')
+            return redirect('designs:manage_academic_calendars')
+        except Exception as e:
+            messages.error(request, f'Error updating academic calendar: {str(e)}')
+    
+    context = {
+        'calendar': calendar,
+    }
+    return render(request, 'designs/edit_academic_calendar.html', context)
+
+
+@login_required
+def delete_academic_calendar(request, pk):
+    """Delete an academic calendar"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to delete academic calendars.')
+        return redirect('people:user_profile')
+    
+    calendar = get_object_or_404(AcademicCalendar, pk=pk)
+    
+    if request.method == 'POST':
+        year = calendar.year
+        calendar.delete()
+        messages.success(request, f'Academic calendar for {year} deleted successfully!')
+        return redirect('designs:manage_academic_calendars')
+    
+    context = {
+        'calendar': calendar,
+    }
+    return render(request, 'designs/delete_academic_calendar.html', context)

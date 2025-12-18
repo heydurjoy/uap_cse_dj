@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Academic Calendar - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="academic-calendar-section">
+        <div class="page-header">
+            <h1>Academic Calendar</h1>
+            <p class="subtitle">View academic calendars for different years</p>
+        </div>
+        
+        {% if all_calendars %}
+        <!-- Calendar Selector -->
+        <div class="calendar-selector-container">
+            <label for="calendar-select" class="selector-label">Select Academic Calendar:</label>
+            <select id="calendar-select" class="calendar-select">
+                {% for calendar in all_calendars %}
+                <option value="{{ calendar.pk }}" data-pdf-url="{% url 'designs:serve_academic_calendar_pdf' calendar.pk %}" {% if calendar == latest_calendar %}selected{% endif %}>
+                    {{ calendar.year }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Calendar Display Card -->
+        <div class="latest-calendar-card">
+            <div class="calendar-header">
+                <h2 id="selected-calendar-title">Academic Calendar <span id="selected-calendar-year">{{ latest_calendar.year }}</span></h2>
+                <span class="calendar-year" id="display-calendar-year">{{ latest_calendar.year }}</span>
+            </div>
+            <div class="calendar-pdf-container">
+                <iframe 
+                    id="pdf-viewer" 
+                    src="{% url 'designs:serve_academic_calendar_pdf' latest_calendar.pk %}#toolbar=1&navpanes=0&scrollbar=1" 
+                    class="calendar-pdf-viewer"
+                    title="Academic Calendar PDF"
+                    allow="fullscreen"
+                    type="application/pdf">
+                </iframe>
+                <div id="pdf-fallback" class="pdf-fallback" style="display: none;">
+                    <div class="fallback-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <p style="margin-bottom: 1rem;">PDF viewer not supported in your browser.</p>
+                        <a id="pdf-direct-link" href="{% url 'designs:serve_academic_calendar_pdf' latest_calendar.pk %}" target="_blank" class="fallback-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            Open PDF in New Tab
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="calendar-actions">
+                <a id="download-link" href="{% url 'designs:serve_academic_calendar_pdf' latest_calendar.pk %}" download class="download-btn" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download PDF
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-calendar">
+            <p>No academic calendar available yet.</p>
+        </div>
+        {% endif %}
+        
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarSelect = document.getElementById('calendar-select');
+    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfFallback = document.getElementById('pdf-fallback');
+    const pdfDirectLink = document.getElementById('pdf-direct-link');
+    const downloadLink = document.getElementById('download-link');
+    const selectedCalendarYear = document.getElementById('selected-calendar-year');
+    const displayCalendarYear = document.getElementById('display-calendar-year');
+    
+    // Store calendar data
+    const calendarData = {};
+    {% for calendar in all_calendars %}
+    calendarData[{{ calendar.pk }}] = {
+        year: '{{ calendar.year|escapejs }}',
+        pdfUrl: '{% url "designs:serve_academic_calendar_pdf" calendar.pk %}'
+    };
+    {% endfor %}
+    
+    // Handle calendar selection change
+    if (calendarSelect) {
+        calendarSelect.addEventListener('change', function() {
+            const selectedPk = this.value;
+            const calendar = calendarData[selectedPk];
+            
+            if (calendar) {
+                // Update PDF viewer
+                const pdfUrl = calendar.pdfUrl + '#toolbar=1&navpanes=1&scrollbar=1';
+                
+                // Update iframe src
+                pdfViewer.src = pdfUrl;
+                
+                // Update download link
+                downloadLink.href = calendar.pdfUrl;
+                
+                // Update direct link in fallback
+                pdfDirectLink.href = calendar.pdfUrl;
+                
+                // Update year display
+                selectedCalendarYear.textContent = calendar.year;
+                displayCalendarYear.textContent = calendar.year;
+                
+                // Show viewer, hide fallback
+                pdfViewer.style.display = 'block';
+                pdfFallback.style.display = 'none';
+            }
+        });
+    }
+    
+    // Check if PDF loads after a delay
+    if (pdfViewer) {
+        setTimeout(function() {
+            // Try to detect if PDF loaded by checking if iframe has content
+            try {
+                const iframeDoc = pdfViewer.contentDocument || pdfViewer.contentWindow.document;
+                // If we can access the document, PDF likely loaded
+            } catch (e) {
+                // Cross-origin or other error - might still be loading or blocked
+                // Show fallback after additional delay if still not working
+                setTimeout(function() {
+                    // Check if viewer is still empty/not visible
+                    if (pdfViewer.offsetHeight === 0 || pdfViewer.style.display === 'none') {
+                        pdfFallback.style.display = 'block';
+                    }
+                }, 2000);
+            }
+        }, 1000);
+    }
+});
+</script>
+
+<style>
+.academic-calendar-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.calendar-selector-container {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.selector-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.calendar-select {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Lexend', sans-serif;
+}
+
+.calendar-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--glow-shadow);
+}
+
+.calendar-select:hover {
+    border-color: var(--color-primary);
+}
+
+.pdf-fallback {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.fallback-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fallback-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.fallback-link:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.fallback-link svg {
+    width: 18px;
+    height: 18px;
+}
+
+.latest-calendar-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-bottom: 3rem;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.calendar-header h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-year {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--color-primary);
+}
+
+.calendar-pdf-container {
+    width: 100%;
+    height: 800px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    margin-bottom: 1.5rem;
+}
+
+.calendar-pdf-viewer {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+object.calendar-pdf-viewer {
+    min-height: 100%;
+}
+
+.calendar-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.download-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.no-calendar {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.no-calendar p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.all-calendars-section {
+    margin-top: 3rem;
+}
+
+.all-calendars-section h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+}
+
+.calendars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.calendar-item {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.calendar-item:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 10%, transparent);
+    transform: translateY(-2px);
+}
+
+.calendar-item-info h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.calendar-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.calendar-item-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.view-btn,
+.download-btn-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.view-btn:hover,
+.download-btn-small:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.view-btn svg,
+.download-btn-small svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 768px) {
+    .academic-calendar-section {
+        padding: 1rem 0.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .calendar-pdf-container {
+        height: 600px;
+    }
+    
+    .calendar-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .calendar-item-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .calendar-selector-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .calendar-select {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

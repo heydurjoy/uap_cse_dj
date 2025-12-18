@@ -1,6 +1,6 @@
 from django.contrib import admin
 from image_cropping import ImageCroppingMixin
-from .models import FeatureCard, HeroTags, AdmissionElement
+from .models import FeatureCard, HeroTags, AdmissionElement, AcademicCalendar
 
 
 @admin.register(FeatureCard)
@@ -48,5 +48,18 @@ class AdmissionElementAdmin(admin.ModelAdmin):
         ('Curriculum PDF', {
             'fields': ('curriculum_pdf',),
             'description': 'Upload curriculum PDF for BSc and MCSE programs'
+        }),
+    )
+
+
+@admin.register(AcademicCalendar)
+class AcademicCalendarAdmin(admin.ModelAdmin):
+    list_display = ['year', 'created_at', 'updated_at']
+    list_filter = ['created_at', 'updated_at']
+    search_fields = ['year']
+    ordering = ['-created_at']
+    fieldsets = (
+        ('Calendar Information', {
+            'fields': ('year', 'pdf')
         }),
     )

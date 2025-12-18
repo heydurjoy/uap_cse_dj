@@ -12,5 +12,12 @@ urlpatterns = [
     path('manage-feature-cards/<int:pk>/delete/', views.delete_feature_card, name='delete_feature_card'),
     path('manage-head-message/', views.manage_head_message, name='manage_head_message'),
     path('admission/<int:pk>/', views.admission_element_detail, name='admission_element_detail'),
+    # Academic Calendar
+    path('academic-calendar/', views.academic_calendar_view, name='academic_calendar'),
+    path('academic-calendar/<int:pk>/pdf/', views.serve_academic_calendar_pdf, name='serve_academic_calendar_pdf'),
+    path('manage-academic-calendars/', views.manage_academic_calendars, name='manage_academic_calendars'),
+    path('manage-academic-calendars/create/', views.create_academic_calendar, name='create_academic_calendar'),
+    path('manage-academic-calendars/<int:pk>/edit/', views.edit_academic_calendar, name='edit_academic_calendar'),
+    path('manage-academic-calendars/<int:pk>/delete/', views.delete_academic_calendar, name='delete_academic_calendar'),
 ]
 

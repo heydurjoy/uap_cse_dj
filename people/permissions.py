@@ -19,6 +19,7 @@ class Permissions:
     # Design permissions
     EDIT_FEATURE_CARDS = 'edit_feature_cards'
     EDIT_HEAD_MESSAGE = 'edit_head_message'
+    MANAGE_ACADEMIC_CALENDARS = 'manage_academic_calendars'
     
     # User management permissions
     MANAGE_USER_PERMISSIONS = 'manage_user_permissions'
@@ -88,6 +89,14 @@ PERMISSION_DEFINITIONS = [
         'category': Permissions.CATEGORY_DESIGNS,
         'requires_role': [],
         'priority': 20,
+    },
+    {
+        'codename': Permissions.MANAGE_ACADEMIC_CALENDARS,
+        'name': 'Manage Academic Calendars',
+        'description': 'Can create, edit, and delete academic calendars',
+        'category': Permissions.CATEGORY_DESIGNS,
+        'requires_role': ['faculty', 'officer'],
+        'priority': 30,
     },
     {
         'codename': Permissions.MANAGE_USER_PERMISSIONS,

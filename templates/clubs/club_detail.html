@@ -103,17 +103,17 @@
                                     <div class="leadership-avatar-placeholder-compact">
                                         {{ club.convener.name|first|upper }}
                                     </div>
-                                    {% endif %}
-                                </div>
+                    {% endif %}
+                </div>
                                 <span class="leadership-name-compact">{{ club.convener.name }}</span>
-                                {% if club.convener.designation %}
+                            {% if club.convener.designation %}
                                 <span class="leadership-meta-compact">({{ club.convener.designation }})</span>
-                                {% endif %}
-                            </a>
-                        </div>
-                        {% endif %}
-                        
-                        {% if club.president %}
+                            {% endif %}
+                        </a>
+                </div>
+                {% endif %}
+                
+                {% if club.president %}
                         <div class="leadership-item-compact">
                             <span class="leadership-label-compact">President:</span>
                             {% if club.president.pk %}
@@ -131,16 +131,16 @@
                                     {% endif %}
                                 </div>
                                 <span class="leadership-name-compact">{{ club.president.name }}</span>
-                                {% if club.president.student_id %}
+                        {% if club.president.student_id %}
                                 <span class="leadership-meta-compact">({{ club.president.student_id }})</span>
-                                {% endif %}
+                        {% endif %}
                             {% if club.president.pk %}
                             </a>
                             {% else %}
-                            </div>
+                    </div>
                             {% endif %}
-                        </div>
-                        {% endif %}
+                </div>
+                {% endif %}
                     </div>
                 </div>
             </div>

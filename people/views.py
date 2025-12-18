@@ -378,20 +378,29 @@ def edit_profile(request):
     """
     user = request.user
     
+    # Optimize: Get the user with related profile in a single query
+    # Refresh user from database with select_related to avoid N+1 queries
+    user = BaseUser.objects.select_related(
+        'faculty_profile',
+        'staff_profile', 
+        'officer_profile',
+        'club_member_profile'
+    ).get(pk=user.pk)
+    
     # Get the user's profile based on user_type
     profile = None
     profile_type = None
     
-    if hasattr(user, 'faculty_profile'):
+    if hasattr(user, 'faculty_profile') and user.faculty_profile:
         profile = user.faculty_profile
         profile_type = 'faculty'
-    elif hasattr(user, 'staff_profile'):
+    elif hasattr(user, 'staff_profile') and user.staff_profile:
         profile = user.staff_profile
         profile_type = 'staff'
-    elif hasattr(user, 'officer_profile'):
+    elif hasattr(user, 'officer_profile') and user.officer_profile:
         profile = user.officer_profile
         profile_type = 'officer'
-    elif hasattr(user, 'club_member_profile'):
+    elif hasattr(user, 'club_member_profile') and user.club_member_profile:
         profile = user.club_member_profile
         profile_type = 'club_member'
     

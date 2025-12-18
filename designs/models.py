@@ -145,3 +145,25 @@ class AdmissionElement(models.Model):
     def __str__(self):
         return f"{self.sl} - {self.title}"
 
+
+class AcademicCalendar(models.Model):
+    """Academic calendar with year/term and PDF file"""
+    year = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Academic year or term (e.g., '2025' or 'Spring 2025')"
+    )
+    pdf = models.FileField(
+        upload_to='academic_calendars/',
+        help_text="PDF file for the academic calendar"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Academic Calendar'
+        verbose_name_plural = 'Academic Calendars'
+    
+    def __str__(self):
+        return f"Academic Calendar {self.year}"

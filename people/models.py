@@ -528,10 +528,20 @@ class Faculty(models.Model):
         # Detect if profile_pic file was replaced
         picture_changed = False
         if is_update:
-            try:
-                old = Faculty.objects.get(pk=self.pk)
-                picture_changed = old.profile_pic.name != self.profile_pic.name if self.profile_pic and old.profile_pic else bool(self.profile_pic)
-            except Faculty.DoesNotExist:
+            # Only query if profile_pic might have changed
+            # Check update_fields to avoid unnecessary query
+            update_fields = kwargs.get('update_fields')
+            if update_fields is None or 'profile_pic' in update_fields:
+                try:
+                    # Use only() to fetch only the field we need (optimization)
+                    old = Faculty.objects.only('profile_pic').get(pk=self.pk)
+                    old_pic_name = old.profile_pic.name if old.profile_pic else None
+                    new_pic_name = self.profile_pic.name if self.profile_pic else None
+                    picture_changed = old_pic_name != new_pic_name
+                except Faculty.DoesNotExist:
+                    picture_changed = False
+            # If update_fields is specified and profile_pic is not in it, skip the check
+            elif update_fields and 'profile_pic' not in update_fields:
                 picture_changed = False
         else:
             picture_changed = bool(self.profile_pic and self.profile_pic.name)

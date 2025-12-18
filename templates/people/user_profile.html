@@ -294,6 +294,17 @@
                 </a>
                 {% endif %}
                 
+                <!-- Manage Academic Calendars -->
+                {% if user|has_granted_permission:'manage_academic_calendars' %}
+                <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card">
+                    <div class="action-icon">📅</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Academic Calendars</h3>
+                        <p class="action-desc">Create, edit, and manage academic calendars</p>
+                    </div>
+                </a>
+                {% endif %}
+                
                 <!-- Manage My Permissions -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_own_permissions' %}" class="action-card">
