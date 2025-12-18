@@ -438,8 +438,20 @@ from django.shortcuts import render
 
 def credits(request):
     # Query contributors from database, grouped by project_type
-    final_contributors = Contributor.objects.filter(project_type='final').order_by('order', 'name')
-    course_contributors = Contributor.objects.filter(project_type='course').order_by('order', 'name')
+    # Sort by contribution: first by lines_added (descending), then by number_of_commits (descending), then by name
+    # Handle None values by treating them as 0 for sorting purposes
+    from django.db.models import Value, IntegerField
+    from django.db.models.functions import Coalesce
+    
+    final_contributors = Contributor.objects.filter(project_type='final').annotate(
+        lines_added_sorted=Coalesce('lines_added', Value(0), output_field=IntegerField()),
+        commits_sorted=Coalesce('number_of_commits', Value(0), output_field=IntegerField())
+    ).order_by('-lines_added_sorted', '-commits_sorted', 'name')
+    
+    course_contributors = Contributor.objects.filter(project_type='course').annotate(
+        lines_added_sorted=Coalesce('lines_added', Value(0), output_field=IntegerField()),
+        commits_sorted=Coalesce('number_of_commits', Value(0), output_field=IntegerField())
+    ).order_by('-lines_added_sorted', '-commits_sorted', 'name')
     
     # Introductory text about the project
     intro_text = """Project Credits & Acknowledgement
