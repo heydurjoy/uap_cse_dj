@@ -15,8 +15,8 @@ def faculty_list(request):
     Display list of all faculties, sorted by designation first, then by sl.
     Separates former faculty (with last_office_date) from active faculty.
     """
-    # Get all faculties
-    all_faculties = Faculty.objects.all()
+    # Get all faculties with base_user for email access
+    all_faculties = Faculty.objects.all().select_related('base_user')
     
     # Define designation order for sorting
     designation_order = {
@@ -93,8 +93,11 @@ def faculty_list(request):
             former_faculties_by_designation[designation] = []
         former_faculties_by_designation[designation].append(faculty)
     
+    # For table view, only show active faculties (exclude those on leave and former)
+    all_faculties_for_table = sorted_active
+    
     context = {
-        'faculties': sorted_faculties,
+        'faculties': all_faculties_for_table,
         'faculties_by_designation': faculties_by_designation,
         'former_faculties': sorted_former,
         'former_faculties_by_designation': former_faculties_by_designation,

@@ -12,70 +12,164 @@
                     <h1>Our Faculty</h1>
                     <p class="subtitle">Meet the distinguished members of our Computer Science and Engineering department</p>
                 </div>
-                <div class="view-toggle">
-                    <button id="gridViewBtn" class="view-btn active" title="Grid View">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
+                <div class="header-actions">
+                    <div class="view-toggle">
+                        <button id="gridViewBtn" class="view-btn active" title="Grid View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </button>
+                        <button id="listViewBtn" class="view-btn" title="List View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <button id="copyAllBtn" class="copy-btn" title="Copy All Faculty Info" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
-                    </button>
-                    <button id="listViewBtn" class="view-btn" title="List View">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="6" x2="21" y2="6"></line>
-                            <line x1="8" y1="12" x2="21" y2="12"></line>
-                            <line x1="8" y1="18" x2="21" y2="18"></line>
-                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                        </svg>
+                        Copy All
                     </button>
                 </div>
             </div>
         </div>
         
-        {% if faculties_by_designation %}
-            {% for designation, faculty_list in faculties_by_designation.items %}
-            <div class="designation-group">
-                <h2 class="designation-title">{{ designation }}</h2>
-                <div class="faculty-grid" data-view="grid">
-                    {% for faculty in faculty_list %}
-                    <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
-                        {% if faculty.bio %}
-                            <div class="faculty-bio-bubble">
-                                <div class="bubble-content">
-                                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
-                                </div>
-                                <div class="bubble-tail"></div>
-                            </div>
+        <!-- Excel-like Table View -->
+        <div id="facultyTableView" class="faculty-table-view" style="display: none;">
+            <div class="table-container">
+                <table class="faculty-excel-table">
+                    <thead>
+                        <tr>
+                            <th>SL</th>
+                            <th>Name</th>
+                            <th>Designation</th>
+                            <th>Email</th>
+                            <th class="phone-column {% if not user.is_authenticated %}hidden{% endif %}">Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if faculties %}
+                            {% for faculty in faculties %}
+                            <tr>
+                                <td>{{ faculty.sl|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-table-link">{{ faculty.name }}</a>
+                                </td>
+                                <td>{{ faculty.designation|default:"-" }}</td>
+                                <td>{{ faculty.base_user.email|default:"-" }}</td>
+                                <td class="phone-column {% if not user.is_authenticated %}hidden{% endif %}">{{ faculty.phone|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="no-data">No faculty members available yet.</td>
+                            </tr>
                         {% endif %}
-                        <div class="faculty-card">
-                            <div class="faculty-card-image">
-                                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
-                                <div class="faculty-card-overlay">
-                                    <div class="faculty-card-info">
-                                        <h3 class="faculty-name">{{ faculty.name }}</h3>
-                                        <div class="faculty-meta">
-                                            {% if faculty.designation %}
-                                                <span class="faculty-designation">{{ faculty.designation }}</span>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div id="facultyGridView" class="faculty-grid-view">
+            {% if faculties_by_designation %}
+                {% for designation, faculty_list in faculties_by_designation.items %}
+                <div class="designation-group">
+                    <h2 class="designation-title">{{ designation }}</h2>
+                    <div class="faculty-grid" data-view="grid">
+                        {% for faculty in faculty_list %}
+                        {% if "durjoy" in faculty.name|lower and "mistry" in faculty.name|lower and faculty.base_user.email == "durjoy@uap-bd.edu" %}
+                            <!-- Special flip card for Durjoy Mistry -->
+                            <div class="faculty-card-flip-container special-card">
+                                <div class="faculty-card-flip-inner">
+                                    <div class="faculty-card-front">
+                                        <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                                            {% if faculty.bio %}
+                                                <div class="faculty-bio-bubble">
+                                                    <div class="bubble-content">
+                                                        <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                                                    </div>
+                                                    <div class="bubble-tail"></div>
+                                                </div>
                                             {% endif %}
-                                            {% if faculty.citation %}
-                                                <span class="faculty-citation">📊 {{ faculty.citation }}</span>
-                                            {% endif %}
+                                            <div class="faculty-card">
+                                                <div class="faculty-card-image">
+                                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                                    <div class="faculty-card-overlay">
+                                                        <div class="faculty-card-info">
+                                                            <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                                            <div class="faculty-meta">
+                                                                {% if faculty.designation %}
+                                                                    <span class="faculty-designation">{{ faculty.designation }}</span>
+                                                                {% endif %}
+                                                                {% if faculty.citation %}
+                                                                    <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <a href="{% url 'credits' %}#final-development" class="faculty-card-back-link">
+                                        <div class="faculty-card-back">
+                                            <div class="special-message">
+                                                <p>🧠Brain behind this project</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Regular card -->
+                            <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                                {% if faculty.bio %}
+                                    <div class="faculty-bio-bubble">
+                                        <div class="bubble-content">
+                                            <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                                        </div>
+                                        <div class="bubble-tail"></div>
+                                    </div>
+                                {% endif %}
+                                <div class="faculty-card">
+                                    <div class="faculty-card-image">
+                                        <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                        <div class="faculty-card-overlay">
+                                            <div class="faculty-card-info">
+                                                <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                                <div class="faculty-meta">
+                                                    {% if faculty.designation %}
+                                                        <span class="faculty-designation">{{ faculty.designation }}</span>
+                                                    {% endif %}
+                                                    {% if faculty.citation %}
+                                                        <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
+                            </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p class="no-faculty">No faculty members available yet.</p>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="no-faculty">No faculty members available yet.</p>
+            {% endif %}
+        </div>
         
         {% if former_faculties_by_designation %}
         <div class="former-faculty-section">
@@ -88,37 +182,86 @@
                 <h2 class="designation-title">{{ designation }}</h2>
                 <div class="faculty-grid" data-view="grid">
                     {% for faculty in faculty_list %}
-                    <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
-                        {% if faculty.bio %}
-                            <div class="faculty-bio-bubble">
-                                <div class="bubble-content">
-                                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                    {% if "durjoy" in faculty.name|lower and "mistry" in faculty.name|lower and faculty.base_user.email == "durjoy@uap-bd.edu" %}
+                        <!-- Special flip card for Durjoy Mistry (former section) -->
+                        <div class="faculty-card-flip-container special-card">
+                            <div class="faculty-card-flip-inner">
+                                <div class="faculty-card-front">
+                                    <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                                        {% if faculty.bio %}
+                                            <div class="faculty-bio-bubble">
+                                                <div class="bubble-content">
+                                                    <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                                                </div>
+                                                <div class="bubble-tail"></div>
+                                            </div>
+                                        {% endif %}
+                                        <div class="faculty-card former-card">
+                                            <div class="faculty-card-image">
+                                                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                                <div class="faculty-card-overlay">
+                                                    <div class="faculty-card-info">
+                                                        <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                                        <div class="faculty-meta">
+                                                            {% if faculty.designation %}
+                                                                <span class="faculty-designation">{{ faculty.designation }}</span>
+                                                            {% endif %}
+                                                            {% if faculty.citation %}
+                                                                <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% if faculty.last_office_date %}
+                                                            <p class="former-date">Until {{ faculty.last_office_date|date:"F Y" }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
                                 </div>
-                                <div class="bubble-tail"></div>
+                                <a href="{% url 'credits' %}#final-development" class="faculty-card-back-link">
+                                    <div class="faculty-card-back">
+                                        <div class="special-message">
+                                            <p>🧠Brain behind this project</p>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
-                        {% endif %}
-                        <div class="faculty-card former-card">
-                            <div class="faculty-card-image">
-                                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
-                                <div class="faculty-card-overlay">
-                                    <div class="faculty-card-info">
-                                        <h3 class="faculty-name">{{ faculty.name }}</h3>
-                                        <div class="faculty-meta">
-                                            {% if faculty.designation %}
-                                                <span class="faculty-designation">{{ faculty.designation }}</span>
-                                            {% endif %}
-                                            {% if faculty.citation %}
-                                                <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                        </div>
+                    {% else %}
+                        <!-- Regular card -->
+                        <a href="{% url 'people:faculty_detail' faculty.pk %}" class="faculty-card-link">
+                            {% if faculty.bio %}
+                                <div class="faculty-bio-bubble">
+                                    <div class="bubble-content">
+                                        <p class="faculty-bio-text">{{ faculty.bio }}</p>
+                                    </div>
+                                    <div class="bubble-tail"></div>
+                                </div>
+                            {% endif %}
+                            <div class="faculty-card former-card">
+                                <div class="faculty-card-image">
+                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                    <div class="faculty-card-overlay">
+                                        <div class="faculty-card-info">
+                                            <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                            <div class="faculty-meta">
+                                                {% if faculty.designation %}
+                                                    <span class="faculty-designation">{{ faculty.designation }}</span>
+                                                {% endif %}
+                                                {% if faculty.citation %}
+                                                    <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if faculty.last_office_date %}
+                                                <p class="former-date">Until {{ faculty.last_office_date|date:"F Y" }}</p>
                                             {% endif %}
                                         </div>
-                                        {% if faculty.last_office_date %}
-                                            <p class="former-date">Until {{ faculty.last_office_date|date:"F Y" }}</p>
-                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -167,6 +310,12 @@
     margin: 0 auto;
 }
 
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
 .view-toggle {
     display: flex;
     gap: 0.5rem;
@@ -174,6 +323,32 @@
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 0.4rem;
+}
+
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.copy-btn svg {
+    width: 18px;
+    height: 18px;
 }
 
 .view-btn {
@@ -657,6 +832,330 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Special Flip Card for Durjoy Mistry */
+.faculty-card-flip-container {
+    perspective: 1000px;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
+    overflow: visible;
+}
+
+.faculty-card-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    transform-style: preserve-3d;
+    animation: autoFlip 10s infinite;
+}
+
+@keyframes autoFlip {
+    0% {
+        transform: rotateY(0deg);
+    }
+    30% {
+        transform: rotateY(0deg);
+    }
+    35% {
+        transform: rotateY(180deg);
+    }
+    65% {
+        transform: rotateY(180deg);
+    }
+    70% {
+        transform: rotateY(360deg);
+    }
+    100% {
+        transform: rotateY(360deg);
+    }
+}
+
+.faculty-card-front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 16px;
+    overflow: visible;
+}
+
+.faculty-card-back-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: rotateY(180deg);
+    border-radius: 16px;
+}
+
+.faculty-card-front {
+    transform: rotateY(0deg);
+    overflow: visible;
+}
+
+.faculty-card-front .faculty-card-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.faculty-card-front .faculty-card {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    margin: 0;
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.faculty-card-front .faculty-card-image {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.faculty-card-front .faculty-card-image img {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+}
+
+.faculty-card-front .faculty-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.25rem 1rem 1rem 1rem;
+}
+
+.faculty-card-flip-container .faculty-bio-bubble {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    margin-top: 0;
+    transform: translateX(-50%) translateY(-20px);
+    transform-origin: center top;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10000;
+    min-width: 220px;
+    max-width: 300px;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.faculty-card-flip-container .faculty-card-link:hover .faculty-bio-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(12px);
+    pointer-events: auto;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10000;
+}
+
+.faculty-card-back-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.faculty-card-back {
+    transform: rotateY(0deg);
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: 
+        linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+    transition: all 0.3s ease;
+}
+
+.faculty-card-back-link:hover .faculty-card-back {
+    transform: scale(1.02);
+    box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.special-message {
+    text-align: center;
+    color: var(--text-primary);
+    z-index: 10;
+}
+
+.special-message p {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.special-card {
+    position: relative;
+    z-index: 100;
+}
+
+.special-card::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(45deg, var(--color-primary), #764ba2, var(--color-primary));
+    border-radius: 20px;
+    z-index: -1;
+    opacity: 0.6;
+    animation: glow 3s ease-in-out infinite;
+    filter: blur(10px);
+}
+
+@keyframes glow {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+/* Excel-like Table View */
+.faculty-table-view {
+    margin-top: 2rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.faculty-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    background: var(--bg-secondary);
+}
+
+.faculty-excel-table thead {
+    background: var(--bg-tertiary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.faculty-excel-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.faculty-excel-table th:last-child {
+    border-right: none;
+}
+
+.faculty-excel-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+    background: var(--bg-secondary);
+}
+
+.faculty-excel-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.faculty-excel-table tbody tr:nth-child(even) {
+    background-color: var(--bg-tertiary);
+}
+
+.faculty-excel-table tbody tr:nth-child(even):hover {
+    background-color: color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary));
+}
+
+.faculty-excel-table td {
+    padding: 0.75rem 1rem;
+    border-right: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.faculty-excel-table td:last-child {
+    border-right: none;
+}
+
+.faculty-table-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.faculty-table-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.phone-column.hidden {
+    display: none;
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
 @media (max-width: 768px) {
     .faculty-list-section {
         padding: 2rem 0;
@@ -797,7 +1296,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
+    const copyAllBtn = document.getElementById('copyAllBtn');
     const facultyGrids = document.querySelectorAll('.faculty-grid');
+    const facultyTableView = document.getElementById('facultyTableView');
+    const facultyGridView = document.getElementById('facultyGridView');
     
     // Load saved view preference
     const savedView = localStorage.getItem('facultyViewPreference') || 'grid';
@@ -811,23 +1313,115 @@ document.addEventListener('DOMContentLoaded', function() {
         setView('list');
     });
     
+    copyAllBtn.addEventListener('click', function() {
+        copyAllFacultyInfo();
+    });
+    
     function setView(view) {
         // Update all grids
         facultyGrids.forEach(grid => {
             grid.setAttribute('data-view', view);
         });
         
-        // Update button states
-        if (view === 'grid') {
-            gridViewBtn.classList.add('active');
-            listViewBtn.classList.remove('active');
-        } else {
+        // Show/hide table and grid views
+        if (view === 'list') {
+            facultyTableView.style.display = 'block';
+            facultyGridView.style.display = 'none';
+            copyAllBtn.style.display = 'flex';
             listViewBtn.classList.add('active');
             gridViewBtn.classList.remove('active');
+        } else {
+            facultyTableView.style.display = 'none';
+            facultyGridView.style.display = 'block';
+            copyAllBtn.style.display = 'none';
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
         }
         
         // Save preference
         localStorage.setItem('facultyViewPreference', view);
+    }
+    
+    function copyAllFacultyInfo() {
+        const rows = document.querySelectorAll('.faculty-excel-table tbody tr');
+        let csvContent = 'SL\tName\tDesignation\tEmail\tPhone\n';
+        let htmlContent = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif;">';
+        
+        // Add header row
+        htmlContent += '<thead><tr style="background-color: #f3f4f6; font-weight: bold;">';
+        htmlContent += '<th style="border: 1px solid #d1d5db; padding: 8px;">SL</th>';
+        htmlContent += '<th style="border: 1px solid #d1d5db; padding: 8px;">Name</th>';
+        htmlContent += '<th style="border: 1px solid #d1d5db; padding: 8px;">Designation</th>';
+        htmlContent += '<th style="border: 1px solid #d1d5db; padding: 8px;">Email</th>';
+        htmlContent += '<th style="border: 1px solid #d1d5db; padding: 8px;">Phone</th>';
+        htmlContent += '</tr></thead><tbody>';
+        
+        rows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 0 && !row.querySelector('.no-data')) {
+                const sl = cells[0].textContent.trim();
+                const name = cells[1].textContent.trim();
+                const designation = cells[2].textContent.trim();
+                const email = cells[3].textContent.trim();
+                const phone = cells[4] ? cells[4].textContent.trim() : '';
+                
+                // CSV format (tab-separated for Excel)
+                csvContent += `${sl}\t${name}\t${designation}\t${email}\t${phone}\n`;
+                
+                // HTML format with styling
+                const bgColor = index % 2 === 0 ? '#ffffff' : '#fafafa';
+                htmlContent += `<tr style="background-color: ${bgColor};">`;
+                htmlContent += `<td style="border: 1px solid #d1d5db; padding: 8px;">${escapeHtml(sl)}</td>`;
+                htmlContent += `<td style="border: 1px solid #d1d5db; padding: 8px;">${escapeHtml(name)}</td>`;
+                htmlContent += `<td style="border: 1px solid #d1d5db; padding: 8px;">${escapeHtml(designation)}</td>`;
+                htmlContent += `<td style="border: 1px solid #d1d5db; padding: 8px;">${escapeHtml(email)}</td>`;
+                htmlContent += `<td style="border: 1px solid #d1d5db; padding: 8px;">${escapeHtml(phone)}</td>`;
+                htmlContent += '</tr>';
+            }
+        });
+        
+        htmlContent += '</tbody></table>';
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Copy to clipboard with both HTML and plain text formats
+        const clipboardItem = new ClipboardItem({
+            'text/html': new Blob([htmlContent], { type: 'text/html' }),
+            'text/plain': new Blob([csvContent], { type: 'text/plain' })
+        });
+        
+        navigator.clipboard.write([clipboardItem]).then(function() {
+            // Show success feedback
+            const originalText = copyAllBtn.innerHTML;
+            copyAllBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+            copyAllBtn.style.background = '#10b981';
+            
+            setTimeout(function() {
+                copyAllBtn.innerHTML = originalText;
+                copyAllBtn.style.background = '';
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Failed to copy: ', err);
+            // Fallback to plain text if HTML copy fails
+            navigator.clipboard.writeText(csvContent).then(function() {
+                const originalText = copyAllBtn.innerHTML;
+                copyAllBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                copyAllBtn.style.background = '#10b981';
+                
+                setTimeout(function() {
+                    copyAllBtn.innerHTML = originalText;
+                    copyAllBtn.style.background = '';
+                }, 2000);
+            }).catch(function(err2) {
+                console.error('Failed to copy: ', err2);
+                alert('Failed to copy to clipboard. Please try again.');
+            });
+        });
     }
 });
 </script>
