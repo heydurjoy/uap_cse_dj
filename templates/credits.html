@@ -49,91 +49,195 @@
         </div>
         <div class="course-grid">
             {% for contributor in course_contributors %}
-            <div class="student-wrapper">
-                <div class="student-card">
-                    {% if contributor.photo %}
-                    <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="student-image">
-                    {% else %}
-                    <div class="student-placeholder">👤</div>
-                    {% endif %}
-                </div>
-                <div class="student-info">
-                    <h4 class="student-name">{{ contributor.name }}</h4>
-                    <div class="student-contributions">
-                        {% if contributor.number_of_commits %}
-                        <span class="contribution-item">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
-                            </svg>
-                            {{ contributor.number_of_commits }}
-                        </span>
-                        {% endif %}
-                        {% if contributor.lines_added %}
-                        <span class="contribution-item">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                            </svg>
-                            {{ contributor.lines_added|floatformat:0 }}
-                        </span>
-                        {% endif %}
-                        {% if contributor.lines_deleted %}
-                        <span class="contribution-item">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                                <path d="M19 13H5v-2h14v2z"/>
-                            </svg>
-                            {{ contributor.lines_deleted|floatformat:0 }}
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
+            {% if "durjoy" in contributor.name|lower and "mistry" in contributor.name|lower %}
+                <!-- Special flip card for Durjoy Mistry in course-based phase -->
+                <div class="student-flip-container special-card">
+                    <div class="student-flip-inner">
+                        <div class="student-flip-front">
+                            <div class="student-wrapper">
+                                <div class="student-card">
+                                    {% if contributor.photo %}
+                                    <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="student-image">
+                                    {% else %}
+                                    <div class="student-placeholder">👤</div>
+                                    {% endif %}
+                                </div>
+                                <div class="student-info">
+                                    <h4 class="student-name">{{ contributor.name }}</h4>
+                                    <div class="student-contributions">
+                                        {% if contributor.number_of_commits %}
+                                        <span class="contribution-item">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                                            </svg>
+                                            {{ contributor.number_of_commits }}
+                                        </span>
+                                        {% endif %}
+                                        {% if contributor.lines_added %}
+                                        <span class="contribution-item">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                            </svg>
+                                            {{ contributor.lines_added|floatformat:0 }}
+                                        </span>
+                                        {% endif %}
+                                        {% if contributor.lines_deleted %}
+                                        <span class="contribution-item">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                                <path d="M19 13H5v-2h14v2z"/>
+                                            </svg>
+                                            {{ contributor.lines_deleted|floatformat:0 }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
 
-                <div class="info-bubble">
-                    <button class="bubble-close">×</button>
-                    <h4>{{ contributor.name }}</h4>
-                    <p class="bubble-role">{{ contributor.role }}</p>
-                    {% if contributor.reflection %}
-                    <p class="bubble-reflection">"{{ contributor.reflection }}"</p>
-                        {% endif %}
-                    <div class="bubble-contributions">
-                        {% if contributor.number_of_commits %}
-                        <div class="bubble-stat">
-                            <span>Commits:</span>
-                            <strong>{{ contributor.number_of_commits }}</strong>
+                                <div class="info-bubble">
+                                    <button class="bubble-close">×</button>
+                                    <h4>{{ contributor.name }}</h4>
+                                    <p class="bubble-role">{{ contributor.role }}</p>
+                                    {% if contributor.reflection %}
+                                    <p class="bubble-reflection">"{{ contributor.reflection }}"</p>
+                                        {% endif %}
+                                    <div class="bubble-contributions">
+                                        {% if contributor.number_of_commits %}
+                                        <div class="bubble-stat">
+                                            <span>Commits:</span>
+                                            <strong>{{ contributor.number_of_commits }}</strong>
+                                        </div>
+                                        {% endif %}
+                                        {% if contributor.lines_added %}
+                                        <div class="bubble-stat">
+                                            <span>Added:</span>
+                                            <strong>{{ contributor.lines_added|floatformat:0 }}</strong>
+                                    </div>
+                                        {% endif %}
+                                        {% if contributor.lines_deleted %}
+                                        <div class="bubble-stat">
+                                            <span>Deleted:</span>
+                                            <strong>{{ contributor.lines_deleted|floatformat:0 }}</strong>
+                                </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="bubble-footer">
+                                        {% if contributor.github_username %}
+                                        <a href="https://github.com/{{ contributor.github_username }}" target="_blank" class="bubble-link">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                            </svg>
+                                            GitHub
+                                        </a>
+                                        {% endif %}
+                                        {% if contributor.portfolio_link %}
+                                        <a href="{{ contributor.portfolio_link }}" target="_blank" class="bubble-link">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                                            </svg>
+                                            Portfolio
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        {% endif %}
-                        {% if contributor.lines_added %}
-                        <div class="bubble-stat">
-                            <span>Added:</span>
-                            <strong>{{ contributor.lines_added|floatformat:0 }}</strong>
-                    </div>
-                        {% endif %}
-                        {% if contributor.lines_deleted %}
-                        <div class="bubble-stat">
-                            <span>Deleted:</span>
-                            <strong>{{ contributor.lines_deleted|floatformat:0 }}</strong>
-                </div>
-                        {% endif %}
-                    </div>
-                    <div class="bubble-footer">
-                        {% if contributor.github_username %}
-                        <a href="https://github.com/{{ contributor.github_username }}" target="_blank" class="bubble-link">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                            </svg>
-                            GitHub
+                        <a href="{% url 'credits' %}#final-development" class="student-flip-back-link">
+                            <div class="student-flip-back">
+                                <div class="special-message">
+                                    <div class="brain-icon">🧠</div>
+                                    <p>Brain behind this project</p>
+                                </div>
+                            </div>
                         </a>
-                        {% endif %}
-                        {% if contributor.portfolio_link %}
-                        <a href="{{ contributor.portfolio_link }}" target="_blank" class="bubble-link">
-                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
-                            </svg>
-                            Portfolio
-                        </a>
-                        {% endif %}
                     </div>
                 </div>
-            </div>
+            {% else %}
+                <!-- Regular student card -->
+                <div class="student-wrapper">
+                    <div class="student-card">
+                        {% if contributor.photo %}
+                        <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="student-image">
+                        {% else %}
+                        <div class="student-placeholder">👤</div>
+                        {% endif %}
+                    </div>
+                    <div class="student-info">
+                        <h4 class="student-name">{{ contributor.name }}</h4>
+                        <div class="student-contributions">
+                            {% if contributor.number_of_commits %}
+                            <span class="contribution-item">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                    <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                                </svg>
+                                {{ contributor.number_of_commits }}
+                            </span>
+                            {% endif %}
+                            {% if contributor.lines_added %}
+                            <span class="contribution-item">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                                {{ contributor.lines_added|floatformat:0 }}
+                            </span>
+                            {% endif %}
+                            {% if contributor.lines_deleted %}
+                            <span class="contribution-item">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                    <path d="M19 13H5v-2h14v2z"/>
+                                </svg>
+                                {{ contributor.lines_deleted|floatformat:0 }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="info-bubble">
+                        <button class="bubble-close">×</button>
+                        <h4>{{ contributor.name }}</h4>
+                        <p class="bubble-role">{{ contributor.role }}</p>
+                        {% if contributor.reflection %}
+                        <p class="bubble-reflection">"{{ contributor.reflection }}"</p>
+                            {% endif %}
+                        <div class="bubble-contributions">
+                            {% if contributor.number_of_commits %}
+                            <div class="bubble-stat">
+                                <span>Commits:</span>
+                                <strong>{{ contributor.number_of_commits }}</strong>
+                            </div>
+                            {% endif %}
+                            {% if contributor.lines_added %}
+                            <div class="bubble-stat">
+                                <span>Added:</span>
+                                <strong>{{ contributor.lines_added|floatformat:0 }}</strong>
+                        </div>
+                            {% endif %}
+                            {% if contributor.lines_deleted %}
+                            <div class="bubble-stat">
+                                <span>Deleted:</span>
+                                <strong>{{ contributor.lines_deleted|floatformat:0 }}</strong>
+                    </div>
+                            {% endif %}
+                        </div>
+                        <div class="bubble-footer">
+                            {% if contributor.github_username %}
+                            <a href="https://github.com/{{ contributor.github_username }}" target="_blank" class="bubble-link">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                GitHub
+                            </a>
+                            {% endif %}
+                            {% if contributor.portfolio_link %}
+                            <a href="{{ contributor.portfolio_link }}" target="_blank" class="bubble-link">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                                </svg>
+                                Portfolio
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
             {% endfor %}
         </div>
     </section>
@@ -787,12 +891,13 @@
 
     .student-card {
         aspect-ratio: 4/5;
-        border-radius: 16px;
+        border-radius: 16px 16px 0 0;
         overflow: hidden;
         position: relative;
         box-shadow: 0 4px 12px var(--shadow);
         transition: all 0.3s ease;
         border: 2px solid transparent;
+        border-bottom: none;
     }
 
     .student-wrapper:not(.active):hover .student-card {
@@ -801,6 +906,11 @@
             0 0 0 2px var(--color-primary-light);
         border-color: var(--color-primary-light);
         transform: scale(1.02);
+        border-bottom: none;
+    }
+
+    .student-wrapper:not(.active):hover .student-info {
+        border-top: 2px solid var(--color-primary-light);
     }
 
     .student-image {
@@ -820,6 +930,8 @@
         background: var(--bg-secondary);
         border-radius: 0 0 16px 16px;
         transition: all 0.3s ease;
+        margin-top: -1px;
+        border-top: none;
     }
 
     .student-wrapper:not(.active):hover .student-info {
@@ -1099,11 +1211,14 @@
         }
 
         .student-card {
-            border-radius: 12px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
         }
 
         .student-info {
             border-radius: 0 0 12px 12px;
+            margin-top: -1px;
+            border-top: none;
         }
 
         .info-bubble {
@@ -1123,6 +1238,180 @@
         .credits-section {
             padding: 1.5rem 0.75rem;
         }
+    }
+
+    /* Flip Card for Durjoy in Course-Based Section */
+    .student-flip-container {
+        perspective: 1000px;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: visible;
+    }
+
+    .student-flip-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        animation: autoFlip 10s infinite;
+    }
+
+    @keyframes autoFlip {
+        0% {
+            transform: rotateY(0deg);
+        }
+        30% {
+            transform: rotateY(0deg);
+        }
+        35% {
+            transform: rotateY(180deg);
+        }
+        65% {
+            transform: rotateY(180deg);
+        }
+        70% {
+            transform: rotateY(360deg);
+        }
+        100% {
+            transform: rotateY(360deg);
+        }
+    }
+
+    .student-flip-front {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: rotateY(0deg);
+        overflow: visible;
+    }
+
+    .student-flip-back-link {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: rotateY(180deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .student-flip-back {
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background-image: 
+            linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+        transition: all 0.3s ease;
+    }
+
+    .student-flip-back-link:hover .student-flip-back {
+        transform: scale(1.02);
+        box-shadow: 
+            0 25px 70px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .student-flip-container .special-message {
+        text-align: center;
+        color: var(--text-primary);
+        z-index: 10;
+    }
+
+    .student-flip-container .special-message p {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        color: var(--text-primary);
+        line-height: 1.4;
+    }
+
+    .student-flip-container .brain-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .student-flip-container.special-card {
+        position: relative;
+        z-index: 100;
+    }
+
+    .student-flip-container.special-card::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        background: linear-gradient(45deg, var(--color-primary), #764ba2, var(--color-primary));
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0.6;
+        animation: glow 3s ease-in-out infinite;
+        filter: blur(10px);
+    }
+
+    @keyframes glow {
+        0%, 100% {
+            opacity: 0.4;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+    }
+
+    .student-flip-container .student-wrapper {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+
+    .student-flip-container .student-card {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px 16px 0 0;
+        border-bottom: none;
+    }
+
+    .student-flip-container .student-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .student-flip-container .student-info {
+        margin-top: -1px;
+        border-top: none;
+    }
+
+    .student-flip-container .info-bubble {
+        position: fixed;
+        z-index: 10000;
     }
 
     @media (max-width: 480px) {
@@ -1196,12 +1485,15 @@
         }
 
         .student-card {
-            border-radius: 12px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
         }
 
         .student-info {
             padding: 0.6rem 0.4rem;
             border-radius: 0 0 12px 12px;
+            margin-top: -1px;
+            border-top: none;
         }
 
         .student-name {
