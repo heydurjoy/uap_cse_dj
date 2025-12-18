@@ -48,7 +48,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="top-bar-right">
-                <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
+                <a href="https://admission.uap-bd.edu/Admission/Home.aspx" target="_blank" rel="noopener noreferrer" class="top-bar-link apply-now-btn">Apply Now</a>
                 <span class="top-bar-separator">|</span>
                 {% if user.is_authenticated %}
                     <span class="top-bar-link user-greeting">Hi, {{ user|greeting_name }}</span>
@@ -102,7 +102,7 @@
             <ul class="nav-menu" id="navMenu">
                 <li class="mobile-top-bar">
                     <div class="mobile-top-bar-content">
-                        <a href="#" class="top-bar-link apply-now-btn">Apply Now</a>
+                        <a href="https://admission.uap-bd.edu/Admission/Home.aspx" target="_blank" rel="noopener noreferrer" class="top-bar-link apply-now-btn">Apply Now</a>
                         {% if user.is_authenticated %}
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <span class="top-bar-link user-greeting">Hi, {{ user|greeting_name }}</span>
