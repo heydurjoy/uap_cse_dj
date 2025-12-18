@@ -1702,7 +1702,7 @@ body.theme-transitioning * {
 /* Main Content */
 .main-content {
     flex: 1;
-    padding: 3rem 0;
+    padding:0;
 }
 
 .main-content > .home-hero:first-child {

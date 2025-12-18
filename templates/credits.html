@@ -8,7 +8,10 @@
     <section class="credits-hero">
         <div class="hero-content">
             <h1 class="hero-title">
-                Built with <span class="heart-container"><span class="glowing-heart">❤️</span></span> by UAPians
+              Built with
+<span class="heart-container">
+  <span class="glowing-heart">❤️</span>
+<audio id="popSound" src="{% static 'images/pop-331049.mp3' %}" preload="auto"></audio></span> by UAPians
             </h1>
             <div class="hero-stats">
                 <div class="stat-item">
@@ -26,7 +29,7 @@
     <section class="credits-intro">
         <div class="intro-card">
             <p class="intro-text">
-                This website was born from <strong>CSE 302: Object-Oriented Programming II: Lab, instructed by Durjoy Mistry</strong>. 
+                This website was born from <strong>CSE 302: Object-Oriented Programming II: Lab, instructed by Durjoy Mistry</strong>.
                 Rebuilt from scratch with commitment—driven by ownership rather than obligation.
             </p>
         </div>
@@ -46,7 +49,7 @@
         </div>
         <div class="course-grid">
             {% for contributor in course_contributors %}
-            <div class="student-wrapper" onclick="toggleBubble(this)">
+            <div class="student-wrapper">
                 <div class="student-card">
                     {% if contributor.photo %}
                     <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="student-image">
@@ -148,7 +151,7 @@
 
         </div>
         <div class="final-description-container">
-            
+
         </div>
         <div class="final-grid">
             {% for contributor in final_contributors %}
@@ -241,7 +244,9 @@
 </div>
 
 <div id="credits-overlay" class="credits-overlay"></div>
+    <audio id="cardClickSound" src="{% static 'images/card click.mp3' %}" preload="auto"></audio>
 {% endblock %}
+
 
 {% block extra_css %}
 <style>
@@ -258,39 +263,39 @@
         padding-bottom: 5rem;
         text-align: center;
     }
-    
+
     .credits-section {
         max-width: 1400px;
         margin: 0 auto;
         padding: 2rem 3rem;
         text-align: center;
     }
-    
+
     .section-header {
         text-align: center;
         margin-bottom: 3rem;
     }
-    
+
     .section-title {
         font-size: clamp(1.8rem, 4vw, 2.5rem);
         font-weight: 700;
         color: var(--color-primary);
         margin-bottom: 0.5rem;
     }
-    
+
     .section-description {
         font-size: 1.1rem;
         color: var(--text-secondary);
         margin: 0;
     }
-    
+
     .credits-intro {
         padding: 2rem 1rem;
         text-align: center;
         max-width: 900px;
         margin: 0 auto;
     }
-    
+
     .intro-card {
         max-width: 800px;
         margin: 0 auto;
@@ -299,12 +304,12 @@
         -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
         padding: 2rem;
         border-radius: 20px;
-        box-shadow: 
+        box-shadow:
             0 8px 32px var(--shadow),
             0 0 0 1px var(--border-color-light) inset;
         border: 1px solid var(--border-color-light);
     }
-    
+
     .intro-text {
         font-size: 1.1rem;
         line-height: 1.8;
@@ -313,7 +318,7 @@
         text-align: center;
         animation: textGlow 4s ease-in-out infinite;
     }
-    
+
     .intro-text strong {
         color: var(--color-primary);
         font-weight: 600;
@@ -322,25 +327,25 @@
 
     @keyframes textGlow {
         0%, 100% {
-            text-shadow: 
+            text-shadow:
                 0 0 10px rgba(6, 182, 212, 0.5),
                 0 0 20px rgba(6, 182, 212, 0.3),
                 0 0 30px rgba(6, 182, 212, 0.2);
         }
         25% {
-            text-shadow: 
+            text-shadow:
                 0 0 10px rgba(155, 126, 216, 0.5),
                 0 0 20px rgba(155, 126, 216, 0.3),
                 0 0 30px rgba(155, 126, 216, 0.2);
         }
         50% {
-            text-shadow: 
+            text-shadow:
                 0 0 10px rgba(122, 184, 232, 0.5),
                 0 0 20px rgba(122, 184, 232, 0.3),
                 0 0 30px rgba(122, 184, 232, 0.2);
         }
         75% {
-            text-shadow: 
+            text-shadow:
                 0 0 10px rgba(255, 107, 180, 0.5),
                 0 0 20px rgba(255, 107, 180, 0.3),
                 0 0 30px rgba(255, 107, 180, 0.2);
@@ -349,7 +354,7 @@
 
     @keyframes textGlowStrong {
         0%, 100% {
-            text-shadow: 
+            text-shadow:
                 0 0 15px rgba(6, 182, 212, 0.8),
                 0 0 25px rgba(6, 182, 212, 0.6),
                 0 0 35px rgba(6, 182, 212, 0.4),
@@ -357,7 +362,7 @@
             color: #06b6d4;
         }
         25% {
-            text-shadow: 
+            text-shadow:
                 0 0 15px rgba(155, 126, 216, 0.8),
                 0 0 25px rgba(155, 126, 216, 0.6),
                 0 0 35px rgba(155, 126, 216, 0.4),
@@ -365,7 +370,7 @@
             color: #9b7ed8;
         }
         50% {
-            text-shadow: 
+            text-shadow:
                 0 0 15px rgba(122, 184, 232, 0.8),
                 0 0 25px rgba(122, 184, 232, 0.6),
                 0 0 35px rgba(122, 184, 232, 0.4),
@@ -373,7 +378,7 @@
             color: #7ab8e8;
         }
         75% {
-            text-shadow: 
+            text-shadow:
                 0 0 15px rgba(255, 107, 180, 0.8),
                 0 0 25px rgba(255, 107, 180, 0.6),
                 0 0 35px rgba(255, 107, 180, 0.4),
@@ -395,7 +400,7 @@
         -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
         padding: 2rem;
         border-radius: 20px;
-        box-shadow: 
+        box-shadow:
             0 8px 32px var(--shadow),
             0 0 0 1px var(--border-color-light) inset;
         border: 1px solid var(--border-color-light);
@@ -426,7 +431,7 @@
         -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
         padding: 2rem;
         border-radius: 20px;
-        box-shadow: 
+        box-shadow:
             0 8px 32px var(--shadow),
             0 0 0 1px var(--border-color-light) inset;
         border: 1px solid var(--border-color-light);
@@ -442,8 +447,11 @@
         font-weight: 600;
     }
 
+
     /* Hero Styling */
     .credits-hero {
+        align-items: center;
+        justify-content: center;
         padding: 6rem 1rem;
         text-align: center;
         background: linear-gradient(to bottom, var(--bg-tertiary), var(--bg-primary));
@@ -452,26 +460,91 @@
     .hero-title {
         font-size: clamp(2rem, 5vw, 3.5rem);
         margin-bottom: 2rem;
-        animation: colorTransition 3s ease-in-out infinite;
-    }
+         animation: colorFade 3s ease-in-out infinite;
+}
 
-    .glowing-heart {
-        display: inline-block;
-        animation: heartBeat 1.5s infinite, colorTransition 3s ease-in-out infinite;
-        text-shadow: 0 0 10px rgba(233, 30, 99, 0.4);
-    }
+@keyframes colorFade {
+    0%, 100% { color:var(--text-primary); }       /* Primary color */
+    33% { color: var(--color-primary-hover); }     /* Hover color */
+    66% { color: var(--text-secondary); }         /* Secondary text color */
+}
 
-    @keyframes heartBeat {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.2); }
-    }
 
-    @keyframes colorTransition {
-        0% { color: #ff4444; } /* Red */
-        33% { color: #ff69b4; } /* Pink */
-        66% { color: #ff8c42; } /* Orange */
-        100% { color: #ff4444; } /* Back to Red */
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;       /* centers text + stats */
+    justify-content: center;
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+   /* Heart heartbeat + glowing effect */
+.glowing-heart {
+    display: inline-block;
+    cursor: pointer;
+    animation: heartBeat 1.5s infinite, colorFade 3s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(233, 30, 99, 0.4);
+    position: relative;
+}
+
+/* Heart beat */
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+/* Flicker/pop animation for main heart */
+.flicker-pop {
+    animation: heartPop 0.3s forwards;
+}
+
+@keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+/* Small heart burst animation */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    animation: floatHeart 1s forwards;
+    font-size: 1rem;
+}
+
+@keyframes floatHeart {
+    0% {
+        transform: scale(1) translate(0, 0) rotate(0deg);
+        opacity: 1;
     }
+    25% {
+        transform: scale(1.2) translate(var(--x), var(--y)) rotate(45deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1) translate(calc(var(--x) * 1.5), calc(var(--y) * 1.5)) rotate(90deg);
+        opacity: 0.8;
+    }
+    75% {
+        transform: scale(0.9) translate(calc(var(--x) * 2), calc(var(--y) * 2)) rotate(135deg);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(0) translate(calc(var(--x) * 2.5), calc(var(--y) * 2.5)) rotate(180deg);
+        opacity: 0;
+    }
+}
+/* Heart pop and vanish */
+.heart-pop {
+    animation: popVanish 0.5s forwards;
+}
+
+@keyframes popVanish {
+    0% { transform: scale(1); opacity: 1; }
+    30% { transform: scale(1.5); opacity: 0; } /* heart pops and vanishes */
+    100% { transform: scale(1); opacity: 1; }  /* heart reappears */
+}
 
     .hero-stats {
         display: flex;
@@ -483,11 +556,11 @@
         font-size: 2.5rem;
         font-weight: 800;
         display: block;
-        animation: colorTransition 3s ease-in-out infinite;
-    }
+       animation: colorFade 3s ease-in-out infinite;
+}
 
     .stat-label {
-        animation: colorTransition 3s ease-in-out infinite;
+        animation: colorFade 3s ease-in-out infinite;
     }
 
     /* Grid Layouts - Compact Design */
@@ -509,7 +582,7 @@
         background: var(--bg-secondary);
         backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
         -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
-        box-shadow: 
+        box-shadow:
             0 8px 32px var(--shadow),
             0 0 0 1px var(--border-color-light) inset;
         border: 1px solid var(--border-color-light);
@@ -529,9 +602,9 @@
         gap: 0.5rem;
     }
 
-    .final-card:hover { 
+    .final-card:hover {
         transform: translateY(-4px);
-        box-shadow: 
+        box-shadow:
             0 12px 40px var(--shadow-lg),
             0 0 0 1px var(--color-primary-light) inset;
         border-color: var(--border-color);
@@ -559,7 +632,7 @@
         object-fit: cover;
         border-radius: 24px;
     }
-    
+
     .image-placeholder {
         width: 100%;
         height: 100%;
@@ -581,7 +654,7 @@
         justify-content: center;
         align-items: center;
     }
-    
+
     .overlay-stat {
         display: flex;
         flex-direction: row;
@@ -632,7 +705,7 @@
         align-items: center;
         gap: 0.15rem;
     }
-    
+
     .card-name {
         font-size: 1.3rem;
         font-weight: 800;
@@ -656,7 +729,7 @@
         margin: 0;
         line-height: 1.3;
     }
-    
+
     .card-links {
         display: flex;
         gap: 0.5rem;
@@ -665,7 +738,7 @@
         padding-top: 0.5rem;
         border-top: 1px solid var(--border-color-light);
     }
-    
+
     .card-link-icon {
         display: inline-flex;
         align-items: center;
@@ -707,12 +780,10 @@
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease;
     }
 
-    .student-wrapper:not(.active):hover {
-        transform: translateY(-8px);
-    }
+
 
     .student-card {
         aspect-ratio: 4/5;
@@ -725,7 +796,7 @@
     }
 
     .student-wrapper:not(.active):hover .student-card {
-        box-shadow: 
+        box-shadow:
             0 12px 32px var(--shadow-lg),
             0 0 0 2px var(--color-primary-light);
         border-color: var(--color-primary-light);
@@ -823,7 +894,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 
+        box-shadow:
             0 20px 50px var(--shadow-lg),
             0 0 0 1px var(--border-color-light) inset;
         border: 1px solid var(--border-color-light);
@@ -953,7 +1024,7 @@
         height: 20px;
         fill: currentColor;
     }
-    
+
     /* Responsive Styles */
     @media (max-width: 768px) {
         .final-grid {
@@ -1002,25 +1073,25 @@
         .card-name {
             font-size: 1.2rem;
         }
-        
+
         .card-student-id {
             font-size: 0.7rem;
         }
-        
+
         .card-role {
             font-size: 0.8rem;
         }
-        
+
         .card-link-icon {
             width: 36px;
             height: 36px;
         }
-        
+
         .card-link-icon svg {
             width: 18px;
             height: 18px;
         }
-        
+
         .course-grid {
             grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
@@ -1048,12 +1119,12 @@
         .stat-number {
             font-size: 2rem;
         }
-        
+
         .credits-section {
             padding: 1.5rem 0.75rem;
         }
     }
-    
+
     @media (max-width: 480px) {
         .final-grid {
             grid-template-columns: 1fr;
@@ -1096,7 +1167,7 @@
         .overlay-stat-value {
             font-size: 0.75rem;
         }
-        
+
         .card-name {
             font-size: 1.1rem;
         }
@@ -1104,7 +1175,7 @@
         .card-student-id {
             font-size: 0.65rem;
         }
-        
+
         .card-role {
             font-size: 0.75rem;
         }
@@ -1147,42 +1218,124 @@
             max-width: 90%;
         }
     }
- </style>
+
+</style>
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
-    function toggleBubble(element) {
-        const overlay = document.getElementById('credits-overlay');
-        const isActive = element.classList.contains('active');
-        
-        // Close all
-        document.querySelectorAll('.student-wrapper').forEach(el => el.classList.remove('active'));
-        
-        if (!isActive) {
-            element.classList.add('active');
-            overlay.classList.add('show');
-        } else {
-            overlay.classList.remove('show');
-        }
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    const wrappers = document.querySelectorAll('.student-wrapper');
+    const overlay = document.getElementById('credits-overlay');
 
-    // Close on overlay click
-    document.getElementById('credits-overlay').addEventListener('click', () => {
-        document.querySelectorAll('.student-wrapper').forEach(el => el.classList.remove('active'));
-        document.getElementById('credits-overlay').classList.remove('show');
-    });
+    wrappers.forEach(wrapper => {
+        const bubble = wrapper.querySelector('.info-bubble');
+        const closeBtn = wrapper.querySelector('.bubble-close');
 
-    // Close button functionality
-    document.querySelectorAll('.bubble-close').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wrapper = btn.closest('.student-wrapper');
-            if (wrapper) {
-                wrapper.classList.remove('active');
-                document.getElementById('credits-overlay').classList.remove('show');
+        wrapper.addEventListener('click', (e) => {
+            // Prevent triggering on clicking the bubble itself
+            if (e.target.closest('.info-bubble')) return;
+
+            const isActive = wrapper.classList.contains('active');
+
+            // Close all wrappers
+            wrappers.forEach(w => w.classList.remove('active'));
+
+            if (!isActive) {
+                wrapper.classList.add('active');
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
             }
         });
+
+        // Close button inside bubble
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering wrapper click
+            wrapper.classList.remove('active');
+            overlay.classList.remove('show');
+        });
     });
+
+    // Click outside to close
+    overlay.addEventListener('click', () => {
+        wrappers.forEach(w => w.classList.remove('active'));
+        overlay.classList.remove('show');
+    });
+});
+
+
+//heart
+const heart = document.querySelector('.glowing-heart');
+const sound = document.getElementById('popSound');
+
+heart.addEventListener('click', () => {
+    // Play sound
+    if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
+    }
+
+    // Main heart pop animation
+    heart.classList.add('heart-pop');
+    setTimeout(() => heart.classList.remove('heart-pop'), 500);
+
+    // Create a burst of hearts
+    for (let i = 0; i < 10; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.textContent = '❤️';
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = Math.random() * 50 + 20;
+        const x = Math.cos(angle) * distance;
+        const y = -Math.abs(Math.sin(angle) * distance);
+        particle.style.setProperty('--x', `${x}px`);
+        particle.style.setProperty('--y', `${y}px`);
+        particle.style.left = '50%';
+        particle.style.top = '50%';
+        particle.style.transform = 'translate(-50%, -50%)';
+        particle.style.fontSize = `${Math.random() * 1.2 + 0.8}rem`;
+        particle.style.color = `hsl(${Math.random()*360}, 80%, 60%)`;
+        heart.appendChild(particle);
+        setTimeout(() => particle.remove(), 1200);
+    }
+});
+
+
+//CARDS CLICK
+document.addEventListener('DOMContentLoaded', () => {
+    const cardClickSound = document.getElementById('cardClickSound');
+
+    document.querySelectorAll('.student-wrapper').forEach(wrapper => {
+        const bubble = wrapper.querySelector('.info-bubble');
+        const closeBtn = wrapper.querySelector('.bubble-close');
+
+        wrapper.addEventListener('click', e => {
+            // Prevent click inside bubble from toggling again
+            if (e.target.closest('.info-bubble')) return;
+
+            // Play sound
+            if (cardClickSound) {
+                cardClickSound.currentTime = 0;
+                cardClickSound.play();
+            }
+
+            // Close all other bubbles
+            document.querySelectorAll('.student-wrapper').forEach(el => el.classList.remove('active'));
+
+            // Open this bubble
+            wrapper.classList.add('active');
+        });
+
+        // Close button
+        if (closeBtn) {
+            closeBtn.addEventListener('click', e => {
+                e.stopPropagation(); // Prevent wrapper click
+                wrapper.classList.remove('active');
+            });
+        }
+    });
+});
 </script>
 {% endblock %}
