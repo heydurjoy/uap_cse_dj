@@ -18,10 +18,26 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect, get_object_or_404
 from . import views
+from people.models import Faculty
+
+def durjoy_faculty_redirect(request):
+    """Redirect /1 to Durjoy Mistry's faculty detail page"""
+    try:
+        durjoy = Faculty.objects.select_related('base_user').filter(
+            base_user__email='durjoy@uap-bd.edu'
+        ).first()
+        if durjoy:
+            return redirect('people:faculty_detail', pk=durjoy.pk)
+        else:
+            return redirect('people:faculty_list')
+    except:
+        return redirect('people:faculty_list')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('1/', durjoy_faculty_redirect, name='durjoy_faculty'),
     path('', views.home, name='home'),
     path('themes/', views.themes, name='themes'),
     path('design-guidelines/', views.design_guidelines, name='design_guidelines'),

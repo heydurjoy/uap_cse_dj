@@ -54,11 +54,7 @@
                 <div class="student-flip-container special-card">
                     <div class="student-flip-inner">
                         <div class="student-flip-front">
-                            {% if durjoy_faculty %}
-                            <a href="{% url 'people:faculty_detail' durjoy_faculty.pk %}" class="student-wrapper durjoy-wrapper" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; cursor: pointer;">
-                            {% else %}
-                            <div class="student-wrapper durjoy-wrapper" style="display: flex; flex-direction: column; cursor: pointer;">
-                            {% endif %}
+                            <a href="{% url 'durjoy_faculty' %}" class="student-wrapper durjoy-wrapper" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; cursor: pointer;">
                                 <div class="student-card">
                                     {% if contributor.photo %}
                                     <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="student-image">
@@ -95,11 +91,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                            {% if durjoy_faculty %}
                             </a>
-                            {% else %}
-                            </div>
-                            {% endif %}
                         </div>
                         <a href="{% url 'credits' %}#final-development" class="student-flip-back-link">
                             <div class="student-flip-back">
