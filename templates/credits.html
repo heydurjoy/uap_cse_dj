@@ -54,7 +54,11 @@
                 <div class="student-flip-container special-card">
                     <div class="student-flip-inner">
                         <div class="student-flip-front">
-                            <div class="student-wrapper">
+                            {% if durjoy_faculty %}
+                            <a href="{% url 'people:faculty_detail' durjoy_faculty.pk %}" class="student-wrapper durjoy-wrapper" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; cursor: pointer;">
+                            {% else %}
+                            <div class="student-wrapper durjoy-wrapper" style="display: flex; flex-direction: column; cursor: pointer;">
+                            {% endif %}
                                 <div class="student-card">
                                     {% if contributor.photo %}
                                     <img src="{{ contributor.photo.url }}" alt="{{ contributor.name }}" class="student-image">
@@ -91,54 +95,11 @@
                                         {% endif %}
                                     </div>
                                 </div>
-
-                                <div class="info-bubble">
-                                    <button class="bubble-close">×</button>
-                                    <h4>{{ contributor.name }}</h4>
-                                    <p class="bubble-role">{{ contributor.role }}</p>
-                                    {% if contributor.reflection %}
-                                    <p class="bubble-reflection">"{{ contributor.reflection }}"</p>
-                                        {% endif %}
-                                    <div class="bubble-contributions">
-                                        {% if contributor.number_of_commits %}
-                                        <div class="bubble-stat">
-                                            <span>Commits:</span>
-                                            <strong>{{ contributor.number_of_commits }}</strong>
-                                        </div>
-                                        {% endif %}
-                                        {% if contributor.lines_added %}
-                                        <div class="bubble-stat">
-                                            <span>Added:</span>
-                                            <strong>{{ contributor.lines_added|floatformat:0 }}</strong>
-                                    </div>
-                                        {% endif %}
-                                        {% if contributor.lines_deleted %}
-                                        <div class="bubble-stat">
-                                            <span>Deleted:</span>
-                                            <strong>{{ contributor.lines_deleted|floatformat:0 }}</strong>
-                                </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="bubble-footer">
-                                        {% if contributor.github_username %}
-                                        <a href="https://github.com/{{ contributor.github_username }}" target="_blank" class="bubble-link">
-                                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                            </svg>
-                                            GitHub
-                                        </a>
-                                        {% endif %}
-                                        {% if contributor.portfolio_link %}
-                                        <a href="{{ contributor.portfolio_link }}" target="_blank" class="bubble-link">
-                                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
-                                            </svg>
-                                            Portfolio
-                                        </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                            {% if durjoy_faculty %}
+                            </a>
+                            {% else %}
                             </div>
+                            {% endif %}
                         </div>
                         <a href="{% url 'credits' %}#final-development" class="student-flip-back-link">
                             <div class="student-flip-back">
@@ -148,6 +109,53 @@
                                 </div>
                             </div>
                         </a>
+                    </div>
+                    <!-- Info bubble moved outside flip container -->
+                    <div class="info-bubble durjoy-bubble">
+                        <button class="bubble-close">×</button>
+                        <h4>{{ contributor.name }}</h4>
+                        <p class="bubble-role">{{ contributor.role }}</p>
+                        {% if contributor.reflection %}
+                        <p class="bubble-reflection">"{{ contributor.reflection }}"</p>
+                            {% endif %}
+                        <div class="bubble-contributions">
+                            {% if contributor.number_of_commits %}
+                            <div class="bubble-stat">
+                                <span>Commits:</span>
+                                <strong>{{ contributor.number_of_commits }}</strong>
+                            </div>
+                            {% endif %}
+                            {% if contributor.lines_added %}
+                            <div class="bubble-stat">
+                                <span>Added:</span>
+                                <strong>{{ contributor.lines_added|floatformat:0 }}</strong>
+                        </div>
+                            {% endif %}
+                            {% if contributor.lines_deleted %}
+                            <div class="bubble-stat">
+                                <span>Deleted:</span>
+                                <strong>{{ contributor.lines_deleted|floatformat:0 }}</strong>
+                    </div>
+                            {% endif %}
+                        </div>
+                        <div class="bubble-footer">
+                            {% if contributor.github_username %}
+                            <a href="https://github.com/{{ contributor.github_username }}" target="_blank" class="bubble-link">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                GitHub
+                            </a>
+                            {% endif %}
+                            {% if contributor.portfolio_link %}
+                            <a href="{{ contributor.portfolio_link }}" target="_blank" class="bubble-link">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                                </svg>
+                                Portfolio
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             {% else %}
@@ -1249,6 +1257,10 @@
         overflow: visible;
     }
 
+    .student-flip-container .student-wrapper {
+        position: relative;
+    }
+
     .student-flip-inner {
         position: relative;
         width: 100%;
@@ -1391,6 +1403,11 @@
         margin: 0;
     }
 
+    .student-flip-container .student-wrapper.durjoy-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
     .student-flip-container .student-card {
         width: 100%;
         height: 100%;
@@ -1409,9 +1426,32 @@
         border-top: none;
     }
 
-    .student-flip-container .info-bubble {
+    .durjoy-bubble {
         position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.7);
+        width: 90%;
+        max-width: 450px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
+        -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
+        padding: 2rem;
+        border-radius: 24px;
         z-index: 10000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow:
+            0 20px 50px var(--shadow-lg),
+            0 0 0 1px var(--border-color-light) inset;
+        border: 1px solid var(--border-color-light);
+    }
+
+    .student-flip-container.durjoy-active .durjoy-bubble {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
     }
 
     @media (max-width: 480px) {
@@ -1522,37 +1562,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('credits-overlay');
 
     wrappers.forEach(wrapper => {
-        const bubble = wrapper.querySelector('.info-bubble');
-        const closeBtn = wrapper.querySelector('.bubble-close');
+        // Skip Durjoy's wrapper if it's a link (it will navigate instead of showing popup)
+        if (wrapper.classList.contains('durjoy-wrapper') && wrapper.tagName === 'A') {
+            return;
+        }
+        
+        const bubble = wrapper.querySelector('.info-bubble') || wrapper.closest('.student-flip-container')?.querySelector('.durjoy-bubble');
+        const closeBtn = bubble ? bubble.querySelector('.bubble-close') : null;
+        const flipContainer = wrapper.closest('.student-flip-container');
 
         wrapper.addEventListener('click', (e) => {
             // Prevent triggering on clicking the bubble itself
-            if (e.target.closest('.info-bubble')) return;
+            if (e.target.closest('.info-bubble') || e.target.closest('.durjoy-bubble')) return;
 
             const isActive = wrapper.classList.contains('active');
 
-            // Close all wrappers
+            // Close all wrappers and flip containers
             wrappers.forEach(w => w.classList.remove('active'));
+            document.querySelectorAll('.student-flip-container').forEach(container => container.classList.remove('durjoy-active'));
 
             if (!isActive) {
                 wrapper.classList.add('active');
+                if (flipContainer) {
+                    flipContainer.classList.add('durjoy-active');
+                }
                 overlay.classList.add('show');
             } else {
+                if (flipContainer) {
+                    flipContainer.classList.remove('durjoy-active');
+                }
                 overlay.classList.remove('show');
             }
         });
 
         // Close button inside bubble
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent triggering wrapper click
-            wrapper.classList.remove('active');
-            overlay.classList.remove('show');
-        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering wrapper click
+                wrapper.classList.remove('active');
+                if (flipContainer) {
+                    flipContainer.classList.remove('durjoy-active');
+                }
+                overlay.classList.remove('show');
+            });
+        }
     });
 
     // Click outside to close
     overlay.addEventListener('click', () => {
         wrappers.forEach(w => w.classList.remove('active'));
+        document.querySelectorAll('.student-flip-container').forEach(container => container.classList.remove('durjoy-active'));
         overlay.classList.remove('show');
     });
 });
@@ -1600,12 +1659,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const cardClickSound = document.getElementById('cardClickSound');
 
     document.querySelectorAll('.student-wrapper').forEach(wrapper => {
-        const bubble = wrapper.querySelector('.info-bubble');
-        const closeBtn = wrapper.querySelector('.bubble-close');
+        // Skip Durjoy's wrapper if it's a link (it will navigate instead of showing popup)
+        if (wrapper.classList.contains('durjoy-wrapper') && wrapper.tagName === 'A') {
+            return;
+        }
+        
+        const bubble = wrapper.querySelector('.info-bubble') || wrapper.closest('.student-flip-container')?.querySelector('.durjoy-bubble');
+        const closeBtn = bubble ? bubble.querySelector('.bubble-close') : null;
+        const flipContainer = wrapper.closest('.student-flip-container');
 
         wrapper.addEventListener('click', e => {
             // Prevent click inside bubble from toggling again
-            if (e.target.closest('.info-bubble')) return;
+            if (e.target.closest('.info-bubble') || e.target.closest('.durjoy-bubble')) return;
 
             // Play sound
             if (cardClickSound) {
@@ -1613,11 +1678,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardClickSound.play();
             }
 
-            // Close all other bubbles
+            // Close all other bubbles and flip containers
             document.querySelectorAll('.student-wrapper').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.student-flip-container').forEach(container => container.classList.remove('durjoy-active'));
 
             // Open this bubble
             wrapper.classList.add('active');
+            if (flipContainer) {
+                flipContainer.classList.add('durjoy-active');
+            }
         });
 
         // Close button
@@ -1625,6 +1694,9 @@ document.addEventListener('DOMContentLoaded', () => {
             closeBtn.addEventListener('click', e => {
                 e.stopPropagation(); // Prevent wrapper click
                 wrapper.classList.remove('active');
+                if (flipContainer) {
+                    flipContainer.classList.remove('durjoy-active');
+                }
             });
         }
     });

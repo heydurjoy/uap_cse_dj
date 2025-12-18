@@ -436,12 +436,16 @@ def system_documentation(request):
 
 from django.shortcuts import render
 
+def features(request):
+    return render(request, 'features.html')
+
 def credits(request):
     # Query contributors from database, grouped by project_type
     # Sort by contribution: first by lines_added (descending), then by number_of_commits (descending), then by name
     # Handle None values by treating them as 0 for sorting purposes
     from django.db.models import Value, IntegerField
     from django.db.models.functions import Coalesce
+    from people.models import Faculty
     
     final_contributors = Contributor.objects.filter(project_type='final').annotate(
         lines_added_sorted=Coalesce('lines_added', Value(0), output_field=IntegerField()),
@@ -452,6 +456,15 @@ def credits(request):
         lines_added_sorted=Coalesce('lines_added', Value(0), output_field=IntegerField()),
         commits_sorted=Coalesce('number_of_commits', Value(0), output_field=IntegerField())
     ).order_by('-lines_added_sorted', '-commits_sorted', 'name')
+    
+    # Get Durjoy's faculty object for linking
+    durjoy_faculty = None
+    try:
+        durjoy_faculty = Faculty.objects.select_related('base_user').filter(
+            base_user__email='durjoy@uap-bd.edu'
+        ).first()
+    except:
+        pass
     
     # Introductory text about the project
     intro_text = """Project Credits & Acknowledgement
@@ -487,6 +500,7 @@ This project stands as a reflection of what students and teachers can create tog
         "intro_text": intro_text,
         "final_contributors": final_contributors,
         "course_contributors": course_contributors,
+        "durjoy_faculty": durjoy_faculty,
     }
 
     return render(request, 'credits.html', context)
