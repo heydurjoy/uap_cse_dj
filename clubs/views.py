@@ -92,9 +92,8 @@ def manage_clubs(request):
     return render(request, 'clubs/manage_clubs.html', context)
 
 
-@login_required
 def club_detail(request, pk):
-    """View club details"""
+    """View club details - Public access, no authentication required"""
     club = get_object_or_404(Club, pk=pk)
     
     # Get positions for this club, ordered by year, semester, and serial number
