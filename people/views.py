@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.db.models import Q, Max
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.core.exceptions import ObjectDoesNotExist
 from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail
 
 
@@ -814,7 +815,7 @@ def create_allowed_email(request):
             )
             
             messages.success(request, f'Allowed email "{email}" created successfully!')
-            return redirect('people:manage_user_permissions_list?tab=allowed_emails')
+            return redirect('people:manage_users')
             
         except Exception as e:
             messages.error(request, f'Error creating allowed email: {str(e)}')
@@ -909,7 +910,7 @@ def edit_allowed_email(request, pk):
                 user.save()
             
             messages.success(request, f'Allowed email "{email}" updated successfully!')
-            return redirect('people:manage_user_permissions_list?tab=allowed_emails')
+            return redirect('people:manage_users')
             
         except Exception as e:
             messages.error(request, f'Error updating allowed email: {str(e)}')
@@ -930,10 +931,111 @@ def edit_allowed_email(request, pk):
 
 
 @login_required
+def manage_users(request):
+    """
+    Manage allowed emails - create, edit, and bulk delete.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can manage users.')
+        return redirect('people:user_profile')
+    
+    # Get filters
+    search_query = request.GET.get('search', '').strip()
+    user_type_filter = request.GET.get('user_type', 'all')
+    
+    # Get user type choices for filter dropdown
+    user_type_choices = [
+        ('all', 'All Types'),
+        ('faculty', 'Faculty'),
+        ('staff', 'Staff'),
+        ('officer', 'Officer'),
+        ('club_member', 'Club Member'),
+    ]
+    
+    # Get allowed emails (all, including club members)
+    allowed_emails = AllowedEmail.objects.all().select_related('created_by', 'base_user')
+    
+    # Filter allowed emails by search
+    if search_query:
+        allowed_emails = allowed_emails.filter(email__icontains=search_query)
+    
+    # Filter by user type for allowed emails
+    if user_type_filter != 'all':
+        allowed_emails = allowed_emails.filter(user_type=user_type_filter)
+    
+    allowed_emails = allowed_emails.order_by('user_type', '-created_at')
+    
+    context = {
+        'allowed_emails': allowed_emails,
+        'search_query': search_query,
+        'user_type_filter': user_type_filter,
+        'user_type_choices': user_type_choices,
+    }
+    
+    return render(request, 'people/manage_users.html', context)
+
+
+@login_required
+def get_user_posts(request, email_id):
+    """
+    Get all posts created by a user associated with an allowed email.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to view posts.'
+        }, status=403)
+    
+    try:
+        allowed_email = get_object_or_404(AllowedEmail, pk=email_id)
+        
+        # Check if base_user exists
+        try:
+            base_user = allowed_email.base_user
+        except AttributeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'No user account associated with this email.'
+            }, status=404)
+        
+        from clubs.models import ClubPost
+        posts = ClubPost.objects.filter(posted_by=base_user).select_related('club').order_by('-created_at')
+        
+        posts_data = []
+        for post in posts:
+            posts_data.append({
+                'id': post.id,
+                'short_title': post.short_title,
+                'long_title': post.long_title,
+                'post_type': post.get_post_type_display(),
+                'club_name': post.club.name,
+                'club_short_name': post.club.short_name or post.club.name,
+                'created_at': post.created_at.strftime('%B %d, %Y'),
+                'is_pinned': post.is_pinned,
+                'tags': post.tags or '',
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'user_name': base_user.get_full_name() or base_user.email,
+            'post_count': posts.count(),
+            'posts': posts_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching posts: {str(e)}'
+        }, status=500)
+
+
+@login_required
 def bulk_delete_allowed_emails(request):
     """
     Delete multiple allowed emails at once.
     Only accessible to power users.
+    Accepts 'action' parameter: 'delete_posts' or 'keep_posts'
     """
     if not request.user.is_power_user:
         return JsonResponse({
@@ -942,6 +1044,7 @@ def bulk_delete_allowed_emails(request):
         }, status=403)
     
     email_ids = request.POST.getlist('email_ids[]')
+    action = request.POST.get('action', '')  # 'delete_posts' or 'keep_posts'
     
     if not email_ids:
         return JsonResponse({
@@ -950,42 +1053,130 @@ def bulk_delete_allowed_emails(request):
         })
     
     try:
-        # Get allowed emails to delete
-        emails_to_delete = AllowedEmail.objects.filter(pk__in=email_ids)
+        # Get allowed emails to delete with related base_user
+        emails_to_delete = AllowedEmail.objects.filter(pk__in=email_ids).select_related('base_user')
         deleted_count = emails_to_delete.count()
         email_addresses = [email.email for email in emails_to_delete]
         
-        # Check if any have associated BaseUser accounts
-        emails_with_accounts = []
+        # Check if any have associated BaseUser accounts with posts
         emails_with_posts = []
+        emails_with_posts_details = []  # Store (email_obj, base_user, post_count) tuples
+        base_users_to_delete = []  # Store base_user objects to delete
         
         for email in emails_to_delete:
-            if email.base_user:
-                emails_with_accounts.append(email.email)
+            # Safely check if base_user exists
+            # OneToOneField reverse relationship raises RelatedObjectDoesNotExist (subclass of AttributeError) if no related object exists
+            try:
+                base_user = email.base_user
+                base_users_to_delete.append(base_user)
                 # Check if this user has created any club posts
                 from clubs.models import ClubPost
-                post_count = ClubPost.objects.filter(posted_by=email.base_user).count()
+                post_count = ClubPost.objects.filter(posted_by=base_user).count()
                 if post_count > 0:
-                    emails_with_posts.append(f"{email.email} ({post_count} post{'s' if post_count > 1 else ''})")
+                    # Get user's name (full name or email as fallback)
+                    user_name = base_user.get_full_name() or base_user.email
+                    emails_with_posts.append(f"{user_name} ({post_count} post{'s' if post_count > 1 else ''})")
+                    emails_with_posts_details.append((email, base_user, post_count))
+            except AttributeError:
+                # No base_user associated with this allowed email (RelatedObjectDoesNotExist is a subclass of AttributeError)
+                # Safe to delete
+                pass
+            except ObjectDoesNotExist:
+                # Catch any other DoesNotExist exceptions
+                pass
         
-        if emails_with_accounts:
-            if emails_with_posts:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot delete emails with active accounts that have created posts: {", ".join(emails_with_posts)}. Please delete or reassign the posts first, or delete the user accounts directly.'
-                }, status=400)
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot delete emails with active accounts: {", ".join(emails_with_accounts)}. Please delete the user accounts first.'
-                }, status=400)
+        # If there are posts and no action specified, return error with details
+        if emails_with_posts and not action:
+            return JsonResponse({
+                'success': False,
+                'has_posts': True,
+                'message': f'Cannot delete emails with active accounts that have created posts: {", ".join(emails_with_posts)}.',
+                'users_with_posts': [
+                    {
+                        'email_id': email.id,
+                        'user_name': base_user.get_full_name() or base_user.email,
+                        'post_count': post_count
+                    }
+                    for email, base_user, post_count in emails_with_posts_details
+                ]
+            }, status=400)
         
-        # Delete the allowed emails
-        emails_to_delete.delete()
+        # Handle posts based on action
+        if action == 'delete_posts':
+            # Delete all posts created by users being deleted
+            from clubs.models import ClubPost
+            posts_deleted = 0
+            for email, base_user, post_count in emails_with_posts_details:
+                deleted = ClubPost.objects.filter(posted_by=base_user).delete()
+                posts_deleted += deleted[0] if deleted else 0
+        elif action == 'keep_posts':
+            # Keep posts but remove user reference (set posted_by to None)
+            # Ensure posted_by_name and posted_by_email are populated before removing the FK
+            from clubs.models import ClubPost
+            posts_updated = 0
+            for email, base_user, post_count in emails_with_posts_details:
+                # Get user's name based on their type (same logic as ClubPost model)
+                user_name = None
+                user_email = base_user.email or ''
+                
+                if base_user.user_type == 'faculty' and hasattr(base_user, 'faculty_profile'):
+                    user_name = base_user.faculty_profile.name if base_user.faculty_profile else None
+                elif base_user.user_type == 'officer' and hasattr(base_user, 'officer_profile'):
+                    user_name = base_user.officer_profile.name if base_user.officer_profile else None
+                elif base_user.user_type == 'club_member' and hasattr(base_user, 'club_member_profile'):
+                    user_name = base_user.club_member_profile.name if base_user.club_member_profile else None
+                elif base_user.user_type == 'staff' and hasattr(base_user, 'staff_profile'):
+                    user_name = base_user.staff_profile.name if base_user.staff_profile else None
+                else:
+                    # Fallback to full name or email
+                    user_name = base_user.get_full_name() or base_user.email or ''
+                
+                user_name = user_name or user_email
+                
+                # Update posts: set posted_by to None and ensure name/email are preserved
+                posts = ClubPost.objects.filter(posted_by=base_user)
+                for post in posts:
+                    # Ensure name and email are set (they should be, but just in case)
+                    if not post.posted_by_name:
+                        post.posted_by_name = user_name
+                    if not post.posted_by_email:
+                        post.posted_by_email = user_email
+                    post.posted_by = None
+                    post.save()
+                posts_updated += posts.count()
+        
+        # Delete associated BaseUser accounts first (this will cascade to AllowedEmail)
+        users_deleted = 0
+        for base_user in base_users_to_delete:
+            try:
+                base_user.delete()
+                users_deleted += 1
+            except Exception as e:
+                # If user deletion fails, log but continue
+                print(f"Error deleting user {base_user.email}: {str(e)}")
+        
+        # Delete the allowed emails (if not already deleted by cascade)
+        # Note: BaseUser.allowed_email has CASCADE, so deleting BaseUser will set AllowedEmail.base_user to NULL
+        # But we still need to delete the AllowedEmail entries themselves
+        remaining_emails = AllowedEmail.objects.filter(pk__in=email_ids)
+        remaining_emails.delete()
+        
+        # Build success message
+        success_message = f'Successfully deleted {deleted_count} allowed email(s)'
+        if users_deleted > 0:
+            success_message += f' and {users_deleted} user account(s)'
+        success_message += '.'
+        
+        if action == 'delete_posts' and emails_with_posts_details:
+            total_posts = sum(post_count for _, _, post_count in emails_with_posts_details)
+            success_message += f' Deleted {total_posts} related post(s).'
+        elif action == 'keep_posts' and emails_with_posts_details:
+            total_posts = sum(post_count for _, _, post_count in emails_with_posts_details)
+            success_message += f' Kept {total_posts} post(s) with preserved author names.'
         
         return JsonResponse({
             'success': True,
-            'message': f'Successfully deleted {deleted_count} allowed email(s).',
+            'message': success_message,
             'deleted_emails': email_addresses
         })
     except Exception as e:

@@ -316,6 +316,17 @@
                 </a>
                 {% endif %}
                 
+                <!-- Manage Users (Power Users Only) -->
+                {% if user.is_power_user %}
+                <a href="{% url 'people:manage_users' %}" class="action-card">
+                    <div class="action-icon">👥</div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Users</h3>
+                        <p class="action-desc">Create, edit, and bulk delete allowed emails</p>
+                    </div>
+                </a>
+                {% endif %}
+                
                 <!-- Manage Faculty (Power Users Only) -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_faculty' %}" class="action-card">

@@ -14,8 +14,10 @@ urlpatterns = [
     path('manage-permissions/', views.manage_user_permissions_list, name='manage_user_permissions_list'),
     path('manage-permissions/self/', views.manage_user_permissions, {'user_id': 'self'}, name='manage_own_permissions'),
     path('manage-permissions/<int:user_id>/', views.manage_user_permissions, name='manage_user_permissions'),
+    path('manage-users/', views.manage_users, name='manage_users'),
     path('allowed-emails/create/', views.create_allowed_email, name='create_allowed_email'),
     path('allowed-emails/<int:pk>/edit/', views.edit_allowed_email, name='edit_allowed_email'),
+    path('allowed-emails/<int:email_id>/posts/', views.get_user_posts, name='get_user_posts'),
     path('allowed-emails/bulk-delete/', views.bulk_delete_allowed_emails, name='bulk_delete_allowed_emails'),
     # Faculty management (power users only)
     path('manage-faculty/', views.manage_faculty, name='manage_faculty'),
