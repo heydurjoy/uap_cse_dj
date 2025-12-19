@@ -1,0 +1,671 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_filters %}
+
+{% block title %}Manage Users - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="user-profile-page">
+        <div class="profile-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1 class="page-title">Manage Users</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container" style="margin-bottom: 1.5rem;">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; background: {% if message.tags == 'error' %}#f8d7da{% elif message.tags == 'success' %}#d4edda{% else %}#d1ecf1{% endif %}; color: {% if message.tags == 'error' %}#721c24{% elif message.tags == 'success' %}#155724{% else %}#0c5460{% endif %}; border: 1px solid {% if message.tags == 'error' %}#f5c6cb{% elif message.tags == 'success' %}#c3e6cb{% else %}#bee5eb{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Info Box -->
+        <div class="info-box" style="background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem;">
+            <p style="margin: 0; color: var(--text-primary); font-size: 0.95rem; line-height: 1.6;">
+                <strong>Manage Allowed Emails:</strong> Create, edit, and delete allowed email addresses for user signups. This controls who can create accounts in the system. All user types including club members can be managed here.
+            </p>
+        </div>
+        
+        <!-- Search and Filter Section -->
+        <div class="search-section" style="margin-bottom: 1.5rem;">
+            <form method="get" action="{% url 'people:manage_users' %}" id="search-form" class="search-form" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                <!-- User Type Filter -->
+                <select 
+                    name="user_type" 
+                    id="user_type_filter"
+                    class="filter-select"
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);"
+                >
+                    {% for value, label in user_type_choices %}
+                        <option value="{{ value }}" {% if user_type_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Search Input -->
+                <input 
+                    type="text" 
+                    name="search" 
+                    id="search_input"
+                    placeholder="Search by email..." 
+                    value="{{ search_query }}"
+                    class="search-input"
+                    style="padding: 0.75rem; flex: 1; min-width: 250px; max-width: 500px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);"
+                >
+                {% if search_query or user_type_filter != 'all' %}
+                    <a href="{% url 'people:manage_users' %}" class="btn-secondary" style="padding: 0.75rem 1.5rem; text-decoration: none; white-space: nowrap; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-tertiary); color: var(--text-primary);">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+                Total: <strong>{{ allowed_emails|length }}</strong> allowed email{{ allowed_emails|length|pluralize }}
+            </p>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <button id="selectAllEmailsBtn" class="btn-secondary" style="padding: 0.75rem 1.5rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; white-space: nowrap;">
+                    Select All
+                </button>
+                <button id="deleteSelectedEmailsBtn" class="btn-danger" style="padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #dc3545; color: white; cursor: pointer; white-space: nowrap; font-weight: 600;" disabled>
+                    Delete Selected
+                </button>
+                <a href="{% url 'people:create_allowed_email' %}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; white-space: nowrap; background: var(--color-primary); color: white; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                    + Add Allowed Email
+                </a>
+            </div>
+        </div>
+        
+        <!-- Hidden CSRF token for JavaScript -->
+        {% csrf_token %}
+        
+        <!-- Allowed Emails List -->
+        <div class="allowed-emails-list">
+            {% if allowed_emails %}
+                <div class="emails-table-container" style="background: var(--bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                    <table class="emails-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border-bottom: 2px solid var(--border-color);">
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary); width: 50px;">
+                                    <input type="checkbox" id="selectAllEmailsCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
+                                </th>
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Email</th>
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">User Type</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Power User</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Status</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Account Created</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Created By</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for email in allowed_emails %}
+                                <tr class="email-row" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                                    <td style="padding: 1rem; text-align: center;">
+                                        <input type="checkbox" class="email-checkbox" value="{{ email.id }}" style="width: 18px; height: 18px; cursor: pointer;">
+                                    </td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">
+                                        <strong>{{ email.email }}</strong>
+                                    </td>
+                                    <td style="padding: 1rem;">
+                                        <span style="padding: 0.25rem 0.75rem; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+                                            {{ email.user_type|title }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        {% if email.is_power_user %}
+                                            <span style="color: #007bff; font-weight: 600; font-size: 1.1rem;">✓</span>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        {% if email.is_blocked %}
+                                            <span style="color: #dc3545; font-weight: 600;">Blocked</span>
+                                        {% elif not email.is_active %}
+                                            <span style="color: #ffc107; font-weight: 600;">Inactive</span>
+                                        {% else %}
+                                            <span style="color: #28a745; font-weight: 600;">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                                        {% if email.base_user %}
+                                            <span style="color: #28a745;">✓ Yes</span>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">— No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                                        {% if email.created_by %}
+                                            {{ email.created_by.get_full_name|default:email.created_by.email|truncatechars:20 }}
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        <a 
+                                            href="{% url 'people:edit_allowed_email' email.id %}" 
+                                            class="btn-link"
+                                            style="padding: 0.5rem 1rem; text-decoration: none; color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; display: inline-block;"
+                                        >
+                                            Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="no-results" style="text-align: center; padding: 3rem; color: var(--text-secondary); background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">No allowed emails found.</p>
+                    {% if search_query or user_type_filter != 'all' %}
+                        <p>Try adjusting your filters or search term.</p>
+                        <a href="{% url 'people:manage_users' %}" class="btn-primary" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; text-decoration: none; background: var(--color-primary); color: white; border-radius: 8px;">Clear Filters</a>
+                    {% else %}
+                        <p>No allowed emails in the system. Create one to get started.</p>
+                        <a href="{% url 'people:create_allowed_email' %}" class="btn-primary" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; text-decoration: none; background: var(--color-primary); color: white; border-radius: 8px;">+ Add Allowed Email</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+    .email-row:hover {
+        background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary)) !important;
+    }
+    
+    .btn-link:hover {
+        background: var(--color-primary);
+        color: white !important;
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--glow-shadow);
+    }
+    
+    .btn-secondary {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: var(--bg-secondary) !important;
+        border-color: var(--color-primary) !important;
+        color: var(--color-primary) !important;
+    }
+    
+    .btn-danger {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+        background: #c82333 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-danger:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    @media (max-width: 768px) {
+        .emails-table-container {
+            overflow-x: auto;
+        }
+        
+        .emails-table {
+            min-width: 800px;
+        }
+        
+        .emails-table th,
+        .emails-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<script>
+    // Real-time search functionality
+    (function() {
+        let searchTimeout;
+        const searchInput = document.getElementById('search_input');
+        const userTypeFilter = document.getElementById('user_type_filter');
+        const searchForm = document.getElementById('search-form');
+        
+        // Debounced search on input
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    searchForm.submit();
+                }, 500); // Wait 500ms after user stops typing
+            });
+        }
+        
+        // Auto-submit on filter change
+        if (userTypeFilter) {
+            userTypeFilter.addEventListener('change', function() {
+                searchForm.submit();
+            });
+        }
+    })();
+    
+    // Bulk delete functionality for allowed emails
+    (function() {
+        const selectAllCheckbox = document.getElementById('selectAllEmailsCheckbox');
+        const selectAllBtn = document.getElementById('selectAllEmailsBtn');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedEmailsBtn');
+        const emailCheckboxes = document.querySelectorAll('.email-checkbox');
+        
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Update delete button state
+        function updateDeleteButton() {
+            const selectedCount = Array.from(emailCheckboxes).filter(cb => cb.checked).length;
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.disabled = selectedCount === 0;
+                if (selectedCount > 0) {
+                    deleteSelectedBtn.textContent = `Delete Selected (${selectedCount})`;
+                } else {
+                    deleteSelectedBtn.textContent = 'Delete Selected';
+                }
+            }
+            
+            // Update select all checkbox
+            if (selectAllCheckbox && emailCheckboxes.length > 0) {
+                selectAllCheckbox.checked = Array.from(emailCheckboxes).every(cb => cb.checked);
+                selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < emailCheckboxes.length;
+            }
+        }
+        
+        // Select all checkbox
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                emailCheckboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                updateDeleteButton();
+            });
+        }
+        
+        // Individual checkbox change
+        emailCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateDeleteButton);
+        });
+        
+        // Select all button
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                const allChecked = Array.from(emailCheckboxes).every(cb => cb.checked);
+                emailCheckboxes.forEach(cb => {
+                    cb.checked = !allChecked;
+                });
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = !allChecked;
+                }
+                updateDeleteButton();
+            });
+        }
+        
+        // Delete selected button
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', function() {
+                const selectedIds = Array.from(emailCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one email to delete.');
+                    return;
+                }
+                
+                // First, check if there are posts
+                performDelete(selectedIds, null);
+            });
+        }
+        
+        // Function to perform delete with optional action
+        function performDelete(selectedIds, action) {
+            // Create form data
+            const formData = new FormData();
+            selectedIds.forEach(id => {
+                formData.append('email_ids[]', id);
+            });
+            
+            if (action) {
+                formData.append('action', action);
+            }
+            
+            // Send delete request
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+            fetch('{% url "people:bulk_delete_allowed_emails" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success';
+                    messageDiv.style.cssText = 'padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: #d4edda; color: #155724; border: 1px solid #c3e6cb;';
+                    messageDiv.textContent = data.message;
+                    
+                    const messagesContainer = document.querySelector('.messages-container');
+                    if (messagesContainer) {
+                        messagesContainer.insertBefore(messageDiv, messagesContainer.firstChild);
+                    } else {
+                        const container = document.createElement('div');
+                        container.className = 'messages-container';
+                        container.style.cssText = 'margin-bottom: 1.5rem;';
+                        container.appendChild(messageDiv);
+                        document.querySelector('.profile-header').after(container);
+                    }
+                    
+                    // Reload page after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else if (data.has_posts) {
+                    // Show dialog with two options
+                    showPostsDialog(data, selectedIds);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting emails. Please try again.');
+            });
+        }
+        
+        // Function to show dialog with options for posts
+        function showPostsDialog(data, selectedIds) {
+            // Create custom dialog
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+            
+            const dialogContent = document.createElement('div');
+            dialogContent.style.cssText = 'background: var(--bg-secondary); border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);';
+            
+            const title = document.createElement('h3');
+            title.style.cssText = 'margin: 0 0 1.5rem 0; color: var(--text-primary); font-size: 1.25rem; font-weight: 700;';
+            title.textContent = 'Users Have Created Posts';
+            
+            // Create users list with view posts buttons
+            const usersContainer = document.createElement('div');
+            usersContainer.style.cssText = 'margin-bottom: 1.5rem;';
+            
+            data.users_with_posts.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 0.75rem;';
+                
+                const userInfo = document.createElement('div');
+                userInfo.style.cssText = 'flex: 1;';
+                const userName = document.createElement('div');
+                userName.style.cssText = 'font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;';
+                userName.textContent = user.user_name;
+                const postCount = document.createElement('div');
+                postCount.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary);';
+                postCount.textContent = `${user.post_count} post${user.post_count > 1 ? 's' : ''}`;
+                
+                userInfo.appendChild(userName);
+                userInfo.appendChild(postCount);
+                
+                const viewPostsBtn = document.createElement('button');
+                viewPostsBtn.style.cssText = 'padding: 0.5rem 1rem; background: var(--color-primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; margin-left: 1rem;';
+                viewPostsBtn.textContent = 'View Posts';
+                viewPostsBtn.onclick = function() {
+                    viewUserPosts(user.email_id, user.user_name);
+                };
+                
+                userItem.appendChild(userInfo);
+                userItem.appendChild(viewPostsBtn);
+                usersContainer.appendChild(userItem);
+            });
+            
+            const messageText = document.createElement('p');
+            messageText.style.cssText = 'color: var(--text-primary); margin: 0 0 1.5rem 0; line-height: 1.6;';
+            messageText.textContent = 'How would you like to proceed?';
+            
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = 'display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;';
+            
+            const deletePostsBtn = document.createElement('button');
+            deletePostsBtn.style.cssText = 'padding: 0.75rem 1.5rem; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;';
+            deletePostsBtn.textContent = 'Delete Posts';
+            deletePostsBtn.onclick = function() {
+                dialog.remove();
+                if (confirm('Are you sure you want to delete the posts? This action cannot be undone.')) {
+                    performDelete(selectedIds, 'delete_posts');
+                }
+            };
+            
+            const keepPostsBtn = document.createElement('button');
+            keepPostsBtn.style.cssText = 'padding: 0.75rem 1.5rem; background: var(--color-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;';
+            keepPostsBtn.textContent = 'Keep Posts';
+            keepPostsBtn.onclick = function() {
+                dialog.remove();
+                if (confirm('The posts will be kept but the user account reference will be removed. The author names will be preserved. Continue?')) {
+                    performDelete(selectedIds, 'keep_posts');
+                }
+            };
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.style.cssText = 'padding: 0.75rem 1.5rem; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-weight: 600;';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = function() {
+                dialog.remove();
+            };
+            
+            buttonContainer.appendChild(deletePostsBtn);
+            buttonContainer.appendChild(keepPostsBtn);
+            buttonContainer.appendChild(cancelBtn);
+            
+            dialogContent.appendChild(title);
+            dialogContent.appendChild(usersContainer);
+            dialogContent.appendChild(messageText);
+            dialogContent.appendChild(buttonContainer);
+            dialog.appendChild(dialogContent);
+            
+            document.body.appendChild(dialog);
+            
+            // Close on outside click
+            dialog.onclick = function(e) {
+                if (e.target === dialog) {
+                    dialog.remove();
+                }
+            };
+        }
+        
+        // Function to view posts for a specific user
+        function viewUserPosts(emailId, userName) {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+            
+            // Show loading
+            const loadingDialog = document.createElement('div');
+            loadingDialog.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10001; display: flex; align-items: center; justify-content: center;';
+            loadingDialog.innerHTML = '<div style="background: var(--bg-secondary); padding: 2rem; border-radius: 12px; color: var(--text-primary);">Loading posts...</div>';
+            document.body.appendChild(loadingDialog);
+            
+            fetch(`{% url "people:get_user_posts" 0 %}`.replace('0', emailId), {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingDialog.remove();
+                
+                if (data.success) {
+                    showPostsModal(data, userName);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                loadingDialog.remove();
+                console.error('Error:', error);
+                alert('An error occurred while fetching posts. Please try again.');
+            });
+        }
+        
+        // Function to show posts in a modal
+        function showPostsModal(data, userName) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10002; display: flex; align-items: center; justify-content: center; padding: 1rem;';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = 'background: var(--bg-secondary); border-radius: 12px; padding: 2rem; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);';
+            
+            const header = document.createElement('div');
+            header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border-color);';
+            
+            const title = document.createElement('h3');
+            title.style.cssText = 'margin: 0; color: var(--text-primary); font-size: 1.25rem; font-weight: 700;';
+            title.textContent = `Posts by ${userName} (${data.post_count})`;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.style.cssText = 'background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px;';
+            closeBtn.textContent = '×';
+            closeBtn.onclick = function() {
+                modal.remove();
+            };
+            closeBtn.onmouseover = function() {
+                this.style.background = 'var(--bg-tertiary)';
+            };
+            closeBtn.onmouseout = function() {
+                this.style.background = 'none';
+            };
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            
+            const postsContainer = document.createElement('div');
+            postsContainer.style.cssText = 'display: flex; flex-direction: column; gap: 1rem;';
+            
+            if (data.posts.length === 0) {
+                const noPosts = document.createElement('p');
+                noPosts.style.cssText = 'color: var(--text-secondary); text-align: center; padding: 2rem;';
+                noPosts.textContent = 'No posts found.';
+                postsContainer.appendChild(noPosts);
+            } else {
+                data.posts.forEach(post => {
+                    const postCard = document.createElement('div');
+                    postCard.style.cssText = 'background: var(--bg-tertiary); border-radius: 8px; padding: 1.25rem; border: 1px solid var(--border-color);';
+                    
+                    const postHeader = document.createElement('div');
+                    postHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;';
+                    
+                    const postType = document.createElement('span');
+                    postType.style.cssText = 'padding: 0.25rem 0.75rem; background: var(--color-primary); color: white; border-radius: 6px; font-size: 0.85rem; font-weight: 600;';
+                    postType.textContent = post.post_type;
+                    
+                    const postDate = document.createElement('span');
+                    postDate.style.cssText = 'color: var(--text-secondary); font-size: 0.9rem;';
+                    postDate.textContent = post.created_at;
+                    
+                    postHeader.appendChild(postType);
+                    postHeader.appendChild(postDate);
+                    
+                    const clubName = document.createElement('div');
+                    clubName.style.cssText = 'color: var(--color-primary); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;';
+                    clubName.textContent = post.club_short_name;
+                    
+                    const postTitle = document.createElement('h4');
+                    postTitle.style.cssText = 'margin: 0 0 0.5rem 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700;';
+                    postTitle.textContent = post.short_title;
+                    
+                    const postSubtitle = document.createElement('p');
+                    postSubtitle.style.cssText = 'margin: 0 0 0.75rem 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;';
+                    postSubtitle.textContent = post.long_title;
+                    
+                    if (post.tags) {
+                        const tagsContainer = document.createElement('div');
+                        tagsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;';
+                        const tags = post.tags.split(',').map(t => t.trim()).filter(t => t);
+                        tags.forEach(tag => {
+                            const tagSpan = document.createElement('span');
+                            tagSpan.style.cssText = 'padding: 0.25rem 0.5rem; background: var(--bg-secondary); color: var(--text-secondary); border-radius: 4px; font-size: 0.85rem;';
+                            tagSpan.textContent = tag;
+                            tagsContainer.appendChild(tagSpan);
+                        });
+                        postCard.appendChild(tagsContainer);
+                    }
+                    
+                    if (post.is_pinned) {
+                        const pinnedBadge = document.createElement('span');
+                        pinnedBadge.style.cssText = 'display: inline-block; margin-left: 0.5rem; color: var(--color-primary); font-size: 0.9rem;';
+                        pinnedBadge.textContent = '📌 Pinned';
+                        postHeader.appendChild(pinnedBadge);
+                    }
+                    
+                    postCard.appendChild(postHeader);
+                    postCard.appendChild(clubName);
+                    postCard.appendChild(postTitle);
+                    postCard.appendChild(postSubtitle);
+                    
+                    postsContainer.appendChild(postCard);
+                });
+            }
+            
+            modalContent.appendChild(header);
+            modalContent.appendChild(postsContainer);
+            modal.appendChild(modalContent);
+            
+            document.body.appendChild(modal);
+            
+            // Close on outside click
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            };
+            
+            // Close on Escape key
+            const escapeHandler = function(e) {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+        }
+        
+        // Initialize button state
+        updateDeleteButton();
+    })();
+</script>
+{% endblock %}
+
