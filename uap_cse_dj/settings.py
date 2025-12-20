@@ -71,6 +71,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Trust proxy headers (needed for Railway/Heroku/etc)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 ROOT_URLCONF = 'uap_cse_dj.urls'
 
 TEMPLATES = [

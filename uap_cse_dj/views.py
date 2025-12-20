@@ -337,10 +337,20 @@ def forgot_password(request):
             # Generate reset token
             reset_token = PasswordResetToken.generate_token(user, hours=24)
             
-            # Create reset URL
-            reset_url = request.build_absolute_uri(
-                reverse('reset_password', kwargs={'token': reset_token.token})
+            # Create reset URL - ensure HTTPS in production
+            reset_path = reverse('reset_password', kwargs={'token': reset_token.token})
+            # Check if request is secure (handles Railway proxy)
+            is_secure = (
+                request.is_secure() or 
+                request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or
+                not settings.DEBUG  # Assume HTTPS in production
             )
+            if is_secure:
+                # Use HTTPS
+                reset_url = f"https://{request.get_host()}{reset_path}"
+            else:
+                # Use HTTP for development
+                reset_url = request.build_absolute_uri(reset_path)
             
             # Send email
             try:
@@ -366,11 +376,10 @@ CSE UAP Team''',
                 messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
             except Exception as e:
                 # If email sending fails, show error message
-                messages.error(request, 'Failed to send password reset email. Please try again later or contact the administrator.')
-                # Log the error for debugging
                 import logging
                 logger = logging.getLogger(__name__)
-                logger.error(f'Failed to send password reset email: {str(e)}')
+                logger.error(f'Failed to send password reset email to {user.email}: {str(e)}', exc_info=True)
+                messages.error(request, f'Failed to send password reset email. Error: {str(e)}. Please try again later or contact the administrator.')
             
             return render(request, 'forgot_password.html')
             
