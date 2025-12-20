@@ -109,13 +109,21 @@
 }
 
 .detail-image-caption {
-    color: #fff;
-    font-size: clamp(3.5rem, 6vw, 5rem);
-    font-weight: 800;
-    line-height: 1.2;
-    text-shadow: 0 10px 28px rgba(0,0,0,0.55);
-    text-align: center;
+  color: #fff;
+  font-size: clamp(3.5rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  text-shadow: 0 10px 28px rgba(0,0,0,0.55);
+  text-align: center;
 }
+
+/* Phones */
+@media (max-width: 480px) {
+  .detail-image-caption {
+    font-size: clamp(2rem, 5vw, 3rem); /* smaller range for mobile */
+  }
+}
+
 
 .detail-content {
     background: var(--bg-secondary);
