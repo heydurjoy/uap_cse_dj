@@ -32,6 +32,12 @@ ALLOWED_HOSTS = [
     '.railway.app' # This wildcard allows any railway subdomain
 ]
 
+# CSRF trusted origins for HTTPS requests
+CSRF_TRUSTED_ORIGINS = [
+    'https://uapcsedj-production.up.railway.app',
+    'https://*.railway.app',  # Allow any railway subdomain
+]
+
 # Application definition
 
 INSTALLED_APPS = [
