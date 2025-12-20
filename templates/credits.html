@@ -932,15 +932,44 @@
         transform: scale(1.1);
     }
 
-    .student-info {
-        padding: 0.75rem 0.5rem;
-        text-align: center;
-        background: var(--bg-secondary);
-        border-radius: 0 0 16px 16px;
-        transition: all 0.3s ease;
-        margin-top: -1px;
-        border-top: none;
-    }
+ .student-info {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  background: var(--bg-secondary);
+  border-radius: 0 0 1rem 1rem; /* use rem for scalability */
+  transition: all 0.3s ease;
+  margin-top: -1px;
+  border-top: none;
+     flex-grow: 1;
+  /* responsive width */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Small devices (phones) */
+@media (max-width: 480px) {
+  .student-info {
+    padding: 1rem 0.75rem;   /* more breathing room */
+    font-size: 0.9rem;       /* slightly smaller text */
+  }
+}
+
+/* Medium devices (tablets) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .student-info {
+    padding: 1rem;           /* balanced spacing */
+    font-size: 1rem;
+  }
+}
+
+/* Large devices (desktops) */
+@media (min-width: 769px) {
+  .student-info {
+    padding: 1.25rem 1rem;   /* more generous spacing */
+    font-size: 1.1rem;
+  }
+}
+
 
     .student-wrapper:not(.active):hover .student-info {
         background: var(--bg-tertiary);
@@ -970,7 +999,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.25rem;
-        font-size: 0.75rem;
+        font-size: clamp(0.7rem, 1.5vw, 0.85rem);
         color: var(--text-secondary);
         background: var(--color-primary-light);
         padding: 0.25rem 0.5rem;
