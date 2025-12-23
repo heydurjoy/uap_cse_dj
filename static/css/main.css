@@ -840,6 +840,13 @@ body {
     line-height: 1.25;  /* desktop line height */
 }
 
+/* Desktop active */
+.notification-modal.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
 /* Medium screens (tablets) */
 @media (max-width: 1024px) {
     .notification-modal {
@@ -854,31 +861,28 @@ body {
 /* Small screens (phones) */
 @media (max-width: 768px) {
     .notification-modal {
-        position:fixed;
+        position: fixed;
         top: 10rem;
-        right: 1rem;
-        left: 1rem;
-        width: auto;
+        left: 50%;
+        transform: translateX(-50%) translateY(0) scale(1);
+
+        width: 22rem;
+        height: 25rem;
         max-width: 22rem;
-        max-height: 16rem;      /* limit height for compact modal */
-        padding: 0.5rem;       /* reduce vertical padding */
-        line-height: 1.1;      /* tighter text spacing */
-        overflow-y: auto;      /* scroll if content exceeds max-height */
-        transform: translateY(0) scale(1);
+        max-height: 25rem;
+
+        padding: 0.5rem;
+        line-height: 1.1;
+        overflow-y: auto;
     }
-}
 
-
-
-
-[data-theme="dark"] .notification-modal {
-    /* Dark theme handled in content */
-}
-
-.notification-modal.active {
-    display: flex;
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    .notification-modal.active {
+        display: flex;
+        opacity: 1;
+        width: 22rem;
+        height: 25rem;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
 }
 
 .notification-modal-content {
