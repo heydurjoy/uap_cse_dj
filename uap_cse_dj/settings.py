@@ -202,13 +202,43 @@ THUMBNAIL_ALIASES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email settings (for password reset)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'mdsahriar.asif@gmail.com'
-EMAIL_HOST_PASSWORD = 'mhkz utxt afnr wute'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Priority: Brevo/Resend > SendGrid > Gmail/Outlook > Console (development)
+# All free forever options supported!
+
+# Get email configuration from environment variables
+EMAIL_HOST_ENV = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT_ENV = os.getenv('EMAIL_PORT', '')
+EMAIL_HOST_USER_ENV = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_FROM_ENV = os.getenv('EMAIL_FROM', '')
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
+
+# Determine which email backend to use
+if EMAIL_HOST_ENV and EMAIL_HOST_USER_ENV and EMAIL_HOST_PASSWORD_ENV:
+    # Production: Use configured SMTP provider (Brevo, Resend, Gmail, Outlook, etc.)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = EMAIL_HOST_ENV
+    try:
+        EMAIL_PORT = int(EMAIL_PORT_ENV) if EMAIL_PORT_ENV else 587
+    except (ValueError, TypeError):
+        EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = EMAIL_HOST_USER_ENV
+    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_ENV
+    DEFAULT_FROM_EMAIL = EMAIL_FROM_ENV or EMAIL_HOST_USER_ENV or 'noreply@uap-cse.edu'
+elif SENDGRID_API_KEY and EMAIL_HOST_USER_ENV:
+    # Fallback: Use SendGrid (if API key is provided)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.sendgrid.net'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = 'apikey'  # Always 'apikey' for SendGrid
+    EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER_ENV or 'noreply@uap-cse.edu'
+else:
+    # Development: Use console backend (emails print to terminal)
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'noreply@uap-cse.edu'  # Just for display in console
 
 # Media file size limits and compression settings
 # Size limits in KB (for images) and MB (for PDFs)

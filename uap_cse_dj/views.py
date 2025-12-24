@@ -369,7 +369,7 @@ If you did not request this password reset, please ignore this email.
 
 Best regards,
 CSE UAP Team''',
-                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@uap-cse.edu'),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
                     fail_silently=False,
                 )
