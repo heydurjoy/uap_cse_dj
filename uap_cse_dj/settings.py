@@ -216,7 +216,7 @@ MEDIA_SIZE_LIMITS = {
     # Profile pictures (600KB threshold)
     'profile_pictures': {
         'max_size_kb': 600,
-        'target_dimensions': (400, 400),
+        'target_dimensions': (600, 600),
         'quality': 85,
     },
     # Club logos (200KB threshold)
@@ -234,7 +234,7 @@ MEDIA_SIZE_LIMITS = {
     # Feature cards (600KB threshold)
     'feature_cards': {
         'max_size_kb': 600,
-        'target_dimensions': (400, 400),
+        'target_dimensions': (600, 600),
         'quality': 85,
     },
     # Class routines (1MB threshold)

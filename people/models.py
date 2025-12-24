@@ -270,7 +270,7 @@ class BaseUser(AbstractUser):
         upload_to='user_profiles/',
         blank=True,
         null=True,
-        help_text="User profile picture (Max 600KB, will be compressed and resized to 400x400px if larger)"
+        help_text="User profile picture (Max 600KB, will be compressed and resized to 600x600px if larger)"
     )
     
     created_at = models.DateTimeField(
@@ -391,13 +391,13 @@ class Faculty(models.Model):
         upload_to='faculty_photos/',
         null=True,
         blank=True,
-        help_text="Faculty profile picture (Max 600KB, will be compressed and resized to 400x400px if larger)"
+        help_text="Faculty profile picture (Max 600KB, will be compressed and resized to 600x600px if larger)"
     )
     cropping = ImageRatioField(
         'profile_pic',
-        '400x400',
+        '600x600',
         size_warning=True,
-        help_text="Crop image to 1:1 aspect ratio (400x400)"
+        help_text="Crop image to 1:1 aspect ratio (600x600)"
     )
     
     joining_date = models.DateField(
@@ -574,9 +574,9 @@ class Faculty(models.Model):
                 # Crop the image
                 cropped_image = image.crop((int(left), int(top), int(right), int(bottom)))
                 
-                # Resize to exact 400x400
-                if cropped_image.size != (400, 400):
-                    cropped_image = cropped_image.resize((400, 400), Image.Resampling.LANCZOS)
+                # Resize to exact 600x600
+                if cropped_image.size != (600, 600):
+                    cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
                 
                 # Save to memory
                 img_io = io.BytesIO()
@@ -633,9 +633,9 @@ class Faculty(models.Model):
                         # Crop the image
                         cropped_image = image.crop((x1, y1, x2, y2))
                         
-                        # Resize to exact 400x400 if needed
-                        if cropped_image.size != (400, 400):
-                            cropped_image = cropped_image.resize((400, 400), Image.Resampling.LANCZOS)
+                        # Resize to exact 600x600 if needed
+                        if cropped_image.size != (600, 600):
+                            cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
                         
                         # Save to memory
                         img_io = io.BytesIO()
