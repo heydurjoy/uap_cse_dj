@@ -270,7 +270,7 @@ class BaseUser(AbstractUser):
         upload_to='user_profiles/',
         blank=True,
         null=True,
-        help_text="User profile picture"
+        help_text="User profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
     )
     
     created_at = models.DateTimeField(
@@ -391,7 +391,7 @@ class Faculty(models.Model):
         upload_to='faculty_photos/',
         null=True,
         blank=True,
-        help_text="Faculty profile picture"
+        help_text="Faculty profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
     )
     cropping = ImageRatioField(
         'profile_pic',
@@ -512,7 +512,7 @@ class Faculty(models.Model):
         upload_to='faculty_cvs/',
         null=True,
         blank=True,
-        help_text="Faculty CV/resume document"
+        help_text="Faculty CV/resume document (PDF only, Max 5MB)"
     )
     
     class Meta:
@@ -717,7 +717,7 @@ class Staff(models.Model):
         upload_to='staff_photos/',
         null=True,
         blank=True,
-        help_text="Staff profile picture"
+        help_text="Staff profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
     )
     
     joining_date = models.DateField(
@@ -793,7 +793,7 @@ class Officer(models.Model):
         upload_to='officer_photos/',
         null=True,
         blank=True,
-        help_text="Officer profile picture"
+        help_text="Officer profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
     )
     
     joining_date = models.DateField(
@@ -854,7 +854,7 @@ class ClubMember(models.Model):
         upload_to='club_member_photos/',
         null=True,
         blank=True,
-        help_text="Club member profile picture"
+        help_text="Club member profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
     )
     
     last_club_position = models.CharField(
@@ -977,7 +977,7 @@ class Contributor(models.Model):
         upload_to='contributor_photos/',
         blank=True,
         null=True,
-        help_text="Profile photo of the contributor"
+        help_text="Profile photo of the contributor (Max 300KB, will be compressed and resized to 400x400px if larger)"
     )
     
     project_type = models.CharField(

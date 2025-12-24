@@ -92,7 +92,7 @@
                         {% endif %}
                         <label for="profile_pic">Upload New Picture (Optional)</label>
                         <input type="file" name="profile_pic" id="profile_pic" accept="image/*">
-                        <small class="form-help">Image will be cropped to 1:1 aspect ratio (400x400)</small>
+                        <small class="form-help">Max 300KB. Image will be automatically compressed and resized to 400x400px (1:1 ratio) if larger.</small>
                         {% if faculty.cropping %}
                         <input type="hidden" name="cropping" value="{{ faculty.cropping }}">
                         {% endif %}
@@ -224,7 +224,7 @@
                         {% endif %}
                         <label for="cv">Upload New CV (Optional)</label>
                         <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx">
-                        <small class="form-help">Upload faculty CV/resume document (PDF, DOC, or DOCX)</small>
+                        <small class="form-help">Max 5MB. PDF format recommended.</small>
                     </div>
                 </div>
                 

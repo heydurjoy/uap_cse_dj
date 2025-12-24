@@ -209,3 +209,48 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mdsahriar.asif@gmail.com'
 EMAIL_HOST_PASSWORD = 'mhkz utxt afnr wute'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Media file size limits and compression settings
+# Size limits in KB (for images) and MB (for PDFs)
+MEDIA_SIZE_LIMITS = {
+    # Profile pictures (300KB threshold)
+    'profile_pictures': {
+        'max_size_kb': 300,
+        'target_dimensions': (400, 400),
+        'quality': 85,
+    },
+    # Club logos (200KB threshold)
+    'club_logos': {
+        'max_size_kb': 200,
+        'target_dimensions': (400, 400),
+        'quality': 90,
+    },
+    # Club cover photos (500KB threshold)
+    'club_covers': {
+        'max_size_kb': 500,
+        'target_dimensions': (2100, 600),
+        'quality': 85,
+    },
+    # Feature cards (500KB threshold)
+    'feature_cards': {
+        'max_size_kb': 500,
+        'target_dimensions': (400, 400),
+        'quality': 85,
+    },
+    # Class routines (1MB threshold)
+    'class_routines': {
+        'max_size_kb': 1000,
+        'max_width': 2000,
+        'quality': 80,
+    },
+}
+
+# PDF file size limits in MB
+PDF_SIZE_LIMITS = {
+    'faculty_cv': 5,  # MB
+    'curriculum_pdf': 10,  # MB
+    'academic_calendar': 5,  # MB
+    'admission_result': 10,  # MB
+    'post_attachment': 10,  # MB
+    'course_outline': 5,  # MB
+}

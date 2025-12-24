@@ -155,7 +155,7 @@ class Course(models.Model):
         null=True, 
         blank=True,
         verbose_name="Course Outline PDF",
-        help_text="Upload the official PDF document containing the course outline/syllabus."
+        help_text="Upload the official PDF document containing the course outline/syllabus (Max 5MB)."
     )
     
     class Meta:

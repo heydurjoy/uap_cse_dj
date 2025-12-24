@@ -80,7 +80,7 @@ class AdmissionResult(models.Model):
     official_pdf = models.FileField(
         upload_to='admission_results/',
         verbose_name="Official PDF",
-        help_text="Single file for the official, signed result document"
+        help_text="Single file for the official, signed result document (Max 10MB)"
     )
     created_by = models.ForeignKey(
         BaseUser,
@@ -277,7 +277,7 @@ class PostAttachment(models.Model):
     file = models.FileField(
         upload_to='posts/attachments/',
         verbose_name="File",
-        help_text="File attachment for the post"
+        help_text="File attachment for the post (PDF only, Max 10MB)"
     )
     uploaded_at = models.DateTimeField(
         auto_now_add=True,
@@ -328,7 +328,7 @@ class ClassRoutine(models.Model):
     routine_image = models.ImageField(
         upload_to='class_routines/',
         verbose_name="Routine Image",
-        help_text="The timetable image"
+        help_text="The timetable image (Max 1MB, will be compressed and resized to max width 2000px if larger)"
     )
     created_at = models.DateTimeField(
         auto_now_add=True,

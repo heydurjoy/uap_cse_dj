@@ -82,7 +82,7 @@ class Club(models.Model):
         upload_to='club_assets/logos/',
         null=True,
         blank=True,
-        help_text="Small club logo"
+        help_text="Small club logo (Max 200KB, will be compressed and resized to 400x400px if larger)"
     )
     logo_cropping = ImageRatioField(
         'logo', 
@@ -96,7 +96,7 @@ class Club(models.Model):
         upload_to='club_assets/covers/',
         null=True,
         blank=True,
-        help_text="Large banner image for the club's profile"
+        help_text="Large banner image for the club's profile (Max 500KB, will be compressed and resized to 2100x600px if larger)"
     )
     cover_photo_cropping = ImageRatioField(
         'cover_photo',

@@ -97,6 +97,7 @@
                     <div class="form-group">
                         <label for="course_outline_pdf">Upload/Update Course Outline PDF</label>
                         <input type="file" name="course_outline_pdf" id="course_outline_pdf" accept=".pdf">
+                        <small class="form-help">Max 5MB. PDF format only.</small>
                         {% if course.course_outline_pdf %}
                         <p class="current-file">Current file: <a href="{{ course.course_outline_pdf.url }}" target="_blank">{{ course.course_outline_pdf.name|slice:"20:" }}</a></p>
                         {% else %}

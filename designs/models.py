@@ -9,7 +9,7 @@ import os
 
 class FeatureCard(models.Model):
     sl_number = models.IntegerField(unique=True, help_text="Serial number for ordering")
-    picture = ImageCropField(upload_to='feature_cards/', help_text="Main picture for the card")
+    picture = ImageCropField(upload_to='feature_cards/', help_text="Main picture for the card (Max 500KB, will be compressed and resized to 400x400px if larger)")
     cropping = ImageRatioField('picture', '400x400', size_warning=True, help_text="Crop image to 1:1 aspect ratio (400x400)")
     caption = models.CharField(max_length=200, help_text="Short caption displayed on the card")
     title = models.CharField(max_length=200, help_text="Title for the detail page")
@@ -132,7 +132,7 @@ class AdmissionElement(models.Model):
         upload_to='admission/curricula/',
         blank=True,
         null=True,
-        help_text="Upload curriculum PDF (for BSc and MCSE programs)"
+        help_text="Upload curriculum PDF (for BSc and MCSE programs, Max 10MB)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -155,7 +155,7 @@ class AcademicCalendar(models.Model):
     )
     pdf = models.FileField(
         upload_to='academic_calendars/',
-        help_text="PDF file for the academic calendar"
+        help_text="PDF file for the academic calendar (Max 5MB)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
