@@ -223,6 +223,8 @@ if EMAIL_HOST_ENV and EMAIL_HOST_USER_ENV and EMAIL_HOST_PASSWORD_ENV:
     except (ValueError, TypeError):
         EMAIL_PORT = 587
     EMAIL_USE_TLS = True
+    EMAIL_USE_SSL = False  # Explicitly set SSL to False when using TLS
+    EMAIL_TIMEOUT = 10  # 10 second timeout to prevent hanging
     EMAIL_HOST_USER = EMAIL_HOST_USER_ENV
     EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_ENV
     DEFAULT_FROM_EMAIL = EMAIL_FROM_ENV or EMAIL_HOST_USER_ENV or 'noreply@uap-cse.edu'

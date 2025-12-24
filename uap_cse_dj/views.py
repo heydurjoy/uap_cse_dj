@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
+import os
 from designs.models import FeatureCard, HeroTags
 from people.models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, PasswordResetToken, Contributor
 
@@ -354,9 +355,66 @@ def forgot_password(request):
             
             # Send email
             try:
-                send_mail(
-                    subject='Password Reset Request - CSE UAP',
-                    message=f'''Hello {user.get_full_name() or user.email},
+                # Try Brevo API first (more reliable than SMTP for cloud platforms)
+                BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
+                if BREVO_API_KEY:
+                    import requests
+                    brevo_url = 'https://api.brevo.com/v3/smtp/email'
+                    headers = {
+                        'accept': 'application/json',
+                        'api-key': BREVO_API_KEY,
+                        'content-type': 'application/json'
+                    }
+                    payload = {
+                        'sender': {
+                            'name': 'CSE UAP',
+                            'email': settings.DEFAULT_FROM_EMAIL
+                        },
+                        'to': [{'email': user.email}],
+                        'subject': 'Password Reset Request - CSE UAP',
+                        'htmlContent': f'''<p>Hello {user.get_full_name() or user.email},</p>
+                        <p>You requested to reset your password for your CSE UAP account.</p>
+                        <p>Click the following link to reset your password:</p>
+                        <p><a href="{reset_url}">{reset_url}</a></p>
+                        <p>This link will expire in 24 hours.</p>
+                        <p>If you did not request this password reset, please ignore this email.</p>
+                        <p>Best regards,<br>CSE UAP Team</p>''',
+                        'textContent': f'''Hello {user.get_full_name() or user.email},
+
+You requested to reset your password for your CSE UAP account.
+
+Click the following link to reset your password:
+{reset_url}
+
+This link will expire in 24 hours.
+
+If you did not request this password reset, please ignore this email.
+
+Best regards,
+CSE UAP Team'''
+                    }
+                    response = requests.post(brevo_url, json=payload, headers=headers, timeout=10)
+                    if response.status_code == 201:
+                        messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
+                    else:
+                        raise Exception(f'Brevo API error: {response.status_code} - {response.text}')
+                else:
+                    # Fallback to SMTP
+                    from django.core.mail import get_connection
+                    connection = get_connection(
+                        backend=settings.EMAIL_BACKEND,
+                        host=settings.EMAIL_HOST,
+                        port=settings.EMAIL_PORT,
+                        username=settings.EMAIL_HOST_USER,
+                        password=settings.EMAIL_HOST_PASSWORD,
+                        use_tls=settings.EMAIL_USE_TLS,
+                        use_ssl=getattr(settings, 'EMAIL_USE_SSL', False),
+                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
+                    )
+                    
+                    send_mail(
+                        subject='Password Reset Request - CSE UAP',
+                        message=f'''Hello {user.get_full_name() or user.email},
 
 You requested to reset your password for your CSE UAP account.
 
@@ -369,11 +427,12 @@ If you did not request this password reset, please ignore this email.
 
 Best regards,
 CSE UAP Team''',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        connection=connection,
+                        fail_silently=False,
+                    )
+                    messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
             except Exception as e:
                 # If email sending fails, show error message
                 import logging
