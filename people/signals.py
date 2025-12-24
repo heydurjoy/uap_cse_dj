@@ -1,11 +1,11 @@
 """
 Django signals for media file compression and validation.
 """
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from people.utils.media_processing import compress_image, validate_pdf_size
+from people.utils.media_processing import compress_image, validate_pdf_size, delete_file_safely
 
 
 def get_image_field_mapping():
@@ -85,6 +85,7 @@ def compress_image_files(sender, instance, **kwargs):
             
             # Check if this is a new file or changed file
             file_changed = True
+            old_field = None
             if instance.pk:
                 try:
                     old_instance = model_class.objects.get(pk=instance.pk)
@@ -100,6 +101,14 @@ def compress_image_files(sender, instance, **kwargs):
             
             if not file_changed:
                 continue
+            
+            # Delete old file if it's being replaced
+            if old_field and old_field.name:
+                old_name = getattr(old_field, 'name', None)
+                new_name = getattr(field, 'name', None) if field else None
+                # If file names are different, delete the old one
+                if old_name != new_name:
+                    delete_file_safely(old_field)
             
             # Apply compression
             compress_image(
@@ -166,4 +175,26 @@ def validate_pdf_files(sender, instance, **kwargs):
                 # Re-raise validation error
                 raise e
             break
+
+
+@receiver(post_delete)
+def delete_media_files(sender, instance, **kwargs):
+    """
+    Delete associated media files when objects are deleted.
+    This prevents orphaned files from accumulating in storage.
+    """
+    # Get all field mappings
+    IMAGE_FIELD_MAPPING = get_image_field_mapping()
+    PDF_FIELD_MAPPING = get_pdf_field_mapping()
+    
+    # Check if this model has any file fields we need to clean up
+    all_field_mappings = list(IMAGE_FIELD_MAPPING.keys()) + list(PDF_FIELD_MAPPING.keys())
+    
+    # Process all file fields for this model instance
+    for (model_class, field_name) in all_field_mappings:
+        if isinstance(instance, model_class):
+            field = getattr(instance, field_name, None)
+            if field:
+                # Delete the file
+                delete_file_safely(field)
 

@@ -213,9 +213,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Media file size limits and compression settings
 # Size limits in KB (for images) and MB (for PDFs)
 MEDIA_SIZE_LIMITS = {
-    # Profile pictures (300KB threshold)
+    # Profile pictures (600KB threshold)
     'profile_pictures': {
-        'max_size_kb': 300,
+        'max_size_kb': 600,
         'target_dimensions': (400, 400),
         'quality': 85,
     },
@@ -231,9 +231,9 @@ MEDIA_SIZE_LIMITS = {
         'target_dimensions': (2100, 600),
         'quality': 85,
     },
-    # Feature cards (500KB threshold)
+    # Feature cards (600KB threshold)
     'feature_cards': {
-        'max_size_kb': 500,
+        'max_size_kb': 600,
         'target_dimensions': (400, 400),
         'quality': 85,
     },

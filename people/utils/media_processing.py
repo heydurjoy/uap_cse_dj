@@ -227,3 +227,40 @@ def validate_pdf_size(file_field, max_size_mb):
             f'File size ({file_size_mb:.2f} MB) exceeds maximum allowed size of {max_size_mb} MB.'
         )
 
+
+def delete_file_safely(file_field):
+    """
+    Safely delete a file from storage.
+    
+    Args:
+        file_field: Django FileField or ImageField
+    
+    Returns:
+        True if file was deleted, False otherwise
+    """
+    if not file_field:
+        return False
+    
+    try:
+        # Check if file has a name (exists in storage)
+        if hasattr(file_field, 'name') and file_field.name:
+            # Delete using storage backend
+            if hasattr(file_field, 'storage') and hasattr(file_field, 'delete'):
+                file_field.delete(save=False)
+                return True
+            # Fallback: try to delete using path
+            elif hasattr(file_field, 'path'):
+                try:
+                    if os.path.exists(file_field.path):
+                        os.remove(file_field.path)
+                        return True
+                except (OSError, ValueError):
+                    pass
+    except Exception as e:
+        # Log error but don't raise - file deletion failure shouldn't break the app
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to delete file {getattr(file_field, 'name', 'unknown')}: {str(e)}")
+    
+    return False
+

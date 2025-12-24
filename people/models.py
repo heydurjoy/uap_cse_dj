@@ -270,7 +270,7 @@ class BaseUser(AbstractUser):
         upload_to='user_profiles/',
         blank=True,
         null=True,
-        help_text="User profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
+        help_text="User profile picture (Max 600KB, will be compressed and resized to 400x400px if larger)"
     )
     
     created_at = models.DateTimeField(
@@ -391,7 +391,7 @@ class Faculty(models.Model):
         upload_to='faculty_photos/',
         null=True,
         blank=True,
-        help_text="Faculty profile picture (Max 300KB, will be compressed and resized to 400x400px if larger)"
+        help_text="Faculty profile picture (Max 600KB, will be compressed and resized to 400x400px if larger)"
     )
     cropping = ImageRatioField(
         'profile_pic',
