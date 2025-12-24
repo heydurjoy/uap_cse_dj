@@ -53,9 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',  # Must be before 'django.contrib.staticfiles'
     'django.contrib.staticfiles',
-    'cloudinary',  # For Cloudinary integration
     'ckeditor',
     'easy_thumbnails',
     'image_cropping',
@@ -171,25 +169,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'  # Directory where collectstatic will gat
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (user uploads)
-# Use Cloudinary for media storage in production if credentials are provided
-# Otherwise, use local filesystem (for local development)
-CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
-CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
-
-if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
-    # Use Cloudinary for media storage (production)
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
-        'API_KEY': CLOUDINARY_API_KEY,
-        'API_SECRET': CLOUDINARY_API_SECRET,
-    }
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    MEDIA_URL = '/media/'  # Cloudinary will handle the actual URLs
-else:
-    # Use local filesystem for media storage (local development)
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
+# In production (Railway), media files are stored in a mounted volume at /app/media
+# In local development, media files are stored in the local media/ directory
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # CKEditor settings
 CKEDITOR_CONFIGS = {
