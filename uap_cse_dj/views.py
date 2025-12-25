@@ -12,6 +12,7 @@ import os
 import hashlib
 import logging
 import requests
+import secrets
 from django.contrib import messages
 from django.core.mail import send_mail, get_connection
 from django.utils.crypto import get_random_string
@@ -401,6 +402,203 @@ def signup(request):
             return render(request, 'signup.html')
     
     return render(request, 'signup.html')
+
+
+def google_login(request):
+    """
+    Initiate Google OAuth login flow.
+    Redirects user to Google OAuth consent screen.
+    """
+    from django.conf import settings
+    import secrets
+    
+    # Generate state token for CSRF protection
+    state = secrets.token_urlsafe(32)
+    request.session['oauth_state'] = state
+    request.session['oauth_next'] = request.GET.get('next', 'people:user_profile')
+    
+    # Google OAuth configuration
+    client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
+    redirect_uri = request.build_absolute_uri(reverse('google_callback'))
+    
+    if not client_id:
+        messages.error(request, 'Google OAuth is not configured. Please contact the administrator.')
+        return redirect('login')
+    
+    # Build Google OAuth URL (using modern Google Identity Services approach)
+    # No Google+ API needed - using standard OAuth 2.0 with openid, email, profile scopes
+    google_auth_url = (
+        'https://accounts.google.com/o/oauth2/v2/auth?'
+        f'client_id={client_id}&'
+        f'redirect_uri={redirect_uri}&'
+        'response_type=code&'
+        'scope=openid email profile&'  # Modern scopes - no Google+ API needed
+        f'state={state}&'
+        'access_type=offline&'
+        'prompt=consent'
+    )
+    
+    return redirect(google_auth_url)
+
+
+def google_callback(request):
+    """
+    Handle Google OAuth callback.
+    Creates or logs in user based on Google account.
+    """
+    from django.conf import settings
+    import requests
+    
+    # Verify state token
+    state = request.GET.get('state')
+    if not state or state != request.session.get('oauth_state'):
+        messages.error(request, 'Invalid OAuth state. Please try again.')
+        return redirect('login')
+    
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, 'Authorization failed. Please try again.')
+        return redirect('login')
+    
+    # Exchange code for tokens
+    client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
+    client_secret = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', '')
+    redirect_uri = request.build_absolute_uri(reverse('google_callback'))
+    
+    if not client_id or not client_secret:
+        messages.error(request, 'Google OAuth is not configured. Please contact the administrator.')
+        return redirect('login')
+    
+    # Exchange authorization code for access token
+    token_url = 'https://oauth2.googleapis.com/token'
+    token_data = {
+        'code': code,
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'redirect_uri': redirect_uri,
+        'grant_type': 'authorization_code',
+    }
+    
+    try:
+        token_response = requests.post(token_url, data=token_data, timeout=10)
+        token_response.raise_for_status()
+        tokens = token_response.json()
+        access_token = tokens.get('access_token')
+        
+        if not access_token:
+            messages.error(request, 'Failed to obtain access token from Google.')
+            return redirect('login')
+        
+        # Get user info from Google (using modern OAuth 2.0 userinfo endpoint)
+        # This works without Google+ API - uses standard OAuth 2.0 userinfo endpoint
+        user_info_url = 'https://www.googleapis.com/oauth2/v2/userinfo'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        user_info_response = requests.get(user_info_url, headers=headers, timeout=10)
+        user_info_response.raise_for_status()
+        user_info = user_info_response.json()
+        
+        email = user_info.get('email', '').lower()
+        if not email:
+            messages.error(request, 'Could not retrieve email from Google account.')
+            return redirect('login')
+        
+        # Check if email is in AllowedEmail list
+        from people.models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember
+        
+        try:
+            allowed_email = AllowedEmail.objects.get(email=email, is_active=True)
+        except AllowedEmail.DoesNotExist:
+            messages.error(
+                request, 
+                f'Your email ({email}) is not authorized to access this system. '
+                'Please contact the administrator to get access.'
+            )
+            return redirect('login')
+        
+        # Check if user already exists
+        try:
+            user = BaseUser.objects.get(email=email)
+        except BaseUser.DoesNotExist:
+            # Create new user
+            full_name = user_info.get('name', '')
+            first_name = full_name.split()[0] if full_name.split() else ''
+            last_name = ' '.join(full_name.split()[1:]) if len(full_name.split()) > 1 else ''
+            
+            with transaction.atomic():
+                user = BaseUser.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=secrets.token_urlsafe(32),  # Random password (won't be used)
+                    allowed_email=allowed_email,
+                    user_type=allowed_email.user_type,
+                    is_power_user=allowed_email.is_power_user,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                # Mark password as unusable since user will login via OAuth
+                user.set_unusable_password()
+                user.save()
+                
+                # Create appropriate profile based on user_type
+                if allowed_email.user_type == 'faculty':
+                    name_parts = full_name.split()
+                    if len(name_parts) >= 2:
+                        shortname = ''.join([n[0].upper() for n in name_parts[:2]])
+                    else:
+                        shortname = full_name[:2].upper() if len(full_name) >= 2 else 'N/A'
+                    
+                    Faculty.objects.create(
+                        base_user=user,
+                        name=full_name or email,
+                        shortname=shortname,
+                    )
+                elif allowed_email.user_type == 'staff':
+                    Staff.objects.create(
+                        base_user=user,
+                        name=full_name or email,
+                        designation='Lab Assistant',
+                    )
+                elif allowed_email.user_type == 'officer':
+                    Officer.objects.create(
+                        base_user=user,
+                        name=full_name or email,
+                    )
+                elif allowed_email.user_type == 'club_member':
+                    ClubMember.objects.create(
+                        base_user=user,
+                        name=full_name or email,
+                    )
+        
+        # Check if user is blocked
+        if user.allowed_email and user.allowed_email.is_blocked:
+            messages.error(request, 'Your account has been blocked. Please contact the administrator.')
+            return redirect('login')
+        
+        # Check if user account is active
+        if not user.is_active:
+            messages.error(request, 'Your account is inactive. Please contact the administrator.')
+            return redirect('login')
+        
+        # Login the user
+        auth_login(request, user)
+        
+        # Clear OAuth state
+        if 'oauth_state' in request.session:
+            del request.session['oauth_state']
+        
+        next_url = request.session.get('oauth_next', 'people:user_profile')
+        if 'oauth_next' in request.session:
+            del request.session['oauth_next']
+        
+        messages.success(request, f'Welcome, {user.get_full_name() or user.email}!')
+        return redirect(next_url)
+        
+    except requests.RequestException as e:
+        messages.error(request, f'Error communicating with Google: {str(e)}')
+        return redirect('login')
+    except Exception as e:
+        messages.error(request, f'An error occurred during Google authentication: {str(e)}')
+        return redirect('login')
 
 
 def logout(request):
