@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 import io
 import os
+import hashlib
 
 
 class Permission(models.Model):
@@ -908,26 +909,33 @@ class PasswordResetToken(models.Model):
     
     def __str__(self):
         return f'Token for {self.user.email} - {"Used" if self.used else "Active"}'
-    
+
     def is_valid(self):
         """Check if token is valid (not used and not expired)"""
-        return not self.used and timezone.now() < self.expires_at
-    
+        return (
+                not self.used and
+                timezone.now() <= self.expires_at
+        )
+
     @classmethod
     def generate_token(cls, user, hours=24):
         """Generate a new password reset token for a user"""
-        # Delete old unused tokens for this user
-        cls.objects.filter(user=user, used=False).delete()
-        
-        # Generate new token
-        token = get_random_string(64)
+        # Mark old tokens as used (DO NOT delete)
+        cls.objects.filter(user=user, used=False).update(used=True)
+
+        # Generate raw token and hash it
+        raw_token = get_random_string(48)
+        hashed_token = hashlib.sha256(raw_token.encode()).hexdigest()
         expires_at = timezone.now() + timezone.timedelta(hours=hours)
-        
-        return cls.objects.create(
+
+        cls.objects.create(
             user=user,
-            token=token,
+            token=hashed_token,
             expires_at=expires_at
         )
+
+        # Return the raw token for sending via email
+        return raw_token
 
 
 class Contributor(models.Model):

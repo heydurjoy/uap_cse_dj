@@ -1,14 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
-from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
-from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
-import os
 from designs.models import FeatureCard, HeroTags
 from people.models import AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, PasswordResetToken, Contributor
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+import os
+import hashlib
+import logging
+import requests
+from django.contrib import messages
+from django.core.mail import send_mail, get_connection
+from django.utils.crypto import get_random_string
+from django.contrib.auth import update_session_auth_hash
 
 
 def home(request):
@@ -297,204 +304,156 @@ def logout(request):
     messages.success(request, 'You have been logged out successfully.')
     return redirect('home')
 
+logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 def forgot_password(request):
-    """Handle forgot password request"""
+    """Handle forgot password request with Brevo API and SMTP fallback"""
+    GENERIC_MESSAGE = (
+        "If an account exists for this email, a password reset link has been sent."
+    )
+
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
-        
         if not email:
             messages.error(request, 'Please enter your email address.')
             return render(request, 'forgot_password.html')
-        
-        # First check if email is in AllowedEmail list
+
+        # AllowedEmail check (silent)
         try:
             allowed_email = AllowedEmail.objects.get(email=email)
-            
-            # Check if email is blocked
-            if allowed_email.is_blocked:
-                messages.error(request, 'This email has been blocked. Please contact the administrator.')
+            if allowed_email.is_blocked or not allowed_email.is_active:
+                messages.success(request, GENERIC_MESSAGE)
                 return render(request, 'forgot_password.html')
-            
-            # Check if email is active for signup (should be active to reset password)
-            if not allowed_email.is_active:
-                messages.error(request, 'This email is not currently active. Please contact the administrator.')
-                return render(request, 'forgot_password.html')
-            
         except AllowedEmail.DoesNotExist:
-            # Email is not in the allowed list
-            messages.error(request, 'This email is not authorized. Only faculty, staff, officers, and club members can reset their passwords.')
+            messages.success(request, GENERIC_MESSAGE)
             return render(request, 'forgot_password.html')
-        
-        # Now check if user account exists
+
+        # User check (silent)
         try:
-            user = BaseUser.objects.get(email=email)
-            
-            # Check if user is active
-            if not user.is_active:
-                messages.error(request, 'Your account is inactive. Please contact the administrator.')
-                return render(request, 'forgot_password.html')
-            
-            # Generate reset token
-            reset_token = PasswordResetToken.generate_token(user, hours=24)
-            
-            # Create reset URL - ensure HTTPS in production
-            reset_path = reverse('reset_password', kwargs={'token': reset_token.token})
-            # Check if request is secure (handles Railway proxy)
-            is_secure = (
-                request.is_secure() or 
-                request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or
-                not settings.DEBUG  # Assume HTTPS in production
-            )
-            if is_secure:
-                # Use HTTPS
-                reset_url = f"https://{request.get_host()}{reset_path}"
-            else:
-                # Use HTTP for development
-                reset_url = request.build_absolute_uri(reset_path)
-            
-            # Send email
+            user = BaseUser.objects.get(email=email, is_active=True)
+        except BaseUser.DoesNotExist:
+            messages.success(request, GENERIC_MESSAGE)
+            return render(request, 'forgot_password.html')
+
+        # Generate hashed token
+        raw_token = PasswordResetToken.generate_token(user)
+        DOMAIN = os.getenv('FRONTEND_DOMAIN', f"http://{request.get_host()}")
+        reset_path = reverse('reset_password', kwargs={'token': raw_token})
+        reset_url = f"{DOMAIN}{reset_path}"
+
+        BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
+        EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@uap-cse.edu')
+
+        # Send email via Brevo API
+        if BREVO_API_KEY:
             try:
-                # Try Brevo API first (more reliable than SMTP for cloud platforms)
-                BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
-                if BREVO_API_KEY:
-                    import requests
-                    brevo_url = 'https://api.brevo.com/v3/smtp/email'
-                    headers = {
-                        'accept': 'application/json',
-                        'api-key': BREVO_API_KEY,
-                        'content-type': 'application/json'
-                    }
-                    payload = {
-                        'sender': {
-                            'name': 'CSE UAP',
-                            'email': settings.DEFAULT_FROM_EMAIL
-                        },
-                        'to': [{'email': user.email}],
-                        'subject': 'Password Reset Request - CSE UAP',
-                        'htmlContent': f'''<p>Hello {user.get_full_name() or user.email},</p>
-                        <p>You requested to reset your password for your CSE UAP account.</p>
-                        <p>Click the following link to reset your password:</p>
+                brevo_url = 'https://api.brevo.com/v3/smtp/email'
+                headers = {
+                    'accept': 'application/json',
+                    'api-key': BREVO_API_KEY,
+                    'content-type': 'application/json'
+                }
+                payload = {
+                    'sender': {'name': 'CSE UAP', 'email': EMAIL_FROM},
+                    'to': [{'email': user.email}],
+                    'subject': 'Password Reset Request - CSE UAP',
+                    'htmlContent': f'''
+                        <p>Hello {user.get_full_name() or user.email},</p>
+                        <p>Click the link below to reset your password:</p>
                         <p><a href="{reset_url}">{reset_url}</a></p>
-                        <p>This link will expire in 24 hours.</p>
-                        <p>If you did not request this password reset, please ignore this email.</p>
-                        <p>Best regards,<br>CSE UAP Team</p>''',
-                        'textContent': f'''Hello {user.get_full_name() or user.email},
+                        <p>This link expires in 24 hours.</p>
+                        <p>If you didn’t request this, ignore this email.</p>
+                    ''',
+                    'textContent': f'''
+Hello {user.get_full_name() or user.email},
 
-You requested to reset your password for your CSE UAP account.
-
-Click the following link to reset your password:
+Reset your password using the link below:
 {reset_url}
 
-This link will expire in 24 hours.
-
-If you did not request this password reset, please ignore this email.
-
-Best regards,
-CSE UAP Team'''
-                    }
-                    response = requests.post(brevo_url, json=payload, headers=headers, timeout=10)
-                    if response.status_code == 201:
-                        messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
-                    else:
-                        raise Exception(f'Brevo API error: {response.status_code} - {response.text}')
-                else:
-                    # Fallback to SMTP
-                    from django.core.mail import get_connection
+This link expires in 24 hours.
+                    '''
+                }
+                response = requests.post(brevo_url, json=payload, headers=headers, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Password reset email sent to {user.email} via Brevo API")
+            except Exception as e:
+                logger.exception(f"Failed to send via Brevo API: {str(e)}")
+                # Fallback to SMTP
+                try:
                     connection = get_connection(
-                        backend=settings.EMAIL_BACKEND,
-                        host=settings.EMAIL_HOST,
-                        port=settings.EMAIL_PORT,
-                        username=settings.EMAIL_HOST_USER,
-                        password=settings.EMAIL_HOST_PASSWORD,
-                        use_tls=settings.EMAIL_USE_TLS,
-                        use_ssl=getattr(settings, 'EMAIL_USE_SSL', False),
-                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
+                        host=os.getenv('EMAIL_HOST'),
+                        port=int(os.getenv('EMAIL_PORT', 587)),
+                        username=os.getenv('EMAIL_HOST_USER'),
+                        password=os.getenv('EMAIL_HOST_PASSWORD'),
+                        use_tls=True,
+                        fail_silently=False
                     )
-                    
                     send_mail(
                         subject='Password Reset Request - CSE UAP',
-                        message=f'''Hello {user.get_full_name() or user.email},
-
-You requested to reset your password for your CSE UAP account.
-
-Click the following link to reset your password:
-{reset_url}
-
-This link will expire in 24 hours.
-
-If you did not request this password reset, please ignore this email.
-
-Best regards,
-CSE UAP Team''',
-                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        message=f"Reset your password: {reset_url}\nThis link expires in 24 hours.",
+                        from_email=EMAIL_FROM,
                         recipient_list=[user.email],
-                        connection=connection,
-                        fail_silently=False,
+                        connection=connection
                     )
-                    messages.success(request, 'Password reset link has been sent to your email address. Please check your inbox.')
-            except Exception as e:
-                # If email sending fails, show error message
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f'Failed to send password reset email to {user.email}: {str(e)}', exc_info=True)
-                messages.error(request, f'Failed to send password reset email. Error: {str(e)}. Please try again later or contact the administrator.')
-            
-            return render(request, 'forgot_password.html')
-            
-        except BaseUser.DoesNotExist:
-            # Email is allowed but user account doesn't exist yet
-            messages.info(request, 'This email is authorized but no account exists yet. Please sign up first.')
-            return render(request, 'forgot_password.html')
-    
+                    logger.info(f"Password reset email sent to {user.email} via SMTP fallback")
+                except Exception as smtp_err:
+                    logger.exception(f"SMTP fallback also failed: {smtp_err}")
+        else:
+            logger.warning("BREVO_API_KEY not set, skipping email sending")
+
+        messages.success(request, GENERIC_MESSAGE)
+        return render(request, 'forgot_password.html')
+
     return render(request, 'forgot_password.html')
 
 
+@transaction.atomic
 def reset_password(request, token):
-    """Handle password reset with token"""
-    # Get the token
+    """Reset password view that uses hashed tokens"""
+    hashed_token = hashlib.sha256(token.encode()).hexdigest()
     try:
-        reset_token = PasswordResetToken.objects.get(token=token)
+        reset_token = PasswordResetToken.objects.select_for_update().get(token=hashed_token)
     except PasswordResetToken.DoesNotExist:
         messages.error(request, 'Invalid or expired password reset link.')
         return redirect('forgot_password')
-    
-    # Check if token is valid
+
     if not reset_token.is_valid():
         messages.error(request, 'This password reset link has expired or has already been used.')
         return redirect('forgot_password')
-    
+
     if request.method == 'POST':
         password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirmPassword', '')
-        
-        # Validation
+
         if not password:
             messages.error(request, 'Please enter a new password.')
             return render(request, 'reset_password.html', {'token': token})
-        
-        if len(password) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
-            return render(request, 'reset_password.html', {'token': token})
-        
+
         if password != confirm_password:
             messages.error(request, 'Passwords do not match.')
             return render(request, 'reset_password.html', {'token': token})
-        
+
+        try:
+            validate_password(password, reset_token.user)
+        except ValidationError as e:
+            messages.error(request, e.messages[0])
+            return render(request, 'reset_password.html', {'token': token})
+
         # Update password
         user = reset_token.user
         user.set_password(password)
         user.save()
-        
+
         # Mark token as used
         reset_token.used = True
         reset_token.save()
-        
-        messages.success(request, 'Your password has been reset successfully. You can now log in with your new password.')
-        return redirect('login')
-    
-    return render(request, 'reset_password.html', {'token': token})
 
+        update_session_auth_hash(request, user)
+        messages.success(request, 'Your password has been reset successfully. You can now log in.')
+        return redirect('login')
+
+    return render(request, 'reset_password.html', {'token': token})
 
 def system_documentation(request):
     """Display comprehensive system documentation"""
