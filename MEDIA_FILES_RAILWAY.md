@@ -126,3 +126,4 @@ After uploading media files, check:
 - The `collectstatic` command in `railway.toml` collects static files during build
 - Media files require manual handling or cloud storage
 
+

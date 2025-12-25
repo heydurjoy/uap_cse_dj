@@ -338,12 +338,32 @@ def forgot_password(request):
 
         # Generate hashed token
         raw_token = PasswordResetToken.generate_token(user)
-        DOMAIN = os.getenv('FRONTEND_DOMAIN', f"http://{request.get_host()}")
+        
+        # Get domain - prefer FRONTEND_DOMAIN env var, fallback to request
+        FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
+        if FRONTEND_DOMAIN_ENV:
+            DOMAIN = FRONTEND_DOMAIN_ENV
+        else:
+            # Fallback: use request host with appropriate protocol
+            protocol = 'https' if request.is_secure() else 'http'
+            DOMAIN = f"{protocol}://{request.get_host()}"
+        
         reset_path = reverse('reset_password', kwargs={'token': raw_token})
         reset_url = f"{DOMAIN}{reset_path}"
+        
+        # Log domain configuration for debugging
+        logger.info(f"FRONTEND_DOMAIN env var: {'SET' if FRONTEND_DOMAIN_ENV else 'NOT SET'}")
+        if FRONTEND_DOMAIN_ENV:
+            logger.info(f"Using FRONTEND_DOMAIN: {FRONTEND_DOMAIN_ENV}")
+        else:
+            logger.warning(f"FRONTEND_DOMAIN not set, using fallback: {DOMAIN}")
 
         BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
         EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@uap-cse.edu')
+        
+        # Track if email was sent successfully
+        email_sent = False
+        email_error = None
 
         # Send email via Brevo API
         if BREVO_API_KEY:
@@ -363,7 +383,7 @@ def forgot_password(request):
                         <p>Click the link below to reset your password:</p>
                         <p><a href="{reset_url}">{reset_url}</a></p>
                         <p>This link expires in 24 hours.</p>
-                        <p>If you didn’t request this, ignore this email.</p>
+                        <p>If you didn't request this, ignore this email.</p>
                     ''',
                     'textContent': f'''
 Hello {user.get_full_name() or user.email},
@@ -374,18 +394,75 @@ Reset your password using the link below:
 This link expires in 24 hours.
                     '''
                 }
+                logger.info(f"Attempting to send password reset email to {user.email} via Brevo API")
+                logger.info(f"Reset URL: {reset_url}")
+                logger.info(f"EMAIL_FROM: {EMAIL_FROM}")
                 response = requests.post(brevo_url, json=payload, headers=headers, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Password reset email sent to {user.email} via Brevo API")
-            except Exception as e:
-                logger.exception(f"Failed to send via Brevo API: {str(e)}")
+                email_sent = True
+                logger.info(f"✅ Password reset email sent successfully to {user.email} via Brevo API")
+            except requests.exceptions.RequestException as e:
+                email_error = f"Brevo API error: {str(e)}"
+                if hasattr(e, 'response') and e.response is not None:
+                    try:
+                        error_detail = e.response.json()
+                        email_error = f"Brevo API error: {error_detail}"
+                        logger.error(f"Brevo API response: {error_detail}")
+                    except:
+                        email_error = f"Brevo API error: {e.response.status_code} - {e.response.text}"
+                logger.exception(f"❌ Failed to send via Brevo API: {email_error}")
                 # Fallback to SMTP
                 try:
+                    EMAIL_HOST = os.getenv('EMAIL_HOST')
+                    EMAIL_PORT = os.getenv('EMAIL_PORT', '587')
+                    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+                    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+                    
+                    if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+                        logger.info(f"Attempting SMTP fallback for {user.email}")
+                        connection = get_connection(
+                            host=EMAIL_HOST,
+                            port=int(EMAIL_PORT),
+                            username=EMAIL_HOST_USER,
+                            password=EMAIL_HOST_PASSWORD,
+                            use_tls=True,
+                            fail_silently=False
+                        )
+                        send_mail(
+                            subject='Password Reset Request - CSE UAP',
+                            message=f"Reset your password: {reset_url}\nThis link expires in 24 hours.",
+                            from_email=EMAIL_FROM,
+                            recipient_list=[user.email],
+                            connection=connection
+                        )
+                        email_sent = True
+                        logger.info(f"✅ Password reset email sent successfully to {user.email} via SMTP fallback")
+                    else:
+                        logger.warning("SMTP credentials not configured, cannot use SMTP fallback")
+                        email_error = "SMTP credentials not configured"
+                except Exception as smtp_err:
+                    email_error = f"SMTP fallback failed: {str(smtp_err)}"
+                    logger.exception(f"❌ SMTP fallback also failed: {email_error}")
+            except Exception as e:
+                email_error = f"Unexpected error: {str(e)}"
+                logger.exception(f"❌ Unexpected error sending email: {email_error}")
+        else:
+            logger.warning("⚠️ BREVO_API_KEY not set, attempting SMTP fallback")
+            # Try SMTP if BREVO_API_KEY is not set
+            try:
+                EMAIL_HOST = os.getenv('EMAIL_HOST')
+                EMAIL_PORT = os.getenv('EMAIL_PORT', '587')
+                EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+                EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+                
+                if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+                    logger.info(f"Attempting to send password reset email to {user.email} via SMTP")
+                    logger.info(f"Reset URL: {reset_url}")
                     connection = get_connection(
-                        host=os.getenv('EMAIL_HOST'),
-                        port=int(os.getenv('EMAIL_PORT', 587)),
-                        username=os.getenv('EMAIL_HOST_USER'),
-                        password=os.getenv('EMAIL_HOST_PASSWORD'),
+                        host=EMAIL_HOST,
+                        port=int(EMAIL_PORT),
+                        username=EMAIL_HOST_USER,
+                        password=EMAIL_HOST_PASSWORD,
                         use_tls=True,
                         fail_silently=False
                     )
@@ -396,13 +473,30 @@ This link expires in 24 hours.
                         recipient_list=[user.email],
                         connection=connection
                     )
-                    logger.info(f"Password reset email sent to {user.email} via SMTP fallback")
-                except Exception as smtp_err:
-                    logger.exception(f"SMTP fallback also failed: {smtp_err}")
-        else:
-            logger.warning("BREVO_API_KEY not set, skipping email sending")
+                    email_sent = True
+                    logger.info(f"✅ Password reset email sent successfully to {user.email} via SMTP")
+                else:
+                    email_error = "Email configuration missing: BREVO_API_KEY not set and SMTP credentials incomplete"
+                    logger.error(f"❌ {email_error}")
+                    logger.error(f"EMAIL_HOST: {'SET' if EMAIL_HOST else 'NOT SET'}")
+                    logger.error(f"EMAIL_HOST_USER: {'SET' if EMAIL_HOST_USER else 'NOT SET'}")
+                    logger.error(f"EMAIL_HOST_PASSWORD: {'SET' if EMAIL_HOST_PASSWORD else 'NOT SET'}")
+            except Exception as smtp_err:
+                email_error = f"SMTP error: {str(smtp_err)}"
+                logger.exception(f"❌ SMTP failed: {email_error}")
 
-        messages.success(request, GENERIC_MESSAGE)
+        # Show appropriate message based on email sending result
+        if email_sent:
+            messages.success(request, GENERIC_MESSAGE)
+        else:
+            # In production, still show generic message for security
+            # But log the actual error for debugging
+            if settings.DEBUG:
+                messages.error(request, f'Failed to send email. Error: {email_error}')
+            else:
+                messages.success(request, GENERIC_MESSAGE)
+                logger.error(f"Email sending failed but showing generic message. Error: {email_error}")
+        
         return render(request, 'forgot_password.html')
 
     return render(request, 'forgot_password.html')
