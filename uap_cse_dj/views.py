@@ -342,7 +342,8 @@ def forgot_password(request):
         # Get domain - prefer FRONTEND_DOMAIN env var, fallback to request
         FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
         if FRONTEND_DOMAIN_ENV:
-            DOMAIN = FRONTEND_DOMAIN_ENV
+            # Strip trailing slash to avoid double slashes
+            DOMAIN = FRONTEND_DOMAIN_ENV.rstrip('/')
         else:
             # Fallback: use request host with appropriate protocol
             protocol = 'https' if request.is_secure() else 'http'
