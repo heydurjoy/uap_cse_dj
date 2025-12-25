@@ -17,7 +17,15 @@ from django.core.mail import send_mail, get_connection
 from django.utils.crypto import get_random_string
 from django.contrib.auth import update_session_auth_hash
 from django.db.models import Q
-from .search_utils import generate_summary
+try:
+    from .search_utils import generate_summary
+except ImportError:
+    # Fallback if search_utils doesn't exist
+    def generate_summary(results, query):
+        if not results or not any(results.values()):
+            return f"I couldn't find any results matching '{query}'. Please try different keywords."
+        total = sum(len(v) for v in results.values() if v)
+        return f"I found {total} result(s) for '{query}'."
 
 
 def home(request):
