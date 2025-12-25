@@ -63,6 +63,33 @@
     </div>
 </section>
 
+<!-- Marks Distribution Network Banner -->
+<section class="marks-network-banner-wrapper">
+    <div class="container marks-network-container">
+        <div class="marks-network-banner" onclick="scrollToMarksDistribution()">
+            <div class="marks-network-bg-animation"></div>
+            <div class="marks-network-content">
+                <div class="marks-network-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                </div>
+                <div class="marks-network-text">
+                    <p class="marks-network-tagline">First University in Bangladesh: Publicly Available Network Showing Detailed Calculation of Every Mark Across Your 4-Year Journey</p>
+                </div>
+                <div class="marks-network-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- UAP Now Section -->
 <section class="uapnow-section">
     <div class="container uapnow-container">
@@ -262,6 +289,102 @@
         </div>
     </div>
 </section>
+
+<!-- Research and Publications Section -->
+{% if research_stats and top_researchers %}
+<section class="research-home-section">
+    <div class="container research-home-container">
+        <div class="research-home-header">
+            <p class="eyebrow">Research & Publications</p>
+            <h2>Departmental Research</h2>
+            <p class="subtitle">Our faculty's research contributions and publications.</p>
+            <a href="{% url 'people:departmental_research' %}" class="view-all-link">View Full Research Page →</a>
+        </div>
+        
+        <!-- Stats Row -->
+        <div class="research-stats-row">
+            <div class="research-stat-item">
+                <div class="research-stat-value" data-target="{{ research_stats.total_pubs }}" data-is-decimal="false">0</div>
+                <div class="research-stat-label">Total Publications</div>
+            </div>
+            <div class="research-stat-item">
+                <div class="research-stat-value" data-target="{{ research_stats.total_citations|floatformat:0 }}" data-is-decimal="false">0</div>
+                <div class="research-stat-label">Total Citations</div>
+            </div>
+            <div class="research-stat-item">
+                <div class="research-stat-value" data-target="{{ research_stats.avg_pubs_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
+                <div class="research-stat-label">Avg. per Faculty</div>
+            </div>
+            <div class="research-stat-item">
+                <div class="research-stat-value" data-target="{{ research_stats.num_faculty }}" data-is-decimal="false">0</div>
+                <div class="research-stat-label">Faculty Members</div>
+            </div>
+        </div>
+        
+        <!-- Top Researchers by Designation -->
+        <div class="top-researchers-home">
+            <div class="top-researchers-header">
+                <h3 class="top-researchers-title">Top Researchers by Designation</h3>
+                <button class="info-btn-home" id="top-researchers-info-btn" title="How are top researchers selected?">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="top-researchers-grid-home">
+                {% for designation in top_researchers.keys %}
+                    {% with researcher=top_researchers|get_item:designation %}
+                    <a href="{% url 'people:faculty_detail' researcher.faculty.pk %}" class="top-researcher-card-home">
+                        <div class="researcher-card-home-image">
+                            <img src="{% if researcher.faculty.profile_pic %}/media/{{ researcher.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ researcher.faculty.name }}">
+                            <div class="researcher-card-home-overlay">
+                                <div class="researcher-card-home-info">
+                                    <h3 class="researcher-name-home">{{ researcher.faculty.name }}</h3>
+                                    <div class="researcher-citation-home">Cited by: {{ researcher.citations|floatformat:0 }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="researcher-designation-home">{{ designation }}</div>
+                    </a>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info Modal for Top Researchers -->
+    <div class="info-modal-home" id="top-researchers-info-modal">
+        <div class="info-modal-content-home">
+            <div class="info-modal-header-home">
+                <h3>How Top Researchers are Selected</h3>
+                <button class="info-modal-close-home" id="close-top-researchers-info-modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="info-modal-body-home">
+                <p>The top researchers are selected based on their research scores, calculated from their publications:</p>
+                <ul>
+                    <li><strong>Q1 publications:</strong> 10 points each</li>
+                    <li><strong>Q2 publications:</strong> 7 points each</li>
+                    <li><strong>Q3 publications:</strong> 5 points each</li>
+                    <li><strong>Q4 publications:</strong> 3 points each</li>
+                    <li><strong>A1 publications:</strong> 8 points each</li>
+                    <li><strong>A2 publications:</strong> 6 points each</li>
+                    <li><strong>A3 publications:</strong> 4 points each</li>
+                    <li><strong>A4 publications:</strong> 2 points each</li>
+                    <li><strong>Not Indexed:</strong> 1 point each</li>
+                </ul>
+                <p>For each designation (Professor, Associate Professor, Assistant Professor, Lecturer), the faculty member with the highest research score is featured. In case of a tie, the researcher with publications spanning fewer years (more concentrated research) is selected.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Head Message Section -->
 <section class="hod-section">
@@ -586,7 +709,7 @@
 
 <!-- PO, Blooms, K, P, A Calculation Tables Section -->
 {% if lifetime_stats %}
-<section class="po-stats-section" style="padding: 4rem 0; background: var(--bg-secondary);">
+<section class="po-stats-section" id="marks-distribution-section" style="padding: 4rem 0; background: var(--bg-secondary);">
     <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
         <div class="po-stats-header" style="text-align: center; margin-bottom: 3rem;">
             <p class="eyebrow" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 0.5rem 0;">Program Outcomes</p>
@@ -932,6 +1055,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <style>
+/* Prevent horizontal scrolling */
+html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+}
+
 .mvpeo-section {
     padding: 3rem 0 2rem;
     background: linear-gradient(180deg,
@@ -1558,6 +1688,349 @@ document.addEventListener("DOMContentLoaded", () => {
     
     .hod-modal-text {
         font-size: 1rem;
+    }
+}
+
+/* Marks Distribution Network Banner */
+.marks-network-banner-wrapper {
+    padding: 2.5rem 0 3rem 0;
+    position: relative;
+    margin-top: 1rem;
+}
+
+.marks-network-container {
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.marks-network-banner {
+    position: relative;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)) 50%,
+        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 100%);
+    border-radius: 999px;
+    padding: 1.15rem 1.75rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 
+                0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset,
+                0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 
+                    0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset,
+                    0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    }
+    50% {
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12), 
+                    0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent) inset,
+                    0 0 40px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    }
+}
+
+.marks-network-banner:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 
+                0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent) inset,
+                0 0 60px color-mix(in srgb, var(--color-primary) 35%, transparent),
+                0 0 100px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+    animation: none;
+}
+
+.marks-network-bg-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--color-primary) 25%, transparent) 20%,
+        color-mix(in srgb, var(--color-primary) 40%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary) 25%, transparent) 80%,
+        transparent 100%
+    );
+    background-size: 300% 100%;
+    animation: shimmer 2.5s ease-in-out infinite;
+    opacity: 0.7;
+    border-radius: 999px;
+}
+
+.marks-network-bg-animation::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        circle at 30% 50%,
+        color-mix(in srgb, var(--color-primary) 30%, transparent) 0%,
+        transparent 50%
+    );
+    animation: sparkle 4s ease-in-out infinite;
+    border-radius: 999px;
+}
+
+.marks-network-bg-animation::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        circle at 70% 50%,
+        color-mix(in srgb, var(--color-primary) 25%, transparent) 0%,
+        transparent 50%
+    );
+    animation: sparkle 4s ease-in-out infinite 2s;
+    border-radius: 999px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -300% 0;
+    }
+    100% {
+        background-position: 300% 0;
+    }
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
+}
+
+.marks-network-banner:hover .marks-network-bg-animation {
+    animation: shimmer 1s ease-in-out infinite;
+    opacity: 0.9;
+}
+
+.marks-network-banner:hover .marks-network-bg-animation::before,
+.marks-network-banner:hover .marks-network-bg-animation::after {
+    animation: sparkle 1.5s ease-in-out infinite;
+    opacity: 0.8;
+}
+
+.marks-network-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.marks-network-icon {
+    color: var(--color-primary);
+    flex-shrink: 0;
+    animation: pulse-glow 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent));
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent));
+    }
+    25% {
+        transform: scale(1.1) rotate(-5deg);
+        filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
+    }
+    50% {
+        transform: scale(1.15) rotate(0deg);
+        filter: drop-shadow(0 0 20px color-mix(in srgb, var(--color-primary) 80%, transparent));
+    }
+    75% {
+        transform: scale(1.1) rotate(5deg);
+        filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
+    }
+}
+
+.marks-network-banner:hover .marks-network-icon {
+    animation: pulse-glow 0.8s ease-in-out infinite;
+    transform: scale(1.2) rotate(10deg);
+    filter: drop-shadow(0 0 25px color-mix(in srgb, var(--color-primary) 90%, transparent));
+}
+
+.marks-network-text {
+    flex: 1;
+    text-align: center;
+}
+
+.marks-network-tagline {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+                 0 0 10px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.marks-network-banner:hover .marks-network-tagline {
+    color: var(--text-primary);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+                 0 0 20px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    transform: scale(1.02);
+}
+
+.marks-network-arrow {
+    color: var(--color-primary);
+    flex-shrink: 0;
+    animation: bounce-arrow 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent));
+}
+
+@keyframes bounce-arrow {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-10px) scale(1.1);
+    }
+}
+
+.marks-network-banner:hover .marks-network-arrow {
+    animation: bounce-arrow 0.7s ease-in-out infinite;
+    transform: translateY(-12px) scale(1.2);
+    filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
+}
+
+@media (max-width: 1024px) {
+    .marks-network-container {
+        max-width: 700px;
+        padding: 0 1.25rem;
+    }
+    
+    .marks-network-banner-wrapper {
+        padding: 2rem 0 2.5rem 0;
+        margin-top: 0.75rem;
+    }
+    
+    .marks-network-banner {
+        padding: 1.1rem 1.5rem;
+    }
+    
+    .marks-network-content {
+        gap: 1rem;
+    }
+    
+    .marks-network-tagline {
+        font-size: 0.98rem;
+    }
+    
+    .marks-network-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .marks-network-arrow svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .marks-network-container {
+        max-width: 100%;
+    }
+    
+    .marks-network-banner-wrapper {
+        padding: 1.75rem 0 2.25rem 0;
+        margin-top: 0.5rem;
+    }
+    
+    .marks-network-banner {
+        padding: 1.1rem 1.5rem;
+        border-radius: 50px;
+    }
+    
+    .marks-network-content {
+        flex-direction: row;
+        gap: 0.875rem;
+        flex-wrap: wrap;
+    }
+    
+    .marks-network-text {
+        flex: 1 1 100%;
+        order: 2;
+    }
+    
+    .marks-network-icon {
+        order: 1;
+    }
+    
+    .marks-network-arrow {
+        order: 3;
+    }
+    
+    .marks-network-tagline {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    
+    .marks-network-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .marks-network-arrow svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .marks-network-banner-wrapper {
+        padding: 1.5rem 0 2rem 0;
+        margin-top: 0.5rem;
+    }
+    
+    .marks-network-container {
+        padding: 0 1rem;
+    }
+    
+    .marks-network-banner {
+        padding: 1rem 1.5rem;
+        border-radius: 40px;
+    }
+    
+    .marks-network-content {
+        gap: 0.875rem;
+    }
+    
+    .marks-network-tagline {
+        font-size: 0.95rem;
+    }
+    
+    .marks-network-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .marks-network-arrow svg {
+        width: 16px;
+        height: 16px;
     }
 }
 
@@ -2344,6 +2817,431 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 }
 
+/* Research and Publications Section */
+.research-home-section {
+    padding: 1.75rem 0;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        color-mix(in srgb, var(--color-primary) 5%, transparent) 100%);
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+.research-home-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.research-home-header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.research-home-header h2 {
+    font-size: 1.75rem;
+    margin: 0.25rem 0;
+    color: var(--text-primary);
+}
+
+.research-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 1rem;
+}
+
+.research-stat-item {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.research-stat-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+}
+
+.research-stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.35rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.research-stat-value.animated {
+    animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.research-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.top-researchers-home {
+    margin-top: 0.5rem;
+}
+
+.top-researchers-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.top-researchers-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.info-btn-home {
+    background: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    padding: 0;
+}
+
+.info-btn-home:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+.info-btn-home svg {
+    width: 18px;
+    height: 18px;
+}
+
+.top-researchers-grid-home {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 1rem;
+}
+
+.top-researcher-card-home {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    width: 100%;
+}
+
+.researcher-card-home-image {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 3/4;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+
+.top-researcher-card-home:hover .researcher-card-home-image {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.researcher-card-home-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.top-researcher-card-home:hover .researcher-card-home-image img {
+    transform: scale(1.05);
+}
+
+.researcher-card-home-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1rem 0.75rem 0.75rem 0.75rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.top-researcher-card-home:hover .researcher-card-home-overlay {
+    padding: 1.25rem 1rem 1rem 1rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.researcher-card-home-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.researcher-name-home {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.top-researcher-card-home:hover .researcher-name-home {
+    font-size: 1.1rem;
+}
+
+.researcher-citation-home {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.researcher-designation-home {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: center;
+    margin-top: 0.25rem;
+}
+
+/* Info Modal Styles */
+.info-modal-home {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.info-modal-home.active {
+    display: flex;
+}
+
+.info-modal-content-home {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.info-modal-header-home {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.info-modal-header-home h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.info-modal-close-home {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-modal-close-home:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.info-modal-body-home {
+    padding: 1.5rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.info-modal-body-home p {
+    margin: 0 0 1rem 0;
+}
+
+.info-modal-body-home ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.info-modal-body-home li {
+    margin-bottom: 0.5rem;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 1024px) {
+    .research-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+    
+    .top-researchers-grid-home {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .research-home-section {
+        padding: 2rem 0;
+    }
+    
+    .research-home-header h2 {
+        font-size: 1.75rem;
+    }
+    
+    .research-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .research-stat-value {
+        font-size: 1.75rem;
+    }
+    
+    .top-researchers-title {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .top-researchers-grid-home {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .research-home-section {
+        padding: 1.25rem 0;
+    }
+    
+    .research-home-header h2 {
+        font-size: 1.35rem;
+    }
+    
+    .research-stats-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 0 1rem;
+    }
+    
+    .research-stat-item {
+        padding: 0.875rem 0.5rem;
+    }
+    
+    .top-researchers-header {
+        margin-bottom: 0.875rem;
+    }
+    
+    .top-researchers-title {
+        font-size: 1rem;
+    }
+    
+    .top-researchers-grid-home {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .researcher-card-home-image {
+        max-width: 260px;
+        margin: 0 auto;
+    }
+    
+    .info-modal-content-home {
+        width: 95%;
+    }
+    
+    .info-modal-header-home {
+        padding: 1rem;
+    }
+    
+    .info-modal-header-home h3 {
+        font-size: 1.1rem;
+    }
+    
+    .info-modal-body-home {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+}
+
 @media (max-width: 767px) {
     .hod-card {
         padding: 1.35rem;
@@ -2727,6 +3625,121 @@ document.addEventListener("DOMContentLoaded", () => {
 
 {% block extra_js %}
 <script>
+// Scroll to Marks Distribution Section
+function scrollToMarksDistribution() {
+    const section = document.getElementById('marks-distribution-section');
+    if (section) {
+        const offset = 80; // Account for fixed navbar
+        const elementPosition = section.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// Top Researchers Info Modal
+document.addEventListener('DOMContentLoaded', function() {
+    const infoBtn = document.getElementById('top-researchers-info-btn');
+    const infoModal = document.getElementById('top-researchers-info-modal');
+    const closeModal = document.getElementById('close-top-researchers-info-modal');
+    
+    if (infoBtn && infoModal) {
+        infoBtn.addEventListener('click', function() {
+            infoModal.classList.add('active');
+        });
+    }
+    
+    if (closeModal && infoModal) {
+        closeModal.addEventListener('click', function() {
+            infoModal.classList.remove('active');
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (infoModal) {
+        infoModal.addEventListener('click', function(e) {
+            if (e.target === infoModal) {
+                infoModal.classList.remove('active');
+            }
+        });
+    }
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && infoModal && infoModal.classList.contains('active')) {
+            infoModal.classList.remove('active');
+        }
+    });
+    
+    // Count-up animation for research stats
+    function animateValue(element, start, end, duration, isDecimal, decimalPlaces) {
+        const startTime = performance.now();
+        const isFloat = isDecimal || end.toString().includes('.');
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function for smooth animation
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const current = start + (end - start) * easeOutQuart;
+            
+            if (isFloat) {
+                const places = decimalPlaces || 2;
+                element.textContent = current.toFixed(places);
+            } else {
+                element.textContent = Math.floor(current).toLocaleString();
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                // Ensure final value is exact
+                if (isFloat) {
+                    const places = decimalPlaces || 2;
+                    element.textContent = parseFloat(end).toFixed(places);
+                } else {
+                    element.textContent = parseInt(end).toLocaleString();
+                }
+            }
+        }
+        
+        requestAnimationFrame(update);
+    }
+    
+    // Intersection Observer to trigger animation when section is visible
+    const statsSection = document.querySelector('.research-home-section');
+    if (statsSection) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statValues = entry.target.querySelectorAll('.research-stat-value[data-target]');
+                    statValues.forEach(stat => {
+                        if (!stat.classList.contains('animated')) {
+                            stat.classList.add('animated');
+                            const target = parseFloat(stat.getAttribute('data-target'));
+                            const isDecimal = stat.getAttribute('data-is-decimal') === 'true';
+                            const decimalPlaces = parseInt(stat.getAttribute('data-decimal-places')) || 2;
+                            const duration = 2000; // 2 seconds
+                            
+                            animateValue(stat, 0, target, duration, isDecimal, decimalPlaces);
+                        }
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.3, // Trigger when 30% of the section is visible
+            rootMargin: '0px 0px -50px 0px' // Start animation slightly before it's fully visible
+        });
+        
+        observer.observe(statsSection);
+    }
+});
+
 // Pass hero tags from Django to JavaScript
 const heroTagsData = [
     {% for tag in hero_tags %}

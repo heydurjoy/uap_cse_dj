@@ -177,10 +177,21 @@ def faculty_detail(request, pk):
     # Get publications for this faculty
     publications = faculty.publications.all().order_by('-pub_year', 'title')
     
+    # Calculate publication stats
+    from datetime import datetime
+    current_year = datetime.now().year
+    
+    pub_stats = {
+        'total': publications.count(),
+        'q1': publications.filter(ranking='q1').count(),
+        'current_year': publications.filter(pub_year=current_year).count(),
+    }
+    
     context = {
         'faculty': faculty,
         'service_data': service_data,
         'publications': publications,
+        'pub_stats': pub_stats,
     }
     
     return render(request, 'people/faculty_detail.html', context)
@@ -2217,3 +2228,131 @@ def confirm_single_publication(request, faculty_id):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def departmental_research(request):
+    """
+    Display departmental research page with all publications from current faculty.
+    Shows statistics, faculty-wise scores, and publications table.
+    Excludes faculty on leave and former faculty.
+    """
+    from django.db.models import Count, Sum, Q
+    from datetime import datetime
+    
+    # Get current faculty (not on leave, not former)
+    current_faculty = Faculty.objects.filter(
+        last_office_date__isnull=True,
+        is_on_study_leave=False
+    ).select_related('base_user')
+    
+    # Get time period filter
+    period = request.GET.get('period', 'all_time')
+    current_year = datetime.now().year
+    
+    # Filter publications by time period
+    publications = Publication.objects.filter(faculty__in=current_faculty)
+    
+    if period == 'current_year':
+        publications = publications.filter(pub_year=current_year)
+    elif period == 'last_2_years':
+        publications = publications.filter(pub_year__gte=current_year - 1)
+    
+    publications = publications.select_related('faculty').order_by('-pub_year', 'title')
+    
+    # Scoring system
+    SCORING = {
+        'q1': 10,
+        'q2': 7,
+        'q3': 5,
+        'q4': 3,
+        'a1': 8,
+        'a2': 6,
+        'a3': 4,
+        'a4': 2,
+        'not_indexed': 1,
+    }
+    
+    # Calculate statistics
+    total_pubs = publications.count()
+    
+    # Count by ranking
+    stats_by_ranking = {}
+    for ranking_code, ranking_label in Publication.RANKING_CHOICES:
+        count = publications.filter(ranking=ranking_code).count()
+        stats_by_ranking[ranking_code] = {
+            'label': ranking_label,
+            'count': count,
+            'score': count * SCORING.get(ranking_code, 0)
+        }
+    
+    # Total citations (sum of faculty citations)
+    total_citations = current_faculty.aggregate(
+        total=Sum('citation')
+    )['total'] or 0
+    
+    # Average publications per faculty
+    num_faculty = current_faculty.count()
+    avg_pubs_per_faculty = round(total_pubs / num_faculty, 2) if num_faculty > 0 else 0
+    
+    # Calculate faculty-wise scores
+    faculty_scores = []
+    for faculty in current_faculty:
+        faculty_pubs = publications.filter(faculty=faculty)
+        pub_count = faculty_pubs.count()
+        
+        # Calculate score
+        score = 0
+        pub_years = []
+        for pub in faculty_pubs:
+            score += SCORING.get(pub.ranking, 0)
+            pub_years.append(pub.pub_year)
+        
+        # Calculate publication year span (for tie-breaking)
+        # Smaller span = more concentrated publications = better
+        year_span = 0
+        if pub_years:
+            min_year = min(pub_years)
+            max_year = max(pub_years)
+            year_span = max_year - min_year if max_year != min_year else 0
+        
+        faculty_scores.append({
+            'faculty': faculty,
+            'publication_count': pub_count,
+            'score': score,
+            'citations': faculty.citation or 0,
+            'year_span': year_span,  # For tie-breaking
+        })
+    
+    # Sort faculty by score (highest first), then by year_span (smaller is better)
+    faculty_scores.sort(key=lambda x: (-x['score'], x['year_span']))
+    
+    # Get top researchers by designation (only top 1 per designation)
+    top_by_designation = {}
+    designations = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
+    
+    for designation in designations:
+        designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
+        # Get only the top 1 (best researcher in this designation)
+        if designation_faculty:
+            top_by_designation[designation] = [designation_faculty[0]]
+        else:
+            top_by_designation[designation] = []
+    
+    context = {
+        'publications': publications,
+        'current_faculty': current_faculty,
+        'period': period,
+        'current_year': current_year,
+        'total_pubs': total_pubs,
+        'stats_by_ranking': stats_by_ranking,
+        'total_citations': total_citations,
+        'avg_pubs_per_faculty': avg_pubs_per_faculty,
+        'faculty_scores': faculty_scores,
+        'num_faculty': num_faculty,
+        'ranking_choices': dict(Publication.RANKING_CHOICES),
+        'type_choices': dict(Publication.TYPE_CHOICES),
+        'top_by_designation': top_by_designation,
+        'scoring_system': SCORING,
+    }
+    
+    return render(request, 'people/departmental_research.html', context)

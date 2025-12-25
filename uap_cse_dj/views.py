@@ -123,12 +123,106 @@ def home(request):
         lifetime_stats = None
         program_outcomes = None
 
+    # Get research data for home page
+    research_stats = None
+    top_researchers = None
+    try:
+        from people.models import Faculty, Publication
+        from django.db.models import Sum
+        from datetime import datetime
+        
+        # Get current faculty (not on leave, not former)
+        current_faculty = Faculty.objects.filter(
+            last_office_date__isnull=True,
+            is_on_study_leave=False
+        ).select_related('base_user')
+        
+        # Get all publications from current faculty
+        publications = Publication.objects.filter(faculty__in=current_faculty)
+        
+        # Scoring system
+        SCORING = {
+            'q1': 10, 'q2': 7, 'q3': 5, 'q4': 3,
+            'a1': 8, 'a2': 6, 'a3': 4, 'a4': 2,
+            'not_indexed': 1,
+        }
+        
+        # Calculate statistics
+        total_pubs = publications.count()
+        total_citations = current_faculty.aggregate(total=Sum('citation'))['total'] or 0
+        num_faculty = current_faculty.count()
+        avg_pubs_per_faculty = round(total_pubs / num_faculty, 2) if num_faculty > 0 else 0
+        
+        # Count by ranking
+        stats_by_ranking = {}
+        for ranking_code, ranking_label in Publication.RANKING_CHOICES:
+            count = publications.filter(ranking=ranking_code).count()
+            stats_by_ranking[ranking_code] = {
+                'label': ranking_label,
+                'count': count,
+            }
+        
+        research_stats = {
+            'total_pubs': total_pubs,
+            'total_citations': total_citations,
+            'avg_pubs_per_faculty': avg_pubs_per_faculty,
+            'num_faculty': num_faculty,
+            'stats_by_ranking': stats_by_ranking,
+        }
+        
+        # Calculate faculty-wise scores
+        faculty_scores = []
+        for faculty in current_faculty:
+            faculty_pubs = publications.filter(faculty=faculty)
+            pub_count = faculty_pubs.count()
+            
+            score = 0
+            pub_years = []
+            for pub in faculty_pubs:
+                score += SCORING.get(pub.ranking, 0)
+                pub_years.append(pub.pub_year)
+            
+            # Calculate publication year span (for tie-breaking)
+            year_span = 0
+            if pub_years:
+                min_year = min(pub_years)
+                max_year = max(pub_years)
+                year_span = max_year - min_year if max_year != min_year else 0
+            
+            faculty_scores.append({
+                'faculty': faculty,
+                'publication_count': pub_count,
+                'score': score,
+                'citations': faculty.citation or 0,
+                'year_span': year_span,
+            })
+        
+        # Sort faculty by score (highest first), then by year_span (smaller is better)
+        faculty_scores.sort(key=lambda x: (-x['score'], x['year_span']))
+        
+        # Get top researchers by designation (only top 1 per designation)
+        # Use OrderedDict to maintain order
+        from collections import OrderedDict
+        top_researchers = OrderedDict()
+        designations = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
+        
+        for designation in designations:
+            designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
+            if designation_faculty:
+                top_researchers[designation] = designation_faculty[0]
+    except Exception:
+        # Handle errors gracefully - research data is optional
+        research_stats = None
+        top_researchers = None
+
     return render(request, 'home.html', {
         'feature_cards': feature_cards,
         'hero_tags': hero_tags,
         'hod_card': hod_card,
         'lifetime_stats': lifetime_stats,
         'program_outcomes': program_outcomes,
+        'research_stats': research_stats,
+        'top_researchers': top_researchers,
     })
 
 
