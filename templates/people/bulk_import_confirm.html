@@ -1,0 +1,543 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Bulk Import - {{ faculty.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="bulk-import-confirm-section">
+        <div class="page-header">
+            <a href="{% url 'people:manage_publications' faculty.pk %}" class="back-link">
+                ← Back to Publications
+            </a>
+            <h1>Confirm Publications Import</h1>
+            <p class="subtitle">{{ faculty.name }} - <span id="remaining-count">{{ parsed_publications|length }}</span> publication(s) remaining</p>
+        </div>
+
+        <div class="instructions-box">
+            <p><strong>Review each publication below.</strong> Click ✓ to confirm and add immediately, or ✕ to discard. You can also use the bulk import button at the bottom to import all remaining publications at once.</p>
+        </div>
+
+        <form method="post" class="bulk-import-confirm-form" id="bulk-form">
+            {% csrf_token %}
+            <input type="hidden" name="confirm_import" value="1">
+            
+            <div class="publications-preview" id="publications-container">
+                {% for pub in parsed_publications %}
+                <div class="publication-preview-card {% if pub.is_duplicate %}duplicate-card{% endif %}" data-index="{{ forloop.counter0 }}" data-title="{{ pub.title|escape }}">
+                    <div class="preview-header">
+                        <span class="publication-number">#{{ forloop.counter }}</span>
+                        <div class="card-actions">
+                            <button type="button" class="btn-confirm" data-index="{{ forloop.counter0 }}" title="Confirm and add">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>Confirm</span>
+                            </button>
+                            <button type="button" class="btn-discard" data-index="{{ forloop.counter0 }}" title="Discard">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                                <span>Discard</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if pub.is_duplicate %}
+                    <div class="duplicate-warning">
+                        ⚠️ A publication with this title already exists
+                    </div>
+                    {% endif %}
+                    
+                    <div class="preview-content">
+                        <div class="form-group">
+                            <label>Title *</label>
+                            <input type="text" name="title_{{ forloop.counter0 }}" value="{{ pub.title|default:'' }}" maxlength="500" required class="field-required">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Year *</label>
+                                <input type="number" name="pub_year_{{ forloop.counter0 }}" value="{{ pub.year|default:'' }}" min="1900" max="2100" required class="field-required">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Type *</label>
+                                <select name="type_{{ forloop.counter0 }}" required class="field-required field-empty field-pink">
+                                    <option value="">Select type</option>
+                                    {% for value, label in type_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Ranking *</label>
+                                <select name="ranking_{{ forloop.counter0 }}" required class="field-required field-empty field-pink">
+                                    <option value="">Select ranking</option>
+                                    {% for value, label in ranking_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="published_at_{{ forloop.counter0 }}" value="{{ pub.venue|default:'' }}">
+                        <input type="hidden" name="doi_{{ forloop.counter0 }}" value="">
+                        <input type="hidden" name="link_{{ forloop.counter0 }}" value="">
+                        <input type="hidden" name="contribution_{{ forloop.counter0 }}" value="">
+                        <input type="hidden" name="confirm_{{ forloop.counter0 }}" value="1" class="confirm-checkbox-input">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Import All Remaining Publications</button>
+                <a href="{% url 'people:bulk_import_publications' faculty.pk %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+<style>
+.bulk-import-confirm-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.instructions-box {
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+    border-radius: 8px;
+    padding: 0.875rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.instructions-box p {
+    margin: 0;
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.publications-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.publication-preview-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.publication-preview-card.removing {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+}
+
+.publication-preview-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.publication-preview-card.duplicate-card {
+    border-color: #f59e0b;
+    background: color-mix(in srgb, #f59e0b 5%, var(--bg-secondary));
+    box-shadow: 0 0 0 2px color-mix(in srgb, #f59e0b 15%, transparent);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.publication-number {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    background: var(--bg-tertiary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 5px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-confirm,
+.btn-discard {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Lexend', sans-serif;
+}
+
+.btn-confirm {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary));
+}
+
+.btn-confirm:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-discard {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-discard:hover {
+    background: var(--bg-tertiary);
+    border-color: #ef4444;
+    color: #ef4444;
+    transform: translateY(-1px);
+}
+
+.duplicate-warning {
+    background: color-mix(in srgb, #f59e0b 15%, transparent);
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    color: #92400e;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.6rem 0.875rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: 'Lexend', sans-serif;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.form-group input.field-empty,
+.form-group select.field-empty {
+    background: color-mix(in srgb, #fca5a5 12%, var(--bg-tertiary));
+    border-color: color-mix(in srgb, #ef4444 50%, var(--border-color));
+}
+
+.form-group input.field-empty:focus,
+.form-group select.field-empty:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px color-mix(in srgb, #ef4444 15%, transparent);
+}
+
+/* Soft pink highlighting for type and ranking - always highlighted since not auto-filled */
+.form-group select.field-pink {
+    background: color-mix(in srgb, #f9a8d4 18%, var(--bg-tertiary));
+    border-color: color-mix(in srgb, #ec4899 50%, var(--border-color));
+}
+
+.form-group select.field-pink:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px color-mix(in srgb, #ec4899 18%, transparent);
+}
+
+.form-group select.field-pink:not([value=""]):not([value="0"]) {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+/* Update empty state on change */
+.form-group input.field-required:not(:placeholder-shown),
+.form-group select.field-required:not([value=""]) {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.form-group select.field-required:not([value=""]):not(.field-empty) {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 10;
+    padding-bottom: 1rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        position: relative;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('publications-container');
+    const remainingCount = document.getElementById('remaining-count');
+    
+    function updateRemainingCount() {
+        const cards = container.querySelectorAll('.publication-preview-card:not(.removing)');
+        remainingCount.textContent = cards.length;
+    }
+    
+    function removeCard(card) {
+        card.classList.add('removing');
+        setTimeout(() => {
+            card.remove();
+            updateRemainingCount();
+        }, 300);
+    }
+    
+    // Handle confirm button clicks
+    container.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-confirm')) {
+            const btn = e.target.closest('.btn-confirm');
+            const card = btn.closest('.publication-preview-card');
+            const index = btn.dataset.index;
+            
+            // Get form data from the card
+            const title = card.querySelector(`input[name="title_${index}"]`).value.trim();
+            const pubYear = card.querySelector(`input[name="pub_year_${index}"]`).value.trim();
+            const type = card.querySelector(`select[name="type_${index}"]`).value;
+            const ranking = card.querySelector(`select[name="ranking_${index}"]`).value;
+            const publishedAt = card.querySelector(`input[name="published_at_${index}"]`).value.trim();
+            const doi = card.querySelector(`input[name="doi_${index}"]`).value.trim();
+            const link = card.querySelector(`input[name="link_${index}"]`).value.trim();
+            const contribution = card.querySelector(`input[name="contribution_${index}"]`).value.trim();
+            
+            // Validate required fields
+            if (!title || !pubYear || !type || !ranking) {
+                // Highlight empty fields
+                if (!title) card.querySelector(`input[name="title_${index}"]`).classList.add('field-empty');
+                if (!pubYear) card.querySelector(`input[name="pub_year_${index}"]`).classList.add('field-empty');
+                if (!type) card.querySelector(`select[name="type_${index}"]`).classList.add('field-empty');
+                if (!ranking) card.querySelector(`select[name="ranking_${index}"]`).classList.add('field-empty');
+                
+                alert('Please fill in all required fields (Title, Year, Type, Ranking)');
+                return;
+            }
+            
+            // Remove empty class if fields are filled
+            card.querySelector(`input[name="title_${index}"]`).classList.remove('field-empty');
+            card.querySelector(`input[name="pub_year_${index}"]`).classList.remove('field-empty');
+            card.querySelector(`select[name="type_${index}"]`).classList.remove('field-empty');
+            card.querySelector(`select[name="ranking_${index}"]`).classList.remove('field-empty');
+            
+            // Disable button during request
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('pub_year', pubYear);
+            formData.append('type', type);
+            formData.append('ranking', ranking);
+            formData.append('published_at', publishedAt);
+            formData.append('doi', doi);
+            formData.append('link', link);
+            formData.append('contribution', contribution);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Send AJAX request
+            fetch('{% url "people:confirm_single_publication" faculty.pk %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove card on success
+                    removeCard(card);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to add publication'));
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            })
+            .catch(error => {
+                alert('Error: Failed to add publication');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }
+        
+        // Handle discard button clicks
+        if (e.target.closest('.btn-discard')) {
+            const btn = e.target.closest('.btn-discard');
+            const card = btn.closest('.publication-preview-card');
+            removeCard(card);
+        }
+    });
+    
+    // Update count on page load
+    updateRemainingCount();
+    
+    // Remove field-empty class when user fills in fields
+    container.addEventListener('input', function(e) {
+        if (e.target.classList.contains('field-required')) {
+            if (e.target.value.trim()) {
+                e.target.classList.remove('field-empty');
+            } else {
+                e.target.classList.add('field-empty');
+            }
+        }
+    });
+    
+    container.addEventListener('change', function(e) {
+        if (e.target.classList.contains('field-required')) {
+            if (e.target.value) {
+                e.target.classList.remove('field-empty');
+            } else {
+                e.target.classList.add('field-empty');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

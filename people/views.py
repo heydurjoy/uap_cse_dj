@@ -8,7 +8,8 @@ from django.db.models import Q, Max
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail
+from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail, Publication
+import re
 
 
 def faculty_list(request):
@@ -173,9 +174,13 @@ def faculty_detail(request, pk):
             'last_office_date': faculty.last_office_date,
         }
     
+    # Get publications for this faculty
+    publications = faculty.publications.all().order_by('-pub_year', 'title')
+    
     context = {
         'faculty': faculty,
         'service_data': service_data,
+        'publications': publications,
     }
     
     return render(request, 'people/faculty_detail.html', context)
@@ -1632,3 +1637,583 @@ def bulk_delete_faculty(request):
             'success': False,
             'message': f'Error deleting faculty: {str(e)}'
         }, status=500)
+
+
+@login_required
+def manage_publications(request, faculty_id):
+    """
+    Manage publications for a faculty member.
+    Only accessible to the faculty member themselves.
+    """
+    faculty = get_object_or_404(Faculty, pk=faculty_id)
+    
+    # Check permissions - only allow users to manage their own publications
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        messages.error(request, 'You can only manage your own publications.')
+        return redirect('people:user_profile')
+    
+    publications = faculty.publications.all().order_by('-pub_year', 'title')
+    
+    context = {
+        'faculty': faculty,
+        'publications': publications,
+    }
+    
+    return render(request, 'people/manage_publications.html', context)
+
+
+@login_required
+@transaction.atomic
+def add_publication(request, faculty_id):
+    """
+    Add a single publication for a faculty member.
+    Only accessible to the faculty member themselves.
+    """
+    faculty = get_object_or_404(Faculty, pk=faculty_id)
+    
+    # Check permissions - only allow users to manage their own publications
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        messages.error(request, 'You can only add publications to your own profile.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        pub_year = request.POST.get('pub_year', '').strip()
+        type = request.POST.get('type', '').strip()
+        ranking = request.POST.get('ranking', '').strip()
+        link = request.POST.get('link', '').strip()
+        doi = request.POST.get('doi', '').strip()
+        published_at = request.POST.get('published_at', '').strip()
+        contribution = request.POST.get('contribution', '').strip()
+        
+        # Validation
+        if not title:
+            messages.error(request, 'Title is required.')
+            return redirect('people:add_publication', faculty_id=faculty_id)
+        
+        if not pub_year:
+            messages.error(request, 'Publication year is required.')
+            return redirect('people:add_publication', faculty_id=faculty_id)
+        
+        try:
+            pub_year = int(pub_year)
+            if pub_year < 1900 or pub_year > 2100:
+                raise ValueError()
+        except ValueError:
+            messages.error(request, 'Please enter a valid year between 1900 and 2100.')
+            return redirect('people:add_publication', faculty_id=faculty_id)
+        
+        if not type or type not in dict(Publication.TYPE_CHOICES):
+            messages.error(request, 'Please select a valid publication type.')
+            return redirect('people:add_publication', faculty_id=faculty_id)
+        
+        if not ranking or ranking not in dict(Publication.RANKING_CHOICES):
+            messages.error(request, 'Please select a valid ranking.')
+            return redirect('people:add_publication', faculty_id=faculty_id)
+        
+        # Create publication
+        publication = Publication.objects.create(
+            faculty=faculty,
+            title=title,
+            pub_year=pub_year,
+            type=type,
+            ranking=ranking,
+            link=link if link else None,
+            doi=doi if doi else None,
+            published_at=published_at if published_at else None,
+            contribution=contribution if contribution else None,
+        )
+        
+        messages.success(request, f'Publication "{title}" added successfully.')
+        return redirect('people:manage_publications', faculty_id=faculty_id)
+    
+    context = {
+        'faculty': faculty,
+        'type_choices': Publication.TYPE_CHOICES,
+        'ranking_choices': Publication.RANKING_CHOICES,
+    }
+    
+    return render(request, 'people/add_publication.html', context)
+
+
+@login_required
+@transaction.atomic
+def add_multiple_publications(request, faculty_id):
+    """
+    Add multiple publications at once for a faculty member.
+    Only accessible to the faculty member themselves.
+    """
+    faculty = get_object_or_404(Faculty, pk=faculty_id)
+    
+    # Check permissions - only allow users to manage their own publications
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        messages.error(request, 'You can only add publications to your own profile.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        # Get number of publications to add
+        num_publications = int(request.POST.get('num_publications', 1))
+        created_count = 0
+        errors = []
+        
+        for i in range(num_publications):
+            title = request.POST.get(f'title_{i}', '').strip()
+            pub_year = request.POST.get(f'pub_year_{i}', '').strip()
+            type = request.POST.get(f'type_{i}', '').strip()
+            ranking = request.POST.get(f'ranking_{i}', '').strip()
+            link = request.POST.get(f'link_{i}', '').strip()
+            doi = request.POST.get(f'doi_{i}', '').strip()
+            published_at = request.POST.get(f'published_at_{i}', '').strip()
+            contribution = request.POST.get(f'contribution_{i}', '').strip()
+            
+            # Skip if title is empty (optional fields)
+            if not title:
+                continue
+            
+            # Validate required fields
+            if not pub_year:
+                errors.append(f'Publication {i+1}: Year is required.')
+                continue
+            
+            try:
+                pub_year = int(pub_year)
+                if pub_year < 1900 or pub_year > 2100:
+                    raise ValueError()
+            except ValueError:
+                errors.append(f'Publication {i+1}: Please enter a valid year between 1900 and 2100.')
+                continue
+            
+            if not type or type not in dict(Publication.TYPE_CHOICES):
+                errors.append(f'Publication {i+1}: Please select a valid publication type.')
+                continue
+            
+            if not ranking or ranking not in dict(Publication.RANKING_CHOICES):
+                errors.append(f'Publication {i+1}: Please select a valid ranking.')
+                continue
+            
+            # Create publication
+            try:
+                Publication.objects.create(
+                    faculty=faculty,
+                    title=title,
+                    pub_year=pub_year,
+                    type=type,
+                    ranking=ranking,
+                    link=link if link else None,
+                    doi=doi if doi else None,
+                    published_at=published_at if published_at else None,
+                    contribution=contribution if contribution else None,
+                )
+                created_count += 1
+            except Exception as e:
+                errors.append(f'Publication {i+1}: Error creating publication - {str(e)}')
+        
+        if created_count > 0:
+            messages.success(request, f'Successfully added {created_count} publication(s).')
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        
+        return redirect('people:manage_publications', faculty_id=faculty_id)
+    
+    # Get number of publications to add from query parameter
+    num_publications = int(request.GET.get('num', 5))
+    if num_publications < 1:
+        num_publications = 1
+    if num_publications > 20:
+        num_publications = 20
+    
+    context = {
+        'faculty': faculty,
+        'type_choices': Publication.TYPE_CHOICES,
+        'ranking_choices': Publication.RANKING_CHOICES,
+        'num_publications': num_publications,
+    }
+    
+    return render(request, 'people/add_multiple_publications.html', context)
+
+
+@login_required
+def bulk_import_publications(request, faculty_id):
+    """
+    Bulk import publications from Google Scholar copy-paste text.
+    Shows a preview page for confirmation before saving.
+    """
+    faculty = get_object_or_404(Faculty, pk=faculty_id)
+    
+    # Check permissions - only allow users to manage their own publications
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        messages.error(request, 'You can only import publications to your own profile.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        # Check if this is the confirmation step
+        if 'confirm_import' in request.POST:
+            # Process confirmed publications
+            created_count = 0
+            errors = []
+            
+            # Get all publication data from the form
+            i = 0
+            while True:
+                title = request.POST.get(f'title_{i}', '').strip()
+                if not title:
+                    break
+                
+                pub_year = request.POST.get(f'pub_year_{i}', '').strip()
+                type_val = request.POST.get(f'type_{i}', '').strip()
+                ranking = request.POST.get(f'ranking_{i}', '').strip()
+                published_at = request.POST.get(f'published_at_{i}', '').strip()
+                doi = request.POST.get(f'doi_{i}', '').strip()
+                link = request.POST.get(f'link_{i}', '').strip()
+                contribution = request.POST.get(f'contribution_{i}', '').strip()
+                
+                # Skip if not confirmed
+                if not request.POST.get(f'confirm_{i}', ''):
+                    i += 1
+                    continue
+                
+                # Validate required fields
+                if not pub_year:
+                    errors.append(f'Publication {i+1}: Year is required.')
+                    i += 1
+                    continue
+                
+                try:
+                    pub_year = int(pub_year)
+                    if pub_year < 1900 or pub_year > 2100:
+                        raise ValueError()
+                except ValueError:
+                    errors.append(f'Publication {i+1}: Please enter a valid year between 1900 and 2100.')
+                    i += 1
+                    continue
+                
+                if not type_val or type_val not in dict(Publication.TYPE_CHOICES):
+                    errors.append(f'Publication {i+1}: Please select a valid publication type.')
+                    i += 1
+                    continue
+                
+                if not ranking or ranking not in dict(Publication.RANKING_CHOICES):
+                    errors.append(f'Publication {i+1}: Please select a valid ranking.')
+                    i += 1
+                    continue
+                
+                # Check for duplicate by title (case-insensitive)
+                existing = Publication.objects.filter(
+                    faculty=faculty,
+                    title__iexact=title
+                ).first()
+                
+                if existing:
+                    errors.append(f'Publication {i+1}: A publication with this title already exists.')
+                    i += 1
+                    continue
+                
+                # Create publication
+                try:
+                    Publication.objects.create(
+                        faculty=faculty,
+                        title=title,
+                        pub_year=pub_year,
+                        type=type_val,
+                        ranking=ranking,
+                        link=link if link else None,
+                        doi=doi if doi else None,
+                        published_at=published_at if published_at else None,
+                        contribution=contribution if contribution else None,
+                    )
+                    created_count += 1
+                except Exception as e:
+                    errors.append(f'Publication {i+1}: Error creating publication - {str(e)}')
+                
+                i += 1
+            
+            if created_count > 0:
+                messages.success(request, f'Successfully imported {created_count} publication(s).')
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+            
+            return redirect('people:manage_publications', faculty_id=faculty_id)
+        
+        # Parse the pasted text
+        pasted_text = request.POST.get('pasted_text', '').strip()
+        
+        if not pasted_text:
+            messages.error(request, 'Please paste the publication data.')
+            return redirect('people:bulk_import_publications', faculty_id=faculty_id)
+        
+        # Parse the text - Google Scholar format:
+        # Line 1: Title
+        # Line 2: Authors (ignore)
+        # Line 3: Venue (ignore)
+        # Line 4: Citations Year (extract year using 20\d{2})
+        # 
+        # Strategy: Find lines with year pattern (20\d{2}), title is 3 lines before
+        
+        parsed_publications = []
+        lines = pasted_text.split('\n')
+        
+        # Remove empty lines and strip whitespace, keep track of original line numbers
+        non_empty_lines = []
+        original_line_nums = []
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped:
+                non_empty_lines.append(stripped)
+                original_line_nums.append(i)
+        
+        # Common header keywords to skip
+        header_keywords = ['title', 'cited', 'year', 'author', 'publication', 'venue', 'journal']
+        
+        # Iterate through lines looking for year pattern (20\d{2})
+        for i, line in enumerate(non_empty_lines):
+            # Skip header rows
+            line_lower = line.lower()
+            is_header = False
+            for keyword in header_keywords:
+                if keyword in line_lower and len(line) < 30:
+                    is_header = True
+                    break
+            if is_header:
+                continue
+            
+            # Look for year pattern in this line (20\d{2})
+            year_match = re.search(r'20\d{2}', line)
+            if year_match:
+                year_str = year_match.group()
+                try:
+                    year = int(year_str)
+                    if 2000 <= year <= 2100:  # Valid year range
+                        # Title is 3 lines before the year line
+                        title_index = i - 3
+                        
+                        if title_index >= 0 and title_index < len(non_empty_lines):
+                            title = non_empty_lines[title_index].strip()
+                            
+                            # Skip if title looks like a header
+                            title_lower = title.lower()
+                            is_title_header = False
+                            for keyword in header_keywords:
+                                if keyword in title_lower and len(title) < 30:
+                                    is_title_header = True
+                                    break
+                            
+                            # Validate title (should be meaningful, not too short)
+                            if not is_title_header and len(title) >= 10:
+                                parsed_publications.append({
+                                    'title': title,
+                                    'authors': None,
+                                    'venue': None,
+                                    'cited': None,
+                                    'year': str(year),
+                                    'line_num': original_line_nums[i],
+                                })
+                except ValueError:
+                    continue
+        
+        if not parsed_publications:
+            messages.error(request, 'No publications could be parsed from the pasted text. Please check the format.')
+            return redirect('people:bulk_import_publications', faculty_id=faculty_id)
+        
+        # Check for duplicates and mark them
+        existing_titles = set(
+            Publication.objects.filter(faculty=faculty)
+            .values_list('title', flat=True)
+        )
+        
+        for pub in parsed_publications:
+            pub['is_duplicate'] = pub['title'].lower() in [t.lower() for t in existing_titles]
+        
+        context = {
+            'faculty': faculty,
+            'parsed_publications': parsed_publications,
+            'type_choices': Publication.TYPE_CHOICES,
+            'ranking_choices': Publication.RANKING_CHOICES,
+        }
+        
+        return render(request, 'people/bulk_import_confirm.html', context)
+    
+    # GET request - show the paste form
+    context = {
+        'faculty': faculty,
+    }
+    
+    return render(request, 'people/bulk_import_publications.html', context)
+
+
+@login_required
+@transaction.atomic
+def edit_publication(request, publication_id):
+    """
+    Edit a publication.
+    Only accessible to the faculty member themselves.
+    """
+    publication = get_object_or_404(Publication, pk=publication_id)
+    faculty = publication.faculty
+    
+    # Check permissions - only allow users to manage their own publications
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        messages.error(request, 'You can only edit your own publications.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        pub_year = request.POST.get('pub_year', '').strip()
+        type = request.POST.get('type', '').strip()
+        ranking = request.POST.get('ranking', '').strip()
+        link = request.POST.get('link', '').strip()
+        doi = request.POST.get('doi', '').strip()
+        published_at = request.POST.get('published_at', '').strip()
+        contribution = request.POST.get('contribution', '').strip()
+        
+        # Validation
+        if not title:
+            messages.error(request, 'Title is required.')
+            return redirect('people:edit_publication', publication_id=publication_id)
+        
+        if not pub_year:
+            messages.error(request, 'Publication year is required.')
+            return redirect('people:edit_publication', publication_id=publication_id)
+        
+        try:
+            pub_year = int(pub_year)
+            if pub_year < 1900 or pub_year > 2100:
+                raise ValueError()
+        except ValueError:
+            messages.error(request, 'Please enter a valid year between 1900 and 2100.')
+            return redirect('people:edit_publication', publication_id=publication_id)
+        
+        if not type or type not in dict(Publication.TYPE_CHOICES):
+            messages.error(request, 'Please select a valid publication type.')
+            return redirect('people:edit_publication', publication_id=publication_id)
+        
+        if not ranking or ranking not in dict(Publication.RANKING_CHOICES):
+            messages.error(request, 'Please select a valid ranking.')
+            return redirect('people:edit_publication', publication_id=publication_id)
+        
+        # Update publication
+        publication.title = title
+        publication.pub_year = pub_year
+        publication.type = type
+        publication.ranking = ranking
+        publication.link = link if link else None
+        publication.doi = doi if doi else None
+        publication.published_at = published_at if published_at else None
+        publication.contribution = contribution if contribution else None
+        publication.save()
+        
+        messages.success(request, f'Publication "{title}" updated successfully.')
+        return redirect('people:manage_publications', faculty_id=faculty.pk)
+    
+    context = {
+        'publication': publication,
+        'faculty': faculty,
+        'type_choices': Publication.TYPE_CHOICES,
+        'ranking_choices': Publication.RANKING_CHOICES,
+    }
+    
+    return render(request, 'people/edit_publication.html', context)
+
+
+@login_required
+@transaction.atomic
+def delete_publication(request, publication_id):
+    """
+    Delete a publication.
+    Only accessible to the faculty member themselves.
+    """
+    publication = get_object_or_404(Publication, pk=publication_id)
+    faculty = publication.faculty
+    
+    # Check permissions - only allow users to manage their own publications
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        messages.error(request, 'You can only delete your own publications.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        title = publication.title
+        publication.delete()
+        messages.success(request, f'Publication "{title}" deleted successfully.')
+        return redirect('people:manage_publications', faculty_id=faculty.pk)
+    
+    context = {
+        'publication': publication,
+        'faculty': faculty,
+    }
+    
+    return render(request, 'people/delete_publication.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def confirm_single_publication(request, faculty_id):
+    """
+    AJAX endpoint to confirm and save a single publication from bulk import.
+    """
+    faculty = get_object_or_404(Faculty, pk=faculty_id)
+    
+    # Check permissions
+    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        title = request.POST.get('title', '').strip()
+        pub_year = request.POST.get('pub_year', '').strip()
+        type_val = request.POST.get('type', '').strip()
+        ranking = request.POST.get('ranking', '').strip()
+        published_at = request.POST.get('published_at', '').strip()
+        doi = request.POST.get('doi', '').strip()
+        link = request.POST.get('link', '').strip()
+        contribution = request.POST.get('contribution', '').strip()
+        
+        # Validate required fields
+        if not title:
+            return JsonResponse({'success': False, 'error': 'Title is required'}, status=400)
+        
+        if not pub_year:
+            return JsonResponse({'success': False, 'error': 'Year is required'}, status=400)
+        
+        try:
+            pub_year = int(pub_year)
+            if pub_year < 1900 or pub_year > 2100:
+                raise ValueError()
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Please enter a valid year between 1900 and 2100'}, status=400)
+        
+        if not type_val or type_val not in dict(Publication.TYPE_CHOICES):
+            return JsonResponse({'success': False, 'error': 'Please select a valid publication type'}, status=400)
+        
+        if not ranking or ranking not in dict(Publication.RANKING_CHOICES):
+            return JsonResponse({'success': False, 'error': 'Please select a valid ranking'}, status=400)
+        
+        # Check for duplicate by title (case-insensitive)
+        existing = Publication.objects.filter(
+            faculty=faculty,
+            title__iexact=title
+        ).first()
+        
+        if existing:
+            return JsonResponse({'success': False, 'error': 'A publication with this title already exists', 'is_duplicate': True}, status=400)
+        
+        # Create publication
+        publication = Publication.objects.create(
+            faculty=faculty,
+            title=title,
+            pub_year=pub_year,
+            type=type_val,
+            ranking=ranking,
+            link=link if link else None,
+            doi=doi if doi else None,
+            published_at=published_at if published_at else None,
+            contribution=contribution if contribution else None,
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Publication added successfully',
+            'publication_id': publication.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

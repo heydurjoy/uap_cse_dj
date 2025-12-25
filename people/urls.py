@@ -25,5 +25,13 @@ urlpatterns = [
     path('manage-faculty/<int:pk>/edit/', views.edit_faculty, name='edit_faculty'),
     path('manage-faculty/update-order/', views.update_faculty_order, name='update_faculty_order'),
     path('manage-faculty/bulk-delete/', views.bulk_delete_faculty, name='bulk_delete_faculty'),
+    # Publication management
+    path('faculty/<int:faculty_id>/publications/', views.manage_publications, name='manage_publications'),
+    path('faculty/<int:faculty_id>/publications/add/', views.add_publication, name='add_publication'),
+    path('faculty/<int:faculty_id>/publications/add-multiple/', views.add_multiple_publications, name='add_multiple_publications'),
+    path('faculty/<int:faculty_id>/publications/bulk-import/', views.bulk_import_publications, name='bulk_import_publications'),
+    path('faculty/<int:faculty_id>/publications/confirm-single/', views.confirm_single_publication, name='confirm_single_publication'),
+    path('publications/<int:publication_id>/edit/', views.edit_publication, name='edit_publication'),
+    path('publications/<int:publication_id>/delete/', views.delete_publication, name='delete_publication'),
 ]
 

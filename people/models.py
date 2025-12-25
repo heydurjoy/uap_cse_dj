@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.files.base import ContentFile
 from ckeditor.fields import RichTextField
 from image_cropping.fields import ImageRatioField, ImageCropField
@@ -673,6 +673,109 @@ class Faculty(models.Model):
                 traceback.print_exc()
         
         super().save(*args, **kwargs)
+
+
+class Publication(models.Model):
+    """Model to store faculty publications"""
+    TYPE_CHOICES = [
+        ('journal', 'Journal'),
+        ('conf', 'Conference'),
+        ('bookchapter', 'Book Chapter'),
+        ('other', 'Other'),
+    ]
+    
+    RANKING_CHOICES = [
+        ('q1', 'Q1'),
+        ('q2', 'Q2'),
+        ('q3', 'Q3'),
+        ('q4', 'Q4'),
+        ('a1', 'A1'),
+        ('a2', 'A2'),
+        ('a3', 'A3'),
+        ('a4', 'A4'),
+        ('not_indexed', 'Not Indexed'),
+    ]
+    
+    title = models.CharField(
+        max_length=500,
+        help_text="Publication title"
+    )
+    
+    pub_year = models.IntegerField(
+        validators=[MinValueValidator(1900), MaxValueValidator(2100)],
+        help_text="Publication year"
+    )
+    
+    type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        help_text="Type of publication"
+    )
+    
+    ranking = models.CharField(
+        max_length=20,
+        choices=RANKING_CHOICES,
+        help_text="Journal/Conference ranking"
+    )
+    
+    faculty = models.ForeignKey(
+        Faculty,
+        on_delete=models.CASCADE,
+        related_name='publications',
+        help_text="Faculty member who authored this publication"
+    )
+    
+    # Optional fields
+    link = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Link to the publication"
+    )
+    
+    doi = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Digital Object Identifier (DOI)"
+    )
+    
+    published_at = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Journal/Conference/Venue name"
+    )
+    
+    contribution = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Author's contribution to the publication"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this publication was added to the system"
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When this publication was last updated"
+    )
+    
+    class Meta:
+        verbose_name = 'Publication'
+        verbose_name_plural = 'Publications'
+        ordering = ['-pub_year', 'title']
+        indexes = [
+            models.Index(fields=['faculty']),
+            models.Index(fields=['pub_year']),
+            models.Index(fields=['type']),
+            models.Index(fields=['ranking']),
+            models.Index(fields=['faculty', 'pub_year']),
+        ]
+    
+    def __str__(self):
+        return f'{self.title} - {self.faculty.name} ({self.pub_year})'
 
 
 class Staff(models.Model):

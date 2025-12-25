@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from image_cropping import ImageCroppingMixin
 from .models import (
     AllowedEmail, BaseUser, Faculty, Staff, Officer, ClubMember, 
-    PasswordResetToken, Permission, UserPermission, Contributor
+    PasswordResetToken, Permission, UserPermission, Contributor, Publication
 )
 
 
@@ -130,12 +130,22 @@ class BaseUserAdmin(BaseUserAdmin):
     )
 
 
+class PublicationInline(admin.TabularInline):
+    """Inline admin for publications in Faculty admin"""
+    model = Publication
+    extra = 1
+    fields = ('title', 'pub_year', 'type', 'ranking', 'published_at', 'doi', 'link')
+    verbose_name = 'Publication'
+    verbose_name_plural = 'Publications'
+
+
 @admin.register(Faculty)
 class FacultyAdmin(ImageCroppingMixin, admin.ModelAdmin):
     list_display = ['name', 'designation', 'sl', 'base_user', 'citation']
     list_filter = ['designation', 'joining_date']
     search_fields = ['name', 'shortname', 'base_user__email']
     ordering = ['sl']
+    inlines = [PublicationInline]
     
     fieldsets = (
         ('Base User', {
@@ -241,6 +251,29 @@ class ContributorAdmin(admin.ModelAdmin):
         }),
         ('Profile', {
             'fields': ('photo', 'portfolio_link')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(Publication)
+class PublicationAdmin(admin.ModelAdmin):
+    list_display = ['title', 'faculty', 'pub_year', 'type', 'ranking', 'published_at']
+    list_filter = ['type', 'ranking', 'pub_year']
+    search_fields = ['title', 'faculty__name', 'doi', 'published_at']
+    ordering = ['-pub_year', 'title']
+    raw_id_fields = ['faculty']
+    
+    fieldsets = (
+        ('Publication Information', {
+            'fields': ('title', 'faculty', 'pub_year', 'type', 'ranking')
+        }),
+        ('Publication Details', {
+            'fields': ('published_at', 'doi', 'link', 'contribution')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at')
