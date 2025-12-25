@@ -49,6 +49,16 @@
                 {% endfor %}
             </div>
         {% endif %}
+        
+        {% if has_manage_all_permission and not is_own_publications %}
+        <div class="permission-notice">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="M9 12l2 2 4-4"></path>
+            </svg>
+            <span>You are managing publications for <strong>{{ faculty.name }}</strong> with administrative access.</span>
+        </div>
+        {% endif %}
 
         {% if publications %}
             <div class="publications-table-container">
@@ -298,6 +308,31 @@
     color: var(--text-secondary);
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
+}
+
+.permission-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 5%, transparent) 100%);
+    border: 1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.permission-notice svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.permission-notice strong {
+    color: var(--color-primary);
+    font-weight: 600;
 }
 
 @media (max-width: 768px) {

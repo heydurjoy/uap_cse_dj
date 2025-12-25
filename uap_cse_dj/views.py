@@ -16,6 +16,8 @@ from django.contrib import messages
 from django.core.mail import send_mail, get_connection
 from django.utils.crypto import get_random_string
 from django.contrib.auth import update_session_auth_hash
+from django.db.models import Q
+from .search_utils import generate_summary
 
 
 def home(request):
@@ -720,4 +722,147 @@ This project stands as a reflection of what students and teachers can create tog
     }
 
     return render(request, 'credits.html', context)
+
+
+def search(request):
+    """
+    Comprehensive search across all models in the application.
+    Searches: Faculty, Publications, Posts, Club Posts, Courses, Clubs, Staff, Officers
+    """
+    query = request.GET.get('q', '').strip()
+    
+    if not query:
+        return render(request, 'search_results.html', {
+            'query': '',
+            'results': {},
+            'summary': 'Please enter a search query.',
+        })
+    
+    results = {}
+    
+    # Search Faculty
+    try:
+        from people.models import Faculty
+        # Search in text fields (RichTextField needs special handling)
+        faculty_results = Faculty.objects.filter(
+            Q(name__icontains=query) |
+            Q(designation__icontains=query) |
+            Q(bio__icontains=query) |
+            Q(shortname__icontains=query) |
+            Q(about__icontains=query) |
+            Q(researches__icontains=query)
+        ).select_related('base_user')[:20]
+        results['faculty'] = list(faculty_results)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error searching faculty: {str(e)}")
+        # Fallback: try simpler search
+        try:
+            from people.models import Faculty
+            faculty_results = Faculty.objects.filter(
+                Q(name__icontains=query) |
+                Q(designation__icontains=query) |
+                Q(bio__icontains=query) |
+                Q(shortname__icontains=query)
+            ).select_related('base_user')[:20]
+            results['faculty'] = list(faculty_results)
+        except:
+            results['faculty'] = []
+    
+    # Search Publications
+    try:
+        from people.models import Publication
+        publication_results = Publication.objects.filter(
+            Q(title__icontains=query) |
+            Q(published_at__icontains=query) |
+            Q(contribution__icontains=query) |
+            Q(doi__icontains=query)
+        ).select_related('faculty')[:20]
+        results['publications'] = list(publication_results)
+    except Exception as e:
+        results['publications'] = []
+    
+    # Search Posts
+    try:
+        from office.models import Post
+        post_results = Post.objects.filter(
+            Q(short_title__icontains=query) |
+            Q(long_title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(tags__icontains=query)
+        ).select_related('created_by')[:20]
+        results['posts'] = list(post_results)
+    except Exception as e:
+        results['posts'] = []
+    
+    # Search Club Posts
+    try:
+        from clubs.models import ClubPost
+        club_post_results = ClubPost.objects.filter(
+            Q(short_title__icontains=query) |
+            Q(long_title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(tags__icontains=query)
+        ).select_related('club', 'posted_by')[:20]
+        results['club_posts'] = list(club_post_results)
+    except Exception as e:
+        results['club_posts'] = []
+    
+    # Search Courses
+    try:
+        from academics.models import Course
+        course_results = Course.objects.filter(
+            Q(title__icontains=query) |
+            Q(course_code__icontains=query)
+        ).select_related('program')[:20]
+        results['courses'] = list(course_results)
+    except Exception as e:
+        results['courses'] = []
+    
+    # Search Clubs
+    try:
+        from clubs.models import Club
+        club_results = Club.objects.filter(
+            Q(name__icontains=query) |
+            Q(short_name__icontains=query) |
+            Q(moto__icontains=query) |
+            Q(description__icontains=query)
+        ).select_related('convener')[:20]
+        results['clubs'] = list(club_results)
+    except Exception as e:
+        results['clubs'] = []
+    
+    # Search Staff
+    try:
+        from people.models import Staff
+        staff_results = Staff.objects.filter(
+            Q(name__icontains=query) |
+            Q(designation__icontains=query)
+        ).select_related('base_user')[:20]
+        results['staff'] = list(staff_results)
+    except Exception as e:
+        results['staff'] = []
+    
+    # Search Officers
+    try:
+        from people.models import Officer
+        officer_results = Officer.objects.filter(
+            Q(name__icontains=query) |
+            Q(position__icontains=query)
+        ).select_related('base_user')[:20]
+        results['officers'] = list(officer_results)
+    except Exception as e:
+        results['officers'] = []
+    
+    # Generate summary using text-based algorithm
+    summary = generate_summary(results, query)
+    
+    context = {
+        'query': query,
+        'results': results,
+        'summary': summary,
+    }
+    
+    return render(request, 'search_results.html', context)
 

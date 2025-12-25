@@ -187,11 +187,20 @@ def faculty_detail(request, pk):
         'current_year': publications.filter(pub_year=current_year).count(),
     }
     
+    # Check if user can manage publications (own or with permission)
+    from people.permissions import Permissions
+    can_manage_publications = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage_publications = True
+    elif request.user.is_authenticated and request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage_publications = True
+    
     context = {
         'faculty': faculty,
         'service_data': service_data,
         'publications': publications,
         'pub_stats': pub_stats,
+        'can_manage_publications': can_manage_publications,
     }
     
     return render(request, 'people/faculty_detail.html', context)
@@ -1654,20 +1663,34 @@ def bulk_delete_faculty(request):
 def manage_publications(request, faculty_id):
     """
     Manage publications for a faculty member.
-    Only accessible to the faculty member themselves.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - only allow users to manage their own publications
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
-        messages.error(request, 'You can only manage your own publications.')
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        messages.error(request, 'You do not have permission to manage publications for this faculty member.')
         return redirect('people:user_profile')
     
     publications = faculty.publications.all().order_by('-pub_year', 'title')
     
+    # Check if user is managing their own publications or has permission
+    is_own_publications = (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk)
+    has_manage_all_permission = request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS)
+    
     context = {
         'faculty': faculty,
         'publications': publications,
+        'is_own_publications': is_own_publications,
+        'has_manage_all_permission': has_manage_all_permission,
     }
     
     return render(request, 'people/manage_publications.html', context)
@@ -1678,13 +1701,21 @@ def manage_publications(request, faculty_id):
 def add_publication(request, faculty_id):
     """
     Add a single publication for a faculty member.
-    Only accessible to the faculty member themselves.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - only allow users to manage their own publications
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
-        messages.error(request, 'You can only add publications to your own profile.')
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        messages.error(request, 'You do not have permission to add publications for this faculty member.')
         return redirect('people:user_profile')
     
     if request.method == 'POST':
@@ -1752,13 +1783,21 @@ def add_publication(request, faculty_id):
 def add_multiple_publications(request, faculty_id):
     """
     Add multiple publications at once for a faculty member.
-    Only accessible to the faculty member themselves.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - only allow users to manage their own publications
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
-        messages.error(request, 'You can only add publications to your own profile.')
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        messages.error(request, 'You do not have permission to add publications for this faculty member.')
         return redirect('people:user_profile')
     
     if request.method == 'POST':
@@ -1849,12 +1888,21 @@ def bulk_import_publications(request, faculty_id):
     """
     Bulk import publications from Google Scholar copy-paste text.
     Shows a preview page for confirmation before saving.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - only allow users to manage their own publications
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
-        messages.error(request, 'You can only import publications to your own profile.')
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        messages.error(request, 'You do not have permission to import publications for this faculty member.')
         return redirect('people:user_profile')
     
     if request.method == 'POST':
@@ -2058,14 +2106,22 @@ def bulk_import_publications(request, faculty_id):
 def edit_publication(request, publication_id):
     """
     Edit a publication.
-    Only accessible to the faculty member themselves.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     publication = get_object_or_404(Publication, pk=publication_id)
     faculty = publication.faculty
     
-    # Check permissions - only allow users to manage their own publications
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
-        messages.error(request, 'You can only edit your own publications.')
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        messages.error(request, 'You do not have permission to edit publications for this faculty member.')
         return redirect('people:user_profile')
     
     if request.method == 'POST':
@@ -2132,14 +2188,22 @@ def edit_publication(request, publication_id):
 def delete_publication(request, publication_id):
     """
     Delete a publication.
-    Only accessible to the faculty member themselves.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     publication = get_object_or_404(Publication, pk=publication_id)
     faculty = publication.faculty
     
-    # Check permissions - only allow users to manage their own publications
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
-        messages.error(request, 'You can only delete your own publications.')
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        messages.error(request, 'You do not have permission to delete publications for this faculty member.')
         return redirect('people:user_profile')
     
     if request.method == 'POST':
@@ -2161,11 +2225,20 @@ def delete_publication(request, publication_id):
 def confirm_single_publication(request, faculty_id):
     """
     AJAX endpoint to confirm and save a single publication from bulk import.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
     """
+    from people.permissions import Permissions
+    
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions
-    if not (hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk):
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
         return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:

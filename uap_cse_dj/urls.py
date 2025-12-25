@@ -55,6 +55,7 @@ urlpatterns = [
     path('clubs/', include('clubs.urls')),
     path('features/', views.features, name='features'),
     path('credits/', views.credits, name='credits'),
+    path('search/', views.search, name='search'),
 ]
 
 # Serve media files in development and production

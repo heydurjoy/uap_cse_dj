@@ -24,6 +24,9 @@ class Permissions:
     # User management permissions
     MANAGE_USER_PERMISSIONS = 'manage_user_permissions'
     
+    # People/Publications permissions
+    MANAGE_ALL_PUBLICATIONS = 'manage_all_publications'
+    
     # Permission categories
     CATEGORY_OFFICE = 'office'
     CATEGORY_CLUBS = 'clubs'
@@ -105,6 +108,14 @@ PERMISSION_DEFINITIONS = [
         'category': Permissions.CATEGORY_USERS,
         'requires_role': [],
         'priority': 10,
+    },
+    {
+        'codename': Permissions.MANAGE_ALL_PUBLICATIONS,
+        'name': 'Manage All Publications',
+        'description': 'Can manage publications for all faculty members',
+        'category': Permissions.CATEGORY_USERS,
+        'requires_role': [],
+        'priority': 20,
     },
 ]
 
