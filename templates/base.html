@@ -296,8 +296,10 @@
     <!-- Left: Map -->
     <div class="footer-map">
         <iframe
+            id="footer-map-iframe"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d44203.88561937511!2d90.32284922217674!3d23.748943881898036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b0a98eaf3b%3A0xc692432124fcc478!2sUniversity%20of%20Asia%20Pacific%20%7C%20UAP!5e1!3m2!1sen!2sbd!4v1766090903952!5m2!1sen!2sbd"
-            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            onerror="this.style.display='none'; console.warn('Google Maps embed failed to load');">
         </iframe>
     </div>
 <div class="footer-column">
@@ -347,6 +349,33 @@
     <script src="{% static 'js/dropdown.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/navbar-scroll.js' %}"></script>
+    
+    <!-- Suppress Google Maps embed errors -->
+    <script>
+    // Suppress Google Maps API errors in console
+    window.addEventListener('error', function(e) {
+        if (e.message && (
+            e.message.includes('RefererNotAllowedMapError') ||
+            e.message.includes('init_embed.js') ||
+            e.message.includes('clientHeight')
+        )) {
+            e.preventDefault();
+            return true;
+        }
+    }, true);
+    
+    // Handle iframe load errors
+    document.addEventListener('DOMContentLoaded', function() {
+        const mapIframe = document.getElementById('footer-map-iframe');
+        if (mapIframe) {
+            mapIframe.addEventListener('error', function() {
+                console.warn('Google Maps embed failed to load');
+                this.style.display = 'none';
+            });
+        }
+    });
+    </script>
+    
  {% block extra_js %}
 
     {% endblock %}

@@ -3201,12 +3201,16 @@ p {
 .footer-map {
     flex: 0 0 500px; /* fix width so map doesn't stretch too far left */
     max-width: 500px;
+    position: relative;
+    min-height: 250px;
 }
 
 .footer-map iframe {
     width: 100%;
     height: 250px;
     border-radius: 2rem;
+    display: block;
+    border: none;
 }
 
 /* Info right side */
@@ -3302,7 +3306,7 @@ p {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    animation: pulse-glow 3s ease-in-out infinite;
+    /* animation: pulse-glow 3s ease-in-out infinite; - Removed */
 }
 
 .made-with-love-btn::before {
@@ -3347,12 +3351,12 @@ p {
     position: relative;
     z-index: 1;
     font-size: 1.2rem;
-    animation: heartbeat 1.5s ease-in-out infinite;
+    /* animation: heartbeat 1.5s ease-in-out infinite; - Removed */
     display: inline-block;
 }
 
 .made-with-love-btn:hover .btn-heart {
-    animation: heartbeat-fast 0.8s ease-in-out infinite;
+    /* animation: heartbeat-fast 0.8s ease-in-out infinite; - Removed */
     transform: scale(1.2);
 }
 
