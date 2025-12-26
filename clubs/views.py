@@ -145,17 +145,34 @@ def club_detail(request, pk):
     
     # 3. Add club members in positions (ordered by serial number)
     member_positions = latest_positions.filter(club_member__isnull=False).select_related('club_member', 'club_member__base_user')
+    member_pks_in_positions = set()  # Track which members are already in positions
     for position in member_positions:
+        member_pk = position.club_member.pk
+        member_pks_in_positions.add(member_pk)
         organized_members.append({
             'type': 'club_member',
             'faculty': None,
             'club_member': position.club_member,
-            'club_member_pk': position.club_member.pk,
+            'club_member_pk': member_pk,
             'position_title': position.position_title,
             'name': position.club_member.name,
             'profile_pic': position.club_member.profile_pic if position.club_member.profile_pic else None,
             'student_id': position.club_member.student_id if position.club_member.student_id else None,
-            'is_president': club.president and club.president.pk == position.club_member.pk,
+            'is_president': club.president and club.president.pk == member_pk,
+        })
+    
+    # 4. Add president if they exist and are not already in the list (not in a position)
+    if club.president and club.president.pk not in member_pks_in_positions:
+        organized_members.append({
+            'type': 'club_member',
+            'faculty': None,
+            'club_member': club.president,
+            'club_member_pk': club.president.pk,
+            'position_title': 'President',
+            'name': club.president.name,
+            'profile_pic': club.president.profile_pic if club.president.profile_pic else None,
+            'student_id': club.president.student_id if club.president.student_id else None,
+            'is_president': True,
         })
     
     # Get pinned posts for this club
