@@ -176,7 +176,10 @@
                                             {% endif %}
                                             <div class="faculty-card-overlay">
                                                 <div class="faculty-card-info">
-                                                    <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                    <div class="faculty-card-header">
+                                                        <span class="faculty-card-sl">#{{ item.faculty.sl|default:"-" }}</span>
+                                                        <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                    </div>
                                                     <div class="faculty-card-meta">
                                                         <span class="faculty-card-score">Score: {{ item.score }}</span>
                                                         <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
@@ -889,12 +892,10 @@
 }
 
 .faculty-card.golden-rank {
-    border: 2px solid var(--color-primary);
-    box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
-                0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)),
-        color-mix(in srgb, var(--color-primary) 6%, var(--bg-secondary)));
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(0, 0, 0, 0.2);
+    background: var(--bg-secondary);
     position: relative;
     animation: prestigiousGlow 3s ease-in-out infinite;
 }
@@ -907,9 +908,9 @@
     right: -2px;
     bottom: -2px;
     background: linear-gradient(45deg, 
-        var(--color-primary),
-        color-mix(in srgb, var(--color-primary) 70%, transparent),
-        var(--color-primary));
+        rgba(0, 0, 0, 0.8),
+        rgba(0, 0, 0, 0.5),
+        rgba(0, 0, 0, 0.8));
     border-radius: 16px;
     z-index: -1;
     opacity: 0.6;
@@ -918,12 +919,12 @@
 
 @keyframes prestigiousGlow {
     0%, 100% {
-        box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
-                    0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
+                    0 0 30px rgba(0, 0, 0, 0.2);
     }
     50% {
-        box-shadow: 0 6px 30px color-mix(in srgb, var(--color-primary) 60%, transparent),
-                    0 0 50px color-mix(in srgb, var(--color-primary) 35%, transparent);
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6),
+                    0 0 50px rgba(0, 0, 0, 0.35);
     }
 }
 
@@ -939,9 +940,9 @@
 }
 
 .faculty-card-item:hover .faculty-card.golden-rank {
-    box-shadow: 0 8px 35px color-mix(in srgb, var(--color-primary) 70%, transparent),
-                0 0 60px color-mix(in srgb, var(--color-primary) 40%, transparent);
-    border-color: var(--color-primary);
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.7),
+                0 0 60px rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 0, 0, 0.5);
     transform: translateY(-4px) scale(1.02);
 }
 
@@ -963,11 +964,11 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 80px;
     background: linear-gradient(to top, 
-        color-mix(in srgb, var(--color-primary) 85%, transparent) 0%,
-        color-mix(in srgb, var(--color-primary) 60%, transparent) 30%,
-        color-mix(in srgb, var(--color-primary) 30%, transparent) 60%,
+        rgba(0, 0, 0, 0.85) 0%,
+        rgba(0, 0, 0, 0.6) 30%,
+        rgba(0, 0, 0, 0.3) 60%,
         transparent 100%);
     pointer-events: none;
     z-index: 2;
@@ -1016,34 +1017,41 @@
 
 .golden-rank-badge-below {
     background: transparent;
-    color: white;
+    color: var(--color-primary);
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
     font-weight: 700;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-top: auto;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
-                 0 0 8px rgba(0, 0, 0, 0.3);
+                 0 0 8px color-mix(in srgb, var(--color-primary) 50%, transparent);
     position: absolute;
-    bottom: 0.75rem;
+    bottom: 0.5rem;
     left: 0;
     right: 0;
-    z-index: 3;
-    animation: badgePulse 2s ease-in-out infinite;
+    z-index: 4;
+    animation: badgeFloat 3s ease-in-out infinite, badgePulse 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes badgeFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
 }
 
 @keyframes badgePulse {
     0%, 100% {
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
-                     0 0 8px rgba(0, 0, 0, 0.3);
-        transform: scale(1);
+                     0 0 8px color-mix(in srgb, var(--color-primary) 50%, transparent);
     }
     50% {
         text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6),
-                     0 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
-        transform: scale(1.02);
+                     0 0 16px color-mix(in srgb, var(--color-primary) 70%, transparent);
     }
 }
 
@@ -1074,6 +1082,7 @@
         rgba(0, 0, 0, 0.7) 30%,
         rgba(0, 0, 0, 0.5) 50%,
         rgba(0, 0, 0, 0) 100%);
+    padding-bottom: 3.5rem; /* Extra space for the badge below */
 }
 
 .faculty-card-item:hover .faculty-card-overlay {
@@ -1081,10 +1090,32 @@
     background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
 }
 
+.faculty-card-item:hover .faculty-card.golden-rank .faculty-card-overlay {
+    padding-bottom: 3.75rem; /* Maintain extra space on hover */
+}
+
 .faculty-card-info {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+}
+
+.faculty-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.faculty-card-sl {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
 }
 
 .faculty-card-name {
@@ -1094,6 +1125,7 @@
     color: white;
     line-height: 1.2;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    flex: 1;
 }
 
 .faculty-card-meta {

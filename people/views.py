@@ -2740,8 +2740,13 @@ def departmental_research(request):
             'year_span': year_span,  # For tie-breaking
         })
     
-    # Sort faculty by score (highest first), then by year_span (smaller is better)
-    faculty_scores.sort(key=lambda x: (-x['score'], x['year_span']))
+    # Sort faculty by SL (serial number) for "All Faculties" tab to match faculty list page
+    # Add SL to each item and sort by SL first, then by score
+    for item in faculty_scores:
+        item['sl'] = item['faculty'].sl if item['faculty'].sl else 999
+    
+    # Sort by SL first, then by score (for "All Faculties" tab)
+    faculty_scores.sort(key=lambda x: (x['sl'], -x['score'], x['year_span']))
     
     # ===== SECTION 1: Most Cited Researchers (All Time) =====
     # Rank strictly by total citation count (descending)
