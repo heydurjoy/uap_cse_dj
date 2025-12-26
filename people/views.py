@@ -495,8 +495,22 @@ def edit_profile(request):
                     if 'routine' in request.POST:
                         routine_content = request.POST.get('routine', '').strip()
                         profile.routine = routine_content if routine_content else None
+                    
+                    # For faculty, profile picture MUST go to Faculty.profile_pic, not BaseUser.profile_picture
                     if 'profile_pic' in request.FILES:
                         profile.profile_pic = request.FILES['profile_pic']
+                        # Explicitly ensure BaseUser.profile_picture is NOT updated for faculty
+                        # (in case it was set before, we don't want to keep it)
+                        if user.profile_picture:
+                            user.profile_picture = None
+                            user.save(update_fields=['profile_picture'])
+                    elif 'profile_picture' in request.FILES:
+                        # If somehow profile_picture is sent instead, still use Faculty.profile_pic
+                        profile.profile_pic = request.FILES['profile_picture']
+                        if user.profile_picture:
+                            user.profile_picture = None
+                            user.save(update_fields=['profile_picture'])
+                    
                     if 'cropping' in request.POST:
                         profile.cropping = request.POST.get('cropping', '').strip()
                     
