@@ -609,89 +609,107 @@ class Faculty(models.Model):
                 import traceback
                 traceback.print_exc()
         
-        # On subsequent edits, only crop if cropping coordinates are explicitly set
-        elif cropping_set and is_update and not picture_changed:
+        # On subsequent edits, only crop if:
+        # 1. A new picture was uploaded AND cropping coordinates are provided, OR
+        # 2. Cropping coordinates are explicitly provided (user wants to crop existing picture)
+        elif cropping_set and is_update:
             try:
                 # Get the original image path
                 if self.profile_pic and self.profile_pic.name:
                     # Read the image file
                     image_data = None
-                    if hasattr(self.profile_pic, 'read'):
-                        # File is in memory (new upload)
-                        self.profile_pic.seek(0)
-                        image_data = self.profile_pic.read()
+                    
+                    # If a new picture was uploaded, read from memory
+                    if picture_changed:
+                        if hasattr(self.profile_pic, 'read'):
+                            try:
+                                # Try to read from the file object
+                                # Check if file is closed (if attribute exists)
+                                if hasattr(self.profile_pic, 'closed') and self.profile_pic.closed:
+                                    # File is closed, can't read - clear cropping and skip
+                                    self.cropping = ''
+                                    super().save(*args, **kwargs)
+                                    return
+                                # Try to seek and read
+                                self.profile_pic.seek(0)
+                                image_data = self.profile_pic.read()
+                            except (ValueError, OSError, AttributeError, IOError):
+                                # File is closed or can't be read, skip cropping
+                                self.cropping = ''
+                                super().save(*args, **kwargs)
+                                return
                     else:
-                        # File is on disk - check if it exists
+                        # No new picture uploaded, but user wants to crop existing picture
+                        # Try to read existing file from disk/storage
                         try:
+                            # Try local file path first
                             image_path = self.profile_pic.path
                             if os.path.exists(image_path):
                                 with open(image_path, 'rb') as f:
                                     image_data = f.read()
                             else:
-                                # File doesn't exist, skip cropping and clear cropping field
-                                self.cropping = ''
-                                super().save(*args, **kwargs)
-                                return
-                        except (ValueError, AttributeError):
-                            # File path is invalid or file doesn't exist
-                            # Try to read from storage instead
-                            try:
+                                # File doesn't exist locally, try storage
                                 if self.profile_pic.storage.exists(self.profile_pic.name):
-                                    image_data = self.profile_pic.storage.open(self.profile_pic.name).read()
+                                    with self.profile_pic.storage.open(self.profile_pic.name, 'rb') as f:
+                                        image_data = f.read()
                                 else:
-                                    # File doesn't exist in storage, skip cropping
+                                    # File doesn't exist, skip cropping and clear cropping field
                                     self.cropping = ''
                                     super().save(*args, **kwargs)
                                     return
-                            except Exception:
-                                # Can't access file, skip cropping
-                                self.cropping = ''
-                                super().save(*args, **kwargs)
-                                return
+                        except (ValueError, AttributeError, IOError, OSError):
+                            # Can't access file, skip cropping
+                            self.cropping = ''
+                            super().save(*args, **kwargs)
+                            return
                     
                     if image_data:
                         # Open image with PIL from bytes
                         image = Image.open(io.BytesIO(image_data))
                         
                         # Parse cropping coordinates (format: "x1,y1,x2,y2")
-                        crop_coords = [int(x.strip()) for x in self.cropping.split(',')]
-                        if len(crop_coords) == 4:
-                            x1, y1, x2, y2 = crop_coords
-                            
-                            # Crop the image
-                            cropped_image = image.crop((x1, y1, x2, y2))
-                            
-                            # Resize to exact 600x600 if needed
-                            if cropped_image.size != (600, 600):
-                                cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
-                            
-                            # Save to memory
-                            img_io = io.BytesIO()
-                            # Determine format from original
-                            format = image.format or 'JPEG'
-                            if format not in ['JPEG', 'PNG', 'WEBP']:
-                                format = 'JPEG'
-                            
-                            # Convert RGBA to RGB if necessary for JPEG
-                            if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
-                                rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
-                                if cropped_image.mode == 'P':
-                                    cropped_image = cropped_image.convert('RGBA')
-                                rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
-                                cropped_image = rgb_image
-                            
-                            cropped_image.save(img_io, format=format, quality=95)
-                            img_io.seek(0)
-                            
-                            # Replace the original file
-                            file_name = os.path.basename(self.profile_pic.name)
-                            self.profile_pic.save(
-                                file_name,
-                                ContentFile(img_io.read()),
-                                save=False
-                            )
-                            
-                            # Clear cropping coordinates after applying
+                        try:
+                            crop_coords = [int(x.strip()) for x in self.cropping.split(',')]
+                            if len(crop_coords) == 4:
+                                x1, y1, x2, y2 = crop_coords
+                                
+                                # Crop the image
+                                cropped_image = image.crop((x1, y1, x2, y2))
+                                
+                                # Resize to exact 600x600 if needed
+                                if cropped_image.size != (600, 600):
+                                    cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
+                                
+                                # Save to memory
+                                img_io = io.BytesIO()
+                                # Determine format from original
+                                format = image.format or 'JPEG'
+                                if format not in ['JPEG', 'PNG', 'WEBP']:
+                                    format = 'JPEG'
+                                
+                                # Convert RGBA to RGB if necessary for JPEG
+                                if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
+                                    rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
+                                    if cropped_image.mode == 'P':
+                                        cropped_image = cropped_image.convert('RGBA')
+                                    rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
+                                    cropped_image = rgb_image
+                                
+                                cropped_image.save(img_io, format=format, quality=95)
+                                img_io.seek(0)
+                                
+                                # Replace the original file
+                                file_name = os.path.basename(self.profile_pic.name)
+                                self.profile_pic.save(
+                                    file_name,
+                                    ContentFile(img_io.read()),
+                                    save=False
+                                )
+                                
+                                # Clear cropping coordinates after applying
+                                self.cropping = ''
+                        except (ValueError, IndexError):
+                            # Invalid cropping coordinates, clear them
                             self.cropping = ''
                     else:
                         # No image data available, clear cropping field
@@ -699,12 +717,15 @@ class Faculty(models.Model):
                 else:
                     # No profile picture, clear cropping field
                     self.cropping = ''
-                        
             except Exception as e:
-                # If cropping fails, clear cropping field and save normally
+                # If cropping fails for any reason, clear cropping field and save normally
                 self.cropping = ''
                 import traceback
                 traceback.print_exc()
+        elif is_update and self.cropping and self.cropping.strip() and not picture_changed:
+            # If cropping coordinates exist but no picture available, clear cropping
+            if not self.profile_pic or not self.profile_pic.name:
+                self.cropping = ''
         
         super().save(*args, **kwargs)
 
