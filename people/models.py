@@ -1,14 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.files.base import ContentFile
 from ckeditor.fields import RichTextField
 from image_cropping.fields import ImageRatioField, ImageCropField
-from PIL import Image
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-import io
-import os
 import hashlib
 
 
@@ -524,210 +520,12 @@ class Faculty(models.Model):
     def __str__(self):
         return f'{self.sl}. {self.name} | {self.designation or "N/A"}'
     
-    def save(self, *args, **kwargs):
-        is_update = self.pk is not None
-        # Detect if profile_pic file was replaced
-        picture_changed = False
-        if is_update:
-            # Only query if profile_pic might have changed
-            # Check update_fields to avoid unnecessary query
-            update_fields = kwargs.get('update_fields')
-            if update_fields is None or 'profile_pic' in update_fields:
-                try:
-                    # Use only() to fetch only the field we need (optimization)
-                    old = Faculty.objects.only('profile_pic').get(pk=self.pk)
-                    old_pic_name = old.profile_pic.name if old.profile_pic else None
-                    new_pic_name = self.profile_pic.name if self.profile_pic else None
-                    picture_changed = old_pic_name != new_pic_name
-                except Faculty.DoesNotExist:
-                    picture_changed = False
-            # If update_fields is specified and profile_pic is not in it, skip the check
-            elif update_fields and 'profile_pic' not in update_fields:
-                picture_changed = False
-        else:
-            picture_changed = bool(self.profile_pic and self.profile_pic.name)
-        
-        cropping_set = bool(self.profile_pic and self.cropping and self.cropping.strip())
-        
-        # On first upload (new object), auto-crop to center 1:1
-        if not is_update and self.profile_pic and self.profile_pic.name:
-            try:
-                # Read the image file
-                if hasattr(self.profile_pic, 'read'):
-                    self.profile_pic.seek(0)
-                    image_data = self.profile_pic.read()
-                else:
-                    image_path = self.profile_pic.path
-                    with open(image_path, 'rb') as f:
-                        image_data = f.read()
-                
-                # Open image with PIL from bytes
-                image = Image.open(io.BytesIO(image_data))
-                width, height = image.size
-                
-                # Calculate center crop for 1:1 ratio
-                min_dim = min(width, height)
-                left = (width - min_dim) / 2
-                top = (height - min_dim) / 2
-                right = (width + min_dim) / 2
-                bottom = (height + min_dim) / 2
-                
-                # Crop the image
-                cropped_image = image.crop((int(left), int(top), int(right), int(bottom)))
-                
-                # Resize to exact 600x600
-                if cropped_image.size != (600, 600):
-                    cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
-                
-                # Save to memory
-                img_io = io.BytesIO()
-                format = image.format or 'JPEG'
-                if format not in ['JPEG', 'PNG', 'WEBP']:
-                    format = 'JPEG'
-                
-                # Convert RGBA to RGB if necessary for JPEG
-                if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
-                    rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
-                    if cropped_image.mode == 'P':
-                        cropped_image = cropped_image.convert('RGBA')
-                    rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
-                    cropped_image = rgb_image
-                
-                cropped_image.save(img_io, format=format, quality=95)
-                img_io.seek(0)
-                
-                # Replace the original file
-                file_name = os.path.basename(self.profile_pic.name)
-                self.profile_pic.save(
-                    file_name,
-                    ContentFile(img_io.read()),
-                    save=False
-                )
-                
-            except Exception as e:
-                # If auto-cropping fails, just save normally
-                import traceback
-                traceback.print_exc()
-        
-        # On subsequent edits, only crop if:
-        # 1. A new picture was uploaded AND cropping coordinates are provided, OR
-        # 2. Cropping coordinates are explicitly provided (user wants to crop existing picture)
-        elif cropping_set and is_update:
-            try:
-                # Get the original image path
-                if self.profile_pic and self.profile_pic.name:
-                    # Read the image file
-                    image_data = None
-                    
-                    # If a new picture was uploaded, read from memory
-                    if picture_changed:
-                        if hasattr(self.profile_pic, 'read'):
-                            try:
-                                # Try to read from the file object
-                                # Check if file is closed (if attribute exists)
-                                if hasattr(self.profile_pic, 'closed') and self.profile_pic.closed:
-                                    # File is closed, can't read - clear cropping and skip
-                                    self.cropping = ''
-                                    super().save(*args, **kwargs)
-                                    return
-                                # Try to seek and read
-                                self.profile_pic.seek(0)
-                                image_data = self.profile_pic.read()
-                            except (ValueError, OSError, AttributeError, IOError):
-                                # File is closed or can't be read, skip cropping
-                                self.cropping = ''
-                                super().save(*args, **kwargs)
-                                return
-                    else:
-                        # No new picture uploaded, but user wants to crop existing picture
-                        # Try to read existing file from disk/storage
-                        try:
-                            # Try local file path first
-                            image_path = self.profile_pic.path
-                            if os.path.exists(image_path):
-                                with open(image_path, 'rb') as f:
-                                    image_data = f.read()
-                            else:
-                                # File doesn't exist locally, try storage
-                                if self.profile_pic.storage.exists(self.profile_pic.name):
-                                    with self.profile_pic.storage.open(self.profile_pic.name, 'rb') as f:
-                                        image_data = f.read()
-                                else:
-                                    # File doesn't exist, skip cropping and clear cropping field
-                                    self.cropping = ''
-                                    super().save(*args, **kwargs)
-                                    return
-                        except (ValueError, AttributeError, IOError, OSError):
-                            # Can't access file, skip cropping
-                            self.cropping = ''
-                            super().save(*args, **kwargs)
-                            return
-                    
-                    if image_data:
-                        # Open image with PIL from bytes
-                        image = Image.open(io.BytesIO(image_data))
-                        
-                        # Parse cropping coordinates (format: "x1,y1,x2,y2")
-                        try:
-                            crop_coords = [int(x.strip()) for x in self.cropping.split(',')]
-                            if len(crop_coords) == 4:
-                                x1, y1, x2, y2 = crop_coords
-                                
-                                # Crop the image
-                                cropped_image = image.crop((x1, y1, x2, y2))
-                                
-                                # Resize to exact 600x600 if needed
-                                if cropped_image.size != (600, 600):
-                                    cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
-                                
-                                # Save to memory
-                                img_io = io.BytesIO()
-                                # Determine format from original
-                                format = image.format or 'JPEG'
-                                if format not in ['JPEG', 'PNG', 'WEBP']:
-                                    format = 'JPEG'
-                                
-                                # Convert RGBA to RGB if necessary for JPEG
-                                if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
-                                    rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
-                                    if cropped_image.mode == 'P':
-                                        cropped_image = cropped_image.convert('RGBA')
-                                    rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
-                                    cropped_image = rgb_image
-                                
-                                cropped_image.save(img_io, format=format, quality=95)
-                                img_io.seek(0)
-                                
-                                # Replace the original file
-                                file_name = os.path.basename(self.profile_pic.name)
-                                self.profile_pic.save(
-                                    file_name,
-                                    ContentFile(img_io.read()),
-                                    save=False
-                                )
-                                
-                                # Clear cropping coordinates after applying
-                                self.cropping = ''
-                        except (ValueError, IndexError):
-                            # Invalid cropping coordinates, clear them
-                            self.cropping = ''
-                    else:
-                        # No image data available, clear cropping field
-                        self.cropping = ''
-                else:
-                    # No profile picture, clear cropping field
-                    self.cropping = ''
-            except Exception as e:
-                # If cropping fails for any reason, clear cropping field and save normally
-                self.cropping = ''
-                import traceback
-                traceback.print_exc()
-        elif is_update and self.cropping and self.cropping.strip() and not picture_changed:
-            # If cropping coordinates exist but no picture available, clear cropping
-            if not self.profile_pic or not self.profile_pic.name:
-                self.cropping = ''
-        
-        super().save(*args, **kwargs)
+    # No custom save method - let Django and image_cropping handle everything automatically
+    # Just like the Club model does
+
+
+# No pre_save signal - let Django and image_cropping handle everything automatically
+# Just like the Club model does
 
 
 class Publication(models.Model):

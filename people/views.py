@@ -479,16 +479,21 @@ def edit_profile(request):
                     if 'citation' in request.POST:
                         citation_str = request.POST.get('citation', '').strip()
                         profile.citation = int(citation_str) if citation_str.isdigit() else None
+                    # Helper function to clean URL values
+                    def clean_url(value):
+                        val = value.strip() if value else ''
+                        return None if not val or val.lower() == 'none' else val
+                    
                     if 'google_scholar_url' in request.POST:
-                        profile.google_scholar_url = request.POST.get('google_scholar_url', '').strip() or None
+                        profile.google_scholar_url = clean_url(request.POST.get('google_scholar_url', ''))
                     if 'researchgate_url' in request.POST:
-                        profile.researchgate_url = request.POST.get('researchgate_url', '').strip() or None
+                        profile.researchgate_url = clean_url(request.POST.get('researchgate_url', ''))
                     if 'orcid_url' in request.POST:
-                        profile.orcid_url = request.POST.get('orcid_url', '').strip() or None
+                        profile.orcid_url = clean_url(request.POST.get('orcid_url', ''))
                     if 'scopus_url' in request.POST:
-                        profile.scopus_url = request.POST.get('scopus_url', '').strip() or None
+                        profile.scopus_url = clean_url(request.POST.get('scopus_url', ''))
                     if 'linkedin_url' in request.POST:
-                        profile.linkedin_url = request.POST.get('linkedin_url', '').strip() or None
+                        profile.linkedin_url = clean_url(request.POST.get('linkedin_url', ''))
                     if 'researches' in request.POST:
                         researches_content = request.POST.get('researches', '').strip()
                         profile.researches = researches_content if researches_content else None
@@ -496,11 +501,10 @@ def edit_profile(request):
                         routine_content = request.POST.get('routine', '').strip()
                         profile.routine = routine_content if routine_content else None
                     
-                    # For faculty, profile picture MUST go to Faculty.profile_pic, not BaseUser.profile_picture
+                    # Handle image uploads (only if new file is provided) - same as Club model
                     if 'profile_pic' in request.FILES:
                         profile.profile_pic = request.FILES['profile_pic']
                         # Explicitly ensure BaseUser.profile_picture is NOT updated for faculty
-                        # (in case it was set before, we don't want to keep it)
                         if user.profile_picture:
                             user.profile_picture = None
                             user.save(update_fields=['profile_picture'])
@@ -511,6 +515,7 @@ def edit_profile(request):
                             user.profile_picture = None
                             user.save(update_fields=['profile_picture'])
                     
+                    # Handle cropping field - same as Club model
                     if 'cropping' in request.POST:
                         profile.cropping = request.POST.get('cropping', '').strip()
                     
@@ -1365,9 +1370,13 @@ def edit_faculty(request, pk):
             faculty.bio = request.POST.get('bio', '').strip() or None
             faculty.about = request.POST.get('about', '')
             
-            # Update profile picture if provided
+            # Handle image uploads (only if new file is provided) - same as Club model
             if 'profile_pic' in request.FILES:
                 faculty.profile_pic = request.FILES['profile_pic']
+            
+            # Handle cropping field - same as Club model
+            if 'cropping' in request.POST:
+                faculty.cropping = request.POST.get('cropping', '').strip()
             
             # Update joining date
             joining_date_str = request.POST.get('joining_date', '').strip()
@@ -1391,12 +1400,16 @@ def edit_faculty(request, pk):
             else:
                 faculty.last_office_date = None
             
-            # Update research links
-            faculty.google_scholar_url = request.POST.get('google_scholar_url', '').strip() or None
-            faculty.researchgate_url = request.POST.get('researchgate_url', '').strip() or None
-            faculty.orcid_url = request.POST.get('orcid_url', '').strip() or None
-            faculty.scopus_url = request.POST.get('scopus_url', '').strip() or None
-            faculty.linkedin_url = request.POST.get('linkedin_url', '').strip() or None
+            # Update research links - convert empty strings and "None" to None
+            def clean_url(value):
+                val = value.strip() if value else ''
+                return None if not val or val.lower() == 'none' else val
+            
+            faculty.google_scholar_url = clean_url(request.POST.get('google_scholar_url', ''))
+            faculty.researchgate_url = clean_url(request.POST.get('researchgate_url', ''))
+            faculty.orcid_url = clean_url(request.POST.get('orcid_url', ''))
+            faculty.scopus_url = clean_url(request.POST.get('scopus_url', ''))
+            faculty.linkedin_url = clean_url(request.POST.get('linkedin_url', ''))
             
             # Update research information
             faculty.researches = request.POST.get('researches', '')
@@ -1568,12 +1581,16 @@ def create_faculty(request):
                 except ValueError:
                     pass
             
-            # Update research links
-            faculty.google_scholar_url = request.POST.get('google_scholar_url', '').strip() or None
-            faculty.researchgate_url = request.POST.get('researchgate_url', '').strip() or None
-            faculty.orcid_url = request.POST.get('orcid_url', '').strip() or None
-            faculty.scopus_url = request.POST.get('scopus_url', '').strip() or None
-            faculty.linkedin_url = request.POST.get('linkedin_url', '').strip() or None
+            # Update research links - convert empty strings and "None" to None
+            def clean_url(value):
+                val = value.strip() if value else ''
+                return None if not val or val.lower() == 'none' else val
+            
+            faculty.google_scholar_url = clean_url(request.POST.get('google_scholar_url', ''))
+            faculty.researchgate_url = clean_url(request.POST.get('researchgate_url', ''))
+            faculty.orcid_url = clean_url(request.POST.get('orcid_url', ''))
+            faculty.scopus_url = clean_url(request.POST.get('scopus_url', ''))
+            faculty.linkedin_url = clean_url(request.POST.get('linkedin_url', ''))
             
             # Update research information
             faculty.researches = request.POST.get('researches', '')

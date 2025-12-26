@@ -317,23 +317,23 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="google_scholar_url">Google Scholar URL</label>
-                        <input type="text" id="google_scholar_url" name="google_scholar_url" value="{{ profile.google_scholar_url }}" placeholder="https://scholar.google.com/...">
+                        <input type="text" id="google_scholar_url" name="google_scholar_url" value="{{ profile.google_scholar_url|default:'' }}" placeholder="https://scholar.google.com/...">
                     </div>
                     <div class="form-group">
                         <label for="researchgate_url">ResearchGate URL</label>
-                        <input type="text" id="researchgate_url" name="researchgate_url" value="{{ profile.researchgate_url }}" placeholder="https://www.researchgate.net/...">
+                        <input type="text" id="researchgate_url" name="researchgate_url" value="{{ profile.researchgate_url|default:'' }}" placeholder="https://www.researchgate.net/...">
                     </div>
                     <div class="form-group">
                         <label for="orcid_url">ORCID URL</label>
-                        <input type="text" id="orcid_url" name="orcid_url" value="{{ profile.orcid_url }}" placeholder="https://orcid.org/...">
+                        <input type="text" id="orcid_url" name="orcid_url" value="{{ profile.orcid_url|default:'' }}" placeholder="https://orcid.org/...">
                     </div>
                     <div class="form-group">
                         <label for="scopus_url">Scopus URL</label>
-                        <input type="text" id="scopus_url" name="scopus_url" value="{{ profile.scopus_url }}" placeholder="https://www.scopus.com/...">
+                        <input type="text" id="scopus_url" name="scopus_url" value="{{ profile.scopus_url|default:'' }}" placeholder="https://www.scopus.com/...">
                     </div>
                     <div class="form-group">
                         <label for="linkedin_url">LinkedIn URL</label>
-                        <input type="text" id="linkedin_url" name="linkedin_url" value="{{ profile.linkedin_url }}" placeholder="https://www.linkedin.com/...">
+                        <input type="text" id="linkedin_url" name="linkedin_url" value="{{ profile.linkedin_url|default:'' }}" placeholder="https://www.linkedin.com/...">
                     </div>
                 </div>
             </div>
