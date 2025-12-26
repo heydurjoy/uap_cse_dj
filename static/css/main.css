@@ -1892,7 +1892,7 @@ body.theme-transitioning * {
 /* Main Content */
 .main-content {
     flex: 1;
-    padding: 0;
+     padding-top: 150px;
 }
 
 
@@ -2551,7 +2551,6 @@ p {
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 0.6rem;
-    margin-top: 7rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-shadow: none;
