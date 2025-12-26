@@ -588,7 +588,7 @@ body {
     transition: margin-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.navbar.scrolled .nav-main-con09999tent {
+.navbar.scrolled .nav-main-content {
     margin-top: 1.8rem;
 }
 
