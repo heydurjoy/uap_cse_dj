@@ -64,7 +64,7 @@
 </section>
 
 <!-- Marks Distribution Network Banner -->
-<section class="marks-network-banner-wrapper">
+
     <div class="container marks-network-container">
         <div class="marks-network-banner" onclick="scrollToMarksDistribution()">
             <div class="marks-network-bg-animation"></div>
@@ -88,7 +88,8 @@
             </div>
         </div>
     </div>
-</section>
+
+
 
 <!-- UAP Now Section -->
 <section class="uapnow-section">
@@ -1692,16 +1693,12 @@ html, body {
 }
 
 /* Marks Distribution Network Banner */
-.marks-network-banner-wrapper {
-    padding: 2.5rem 0 3rem 0;
-    position: relative;
-    margin-top: 1rem;
-}
 
 .marks-network-container {
     max-width: 750px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+        padding: 2.5rem 0 3rem 0;
+    position: relative;
 }
 
 .marks-network-banner {
@@ -1724,12 +1721,12 @@ html, body {
 
 @keyframes subtle-pulse {
     0%, 100% {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1),
                     0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset,
                     0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
     50% {
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12), 
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12),
                     0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent) inset,
                     0 0 40px color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
@@ -1737,7 +1734,7 @@ html, body {
 
 .marks-network-banner:hover {
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
                 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent) inset,
                 0 0 60px color-mix(in srgb, var(--color-primary) 35%, transparent),
                 0 0 100px color-mix(in srgb, var(--color-primary) 20%, transparent);

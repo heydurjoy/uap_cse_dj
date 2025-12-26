@@ -179,6 +179,7 @@ body {
     flex-direction: column;
 }
 
+
 /* Top Bar - Login/Sign Up - Now integrated in navbar */
 
 .top-bar-right {
@@ -555,7 +556,7 @@ body {
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: none;
     border-top: none;
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -566,6 +567,7 @@ body {
     transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 0;
     align-self: flex-start; /* Important for flex containers */
+    flex-shrink: 0;
 }
 
 /* Navbar scrolled state - slightly smaller */
@@ -586,7 +588,7 @@ body {
     transition: margin-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.navbar.scrolled .nav-main-content {
+.navbar.scrolled .nav-main-con09999tent {
     margin-top: 1.8rem;
 }
 
@@ -1890,12 +1892,9 @@ body.theme-transitioning * {
 /* Main Content */
 .main-content {
     flex: 1;
-    padding:0;
+    padding: 0;
 }
 
-.main-content > .home-hero:first-child {
-    margin-top: -3rem;
-}
 
 .container {
     max-width: 85rem; /* 1360px at 16px base, scales with root font-size */
@@ -2468,15 +2467,13 @@ p {
 
 /* Home Hero Section */
 .home-hero {
-    min-height: 81vh;
     display: flex;
     align-items: flex-start;
-    padding: 3.6rem 0 3.6rem 0;
-    margin-top: -3rem;
+    padding: 3.6rem 0 0 0;
     background: var(--bg-primary);
     position: relative;
-    overflow: visible;
 }
+
 
 .home-hero::before {
     content: '';
@@ -2549,14 +2546,13 @@ p {
     justify-content: flex-start;
     padding-top: 0;
 }
-
 .hero-welcome {
     font-size: 1.8rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
-    margin-top: 0;
-    letter-spacing: 0.05em;
+    margin-bottom: 0.6rem;
+    margin-top: 7rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     text-shadow: none;
     -webkit-text-stroke: none;
@@ -2565,7 +2561,7 @@ p {
 .hero-title {
     font-size: 6.75rem;
     font-weight: 900;
-    line-height: 1.1;
+    line-height: 1.08;
     margin: 0;
     background: linear-gradient(135deg,
         var(--color-primary) 0%,
@@ -2579,7 +2575,6 @@ p {
     animation: gradientShift 3s ease-in-out infinite;
     text-shadow: none;
     -webkit-text-stroke: none;
-    margin-bottom: 1rem;
 }
 
 @keyframes gradientShift {
@@ -2595,7 +2590,7 @@ p {
     font-size: 1.62rem;
     font-style: normal;
     color: var(--text-primary);
-    margin-bottom: 2rem;
+    margin-bottom: 0.7rem;
     font-weight: 600;
     text-shadow: none;
     -webkit-text-stroke: none;
@@ -2605,11 +2600,12 @@ p {
     font-size: 3.15rem;
     font-weight: 900;
     color: var(--text-primary);
-    margin-bottom: 2rem;
+    margin-bottom: 2.2rem;
     line-height: 1.2;
     text-shadow: none;
     -webkit-text-stroke: none;
 }
+
 
 .stats-prefix {
     font-size: 1.62rem;
@@ -2775,7 +2771,7 @@ p {
   width: 100%;
   max-width: 432px;
   padding-top: 2.5rem;
-  margin-left: 100px;
+  margin-left: 80px;
   margin-top: 0.9rem;
 }
 
@@ -2792,7 +2788,7 @@ p {
 .polaroid-frame {
   width: 216px;
   background: #fafafa;
-  padding: 12.6px 12.6px 49.5px 12.6px;
+   padding: 10px 10px 38px 10px;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15),
               0 0 30px var(--glow-shadow);
@@ -2836,7 +2832,7 @@ p {
 
 .polaroid-caption {
   margin-top: 10.0px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
