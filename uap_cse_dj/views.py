@@ -282,6 +282,8 @@ def home(request):
         'lifetime_stats': lifetime_stats,
         'program_outcomes': program_outcomes,
         'research_stats': research_stats,
+        'most_cited_researchers': most_cited_researchers,
+        'leading_active_researchers': leading_active_researchers,
         'top_researchers': top_researchers,
     })
 
