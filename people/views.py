@@ -444,8 +444,12 @@ def edit_profile(request):
                     user.last_name = request.POST.get('last_name', '').strip()
                 if 'phone_number' in request.POST:
                     user.phone_number = request.POST.get('phone_number', '').strip() or None
-                if 'profile_picture' in request.FILES:
+                
+                # Only update BaseUser.profile_picture if user is NOT a faculty member
+                # For faculty members, profile picture should go to Faculty.profile_pic
+                if 'profile_picture' in request.FILES and profile_type != 'faculty':
                     user.profile_picture = request.FILES['profile_picture']
+                
                 user.save()
                 
                 # Update profile-specific fields

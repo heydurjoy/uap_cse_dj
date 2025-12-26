@@ -54,9 +54,7 @@
                     <span class="top-bar-link user-greeting">Hi, {{ user|greeting_name }}</span>
                     <a href="{% url 'people:user_profile' %}" class="profile-pic-link" title="View Profile">
                         <div class="profile-pic-wrapper">
-                            {% if user.profile_picture %}
-                                <img src="/media/{{ user.profile_picture.name|cache_bust:user }}" alt="Profile" class="profile-pic-small">
-                            {% elif user.user_type == 'faculty' and user.faculty_profile and user.faculty_profile.profile_pic %}
+                            {% if user.user_type == 'faculty' and user.faculty_profile and user.faculty_profile.profile_pic %}
                                 <img src="/media/{{ user.faculty_profile.profile_pic.name|cache_bust:user.faculty_profile }}" alt="Profile" class="profile-pic-small">
                             {% elif user.user_type == 'staff' and user.staff_profile and user.staff_profile.profile_pic %}
                                 <img src="/media/{{ user.staff_profile.profile_pic.name|cache_bust:user.staff_profile }}" alt="Profile" class="profile-pic-small">
@@ -64,6 +62,8 @@
                                 <img src="/media/{{ user.officer_profile.profile_pic.name|cache_bust:user.officer_profile }}" alt="Profile" class="profile-pic-small">
                             {% elif user.user_type == 'club_member' and user.club_member_profile and user.club_member_profile.profile_pic %}
                                 <img src="/media/{{ user.club_member_profile.profile_pic.name|cache_bust:user.club_member_profile }}" alt="Profile" class="profile-pic-small">
+                            {% elif user.profile_picture %}
+                                <img src="/media/{{ user.profile_picture.name|cache_bust:user }}" alt="Profile" class="profile-pic-small">
                             {% else %}
                                 <img src="{% static 'defaults/people.png' %}" alt="Profile" class="profile-pic-small">
                             {% endif %}
@@ -111,16 +111,16 @@
                                 <span class="top-bar-link user-greeting">Hi, {{ user|greeting_name }}</span>
                                 <a href="{% url 'people:user_profile' %}" class="profile-pic-link mobile" title="View Profile">
                                     <div class="profile-pic-wrapper">
-                                        {% if user.profile_picture %}
-                                            <img src="/media/{{ user.profile_picture.name }}" alt="Profile" class="profile-pic-small">
-                                        {% elif user.user_type == 'faculty' and user.faculty_profile and user.faculty_profile.profile_pic %}
-                                            <img src="/media/{{ user.faculty_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                        {% if user.user_type == 'faculty' and user.faculty_profile and user.faculty_profile.profile_pic %}
+                                            <img src="/media/{{ user.faculty_profile.profile_pic.name|cache_bust:user.faculty_profile }}" alt="Profile" class="profile-pic-small">
                                         {% elif user.user_type == 'staff' and user.staff_profile and user.staff_profile.profile_pic %}
-                                            <img src="/media/{{ user.staff_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                            <img src="/media/{{ user.staff_profile.profile_pic.name|cache_bust:user.staff_profile }}" alt="Profile" class="profile-pic-small">
                                         {% elif user.user_type == 'officer' and user.officer_profile and user.officer_profile.profile_pic %}
-                                            <img src="/media/{{ user.officer_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                            <img src="/media/{{ user.officer_profile.profile_pic.name|cache_bust:user.officer_profile }}" alt="Profile" class="profile-pic-small">
                                         {% elif user.user_type == 'club_member' and user.club_member_profile and user.club_member_profile.profile_pic %}
-                                            <img src="/media/{{ user.club_member_profile.profile_pic.name }}" alt="Profile" class="profile-pic-small">
+                                            <img src="/media/{{ user.club_member_profile.profile_pic.name|cache_bust:user.club_member_profile }}" alt="Profile" class="profile-pic-small">
+                                        {% elif user.profile_picture %}
+                                            <img src="/media/{{ user.profile_picture.name|cache_bust:user }}" alt="Profile" class="profile-pic-small">
                                         {% else %}
                                             <img src="{% static 'defaults/people.png' %}" alt="Profile" class="profile-pic-small">
                                         {% endif %}
