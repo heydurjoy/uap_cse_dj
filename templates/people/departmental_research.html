@@ -109,7 +109,7 @@
             <div class="tab-content {% if request.GET.tab == 'faculty' %}active{% endif %}" id="faculty-tab">
                 <div class="faculty-scores-section">
                     <div class="section-header-with-info">
-                        <h2 class="section-title">Highest Scoring Faculties Designation Wise</h2>
+                        <h2 class="section-title">Top Researchers</h2>
                         <button class="info-btn" id="scoring-info-btn" title="How is research score calculated?">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -119,37 +119,85 @@
                         </button>
                     </div>
                     
-                    <!-- Top Researchers by Designation -->
-                    <div class="top-researchers-grid">
-                        {% for designation in top_by_designation.keys %}
-                            {% with top_list=top_by_designation|get_item:designation %}
-                            {% if top_list %}
-                            <div class="top-researchers-card">
-                                <div class="top-researchers-list">
-                                    {% for item in top_list %}
-                                    <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
-                                        <div class="researcher-card">
-                                            <div class="researcher-card-image">
-                                                <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
-                                                <div class="researcher-card-overlay">
-                                                    <div class="researcher-card-info">
-                                                        <h3 class="researcher-name">{{ item.faculty.name }}</h3>
-                                                        <div class="researcher-meta">
-                                                            <span class="researcher-score">Score: {{ item.score }}</span>
-                                                            <span class="researcher-citation">Citations: {{ item.citations|floatformat:0 }}</span>
-                                                        </div>
-                                                    </div>
+                    <!-- Section 1: Most Cited Researchers (All Time) -->
+                    <div class="researcher-section">
+                        <h3 class="researcher-section-title">Most Cited Researchers (All Time)</h3>
+                        <div class="top-researchers-list">
+                            {% for item in most_cited_researchers %}
+                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
+                                <div class="researcher-card">
+                                    <div class="researcher-card-image">
+                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                        <div class="researcher-card-overlay">
+                                            <div class="researcher-card-info">
+                                                <h3 class="researcher-name">{{ item.faculty.name }}</h3>
+                                                <div class="researcher-meta">
+                                                    <span class="researcher-citation">Citations: {{ item.citations|floatformat:0 }}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <h3 class="designation-title-small">{{ designation }}</h3>
-                                    </a>
-                                    {% endfor %}
+                                    </div>
                                 </div>
-                            </div>
-                            {% endif %}
-                            {% endwith %}
-                        {% endfor %}
+                            </a>
+                            {% empty %}
+                            <p class="empty-message">No researchers found.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Section 2: Leading Active Researchers (Past 2yr) -->
+                    <div class="researcher-section">
+                        <h3 class="researcher-section-title">Leading Active Researchers (Past 2yr)</h3>
+                        <div class="top-researchers-list">
+                            {% for item in leading_active_researchers %}
+                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
+                                <div class="researcher-card">
+                                    <div class="researcher-card-image">
+                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                        <div class="researcher-card-overlay">
+                                            <div class="researcher-card-info">
+                                                <h3 class="researcher-name">{{ item.faculty.name }}</h3>
+                                                <div class="researcher-meta">
+                                                    <span class="researcher-score">Score: {{ item.score }}</span>
+                                                    <span class="researcher-pubs">Pubs (2yr): {{ item.publication_count }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% empty %}
+                            <p class="empty-message">No researchers found.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Section 3: Top Researchers (Designation Wise) -->
+                    <div class="researcher-section">
+                        <h3 class="researcher-section-title">Top Researchers (Designation Wise)</h3>
+                        <div class="top-researchers-list">
+                            {% for item in top_researchers_designation_wise %}
+                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
+                                <div class="researcher-card">
+                                    <div class="researcher-card-image">
+                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                        <div class="researcher-card-overlay">
+                                            <div class="researcher-card-info">
+                                                <h3 class="researcher-name">{{ item.faculty.name }}</h3>
+                                                <div class="researcher-meta">
+                                                    <span class="researcher-score">Score: {{ item.score }}</span>
+                                                    <span class="researcher-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h3 class="designation-title-small">{{ item.faculty.designation }}</h3>
+                            </a>
+                            {% empty %}
+                            <p class="empty-message">No researchers found.</p>
+                            {% endfor %}
+                        </div>
                     </div>
                     
                     <div class="scores-table-container">
@@ -654,24 +702,25 @@
 }
 
 /* Top Researchers Cards */
-.top-researchers-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2.5rem;
+.researcher-section {
+    margin-bottom: 3rem;
 }
 
-.top-researchers-card {
-    background: transparent;
-    border: none;
-    padding: 0;
-    box-shadow: none;
+.researcher-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .top-researchers-list {
     display: flex;
     justify-content: center;
-    gap: 0;
+    flex-wrap: wrap;
+    gap: 1.5rem;
 }
 
 .designation-title-small {
@@ -802,7 +851,17 @@
 }
 
 .researcher-score,
-.researcher-citation {
+.researcher-citation,
+.researcher-pubs {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.researcher-score,
+.researcher-citation,
+.researcher-pubs {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.9);
     margin: 0;
@@ -813,7 +872,8 @@
 }
 
 .top-researcher-item:hover .researcher-score,
-.top-researcher-item:hover .researcher-citation {
+.top-researcher-item:hover .researcher-citation,
+.top-researcher-item:hover .researcher-pubs {
     font-size: 0.85rem;
 }
 
@@ -1053,12 +1113,15 @@
     }
     
     .top-researchers-list {
-        flex-direction: column;
-        align-items: center;
+        gap: 1rem;
     }
     
-    .top-researchers-grid {
-        grid-template-columns: 1fr;
+    .researcher-section {
+        margin-bottom: 2rem;
+    }
+    
+    .researcher-section-title {
+        font-size: 1.25rem;
     }
     
     .researcher-card {

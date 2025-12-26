@@ -2743,7 +2743,51 @@ def departmental_research(request):
     # Sort faculty by score (highest first), then by year_span (smaller is better)
     faculty_scores.sort(key=lambda x: (-x['score'], x['year_span']))
     
-    # Get top researchers by designation (only top 1 per designation)
+    # ===== SECTION 1: Most Cited Researchers (All Time) =====
+    # Rank strictly by total citation count (descending)
+    most_cited = []
+    for faculty in current_faculty:
+        most_cited.append({
+            'faculty': faculty,
+            'citations': faculty.citation or 0,
+            'score': 0,  # Not used for this ranking
+            'publication_count': 0,  # Not used for this ranking
+        })
+    # Sort by citations (descending)
+    most_cited.sort(key=lambda x: -x['citations'])
+    most_cited_researchers = most_cited[:4]  # Top 4
+    
+    # ===== SECTION 2: Leading Active Researchers (Past 2yr) =====
+    # Consider only the last 2 years of research data
+    recent_publications = Publication.objects.filter(
+        faculty__in=current_faculty,
+        pub_year__gte=current_year - 1
+    ).select_related('faculty')
+    
+    # Calculate scores for last 2 years only
+    recent_faculty_scores = []
+    for faculty in current_faculty:
+        faculty_recent_pubs = recent_publications.filter(faculty=faculty)
+        pub_count = faculty_recent_pubs.count()
+        
+        # Calculate score for recent publications only
+        score = 0
+        for pub in faculty_recent_pubs:
+            score += SCORING.get(pub.ranking, 0)
+        
+        recent_faculty_scores.append({
+            'faculty': faculty,
+            'publication_count': pub_count,
+            'score': score,
+            'citations': faculty.citation or 0,  # For display only
+        })
+    
+    # Sort by score (highest first), then by publication count
+    recent_faculty_scores.sort(key=lambda x: (-x['score'], -x['publication_count']))
+    leading_active_researchers = recent_faculty_scores[:4]  # Top 4
+    
+    # ===== SECTION 3: Top Researchers (Designation Wise) =====
+    # Get top researcher from each designation using existing ranking logic
     top_by_designation = {}
     designations = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
     
@@ -2751,9 +2795,16 @@ def departmental_research(request):
         designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
         # Get only the top 1 (best researcher in this designation)
         if designation_faculty:
-            top_by_designation[designation] = [designation_faculty[0]]
+            top_by_designation[designation] = designation_faculty[0]
         else:
-            top_by_designation[designation] = []
+            top_by_designation[designation] = None
+    
+    # Convert to list format for template (only include non-None entries)
+    top_researchers_designation_wise = [
+        top_by_designation[designation] 
+        for designation in designations 
+        if top_by_designation[designation] is not None
+    ]
     
     context = {
         'publications': publications,
@@ -2768,7 +2819,9 @@ def departmental_research(request):
         'num_faculty': num_faculty,
         'ranking_choices': dict(Publication.RANKING_CHOICES),
         'type_choices': dict(Publication.TYPE_CHOICES),
-        'top_by_designation': top_by_designation,
+        'most_cited_researchers': most_cited_researchers,
+        'leading_active_researchers': leading_active_researchers,
+        'top_researchers_designation_wise': top_researchers_designation_wise,
         'scoring_system': SCORING,
     }
     
