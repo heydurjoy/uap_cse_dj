@@ -108,135 +108,177 @@
             <!-- Faculty Scores Tab -->
             <div class="tab-content {% if request.GET.tab == 'faculty' %}active{% endif %}" id="faculty-tab">
                 <div class="faculty-scores-section">
-                    <div class="section-header-with-info">
-                        <h2 class="section-title">Top Researchers</h2>
-                        <button class="info-btn" id="scoring-info-btn" title="How is research score calculated?">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <!-- Section 1: Most Cited Researchers (All Time) -->
-                    <div class="researcher-section">
-                        <h3 class="researcher-section-title">Most Cited Researchers (All Time)</h3>
-                        <div class="top-researchers-list">
-                            {% for item in most_cited_researchers %}
-                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
-                                <div class="researcher-card">
-                                    <div class="researcher-card-image">
-                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
-                                        <div class="researcher-card-overlay">
-                                            <div class="researcher-card-info">
-                                                <h3 class="researcher-name">{{ item.faculty.name }}</h3>
-                                                <div class="researcher-meta">
-                                                    <span class="researcher-citation">Citations: {{ item.citations|floatformat:0 }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                            {% empty %}
-                            <p class="empty-message">No researchers found.</p>
-                            {% endfor %}
+                    <!-- Faculty Tabs -->
+                    <div class="faculty-view-tabs">
+                        <div class="faculty-tab-buttons">
+                            <button class="faculty-tab-btn active" data-faculty-tab="all-faculties">
+                                All Faculties
+                                <button class="faculty-tab-info-btn" title="View all faculty members" onclick="event.stopPropagation(); openFacultyTabInfoModal('all-faculties')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </button>
+                            <button class="faculty-tab-btn" data-faculty-tab="most-cited">
+                                Most Cited
+                                <button class="faculty-tab-info-btn" title="How are most cited researchers selected?" onclick="event.stopPropagation(); openFacultyTabInfoModal('most-cited')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </button>
+                            <button class="faculty-tab-btn" data-faculty-tab="leading-active">
+                                Leading Active
+                                <button class="faculty-tab-info-btn" title="How are leading active researchers selected?" onclick="event.stopPropagation(); openFacultyTabInfoModal('leading-active')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </button>
+                            <button class="faculty-tab-btn" data-faculty-tab="top-designation">
+                                Top by Designation
+                                <button class="faculty-tab-info-btn" title="How are top researchers by designation selected?" onclick="event.stopPropagation(); openFacultyTabInfoModal('top-designation')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </button>
                         </div>
-                    </div>
-                    
-                    <!-- Section 2: Leading Active Researchers (Past 2yr) -->
-                    <div class="researcher-section">
-                        <h3 class="researcher-section-title">Leading Active Researchers (Past 2yr)</h3>
-                        <div class="top-researchers-list">
-                            {% for item in leading_active_researchers %}
-                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
-                                <div class="researcher-card">
-                                    <div class="researcher-card-image">
-                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
-                                        <div class="researcher-card-overlay">
-                                            <div class="researcher-card-info">
-                                                <h3 class="researcher-name">{{ item.faculty.name }}</h3>
-                                                <div class="researcher-meta">
-                                                    <span class="researcher-score">Score: {{ item.score }}</span>
-                                                    <span class="researcher-pubs">Pubs (2yr): {{ item.publication_count }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                            {% empty %}
-                            <p class="empty-message">No researchers found.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <!-- Section 3: Top Researchers (Designation Wise) -->
-                    <div class="researcher-section">
-                        <h3 class="researcher-section-title">Top Researchers (Designation Wise)</h3>
-                        <div class="top-researchers-list">
-                            {% for item in top_researchers_designation_wise %}
-                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-item">
-                                <div class="researcher-card">
-                                    <div class="researcher-card-image">
-                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
-                                        <div class="researcher-card-overlay">
-                                            <div class="researcher-card-info">
-                                                <h3 class="researcher-name">{{ item.faculty.name }}</h3>
-                                                <div class="researcher-meta">
-                                                    <span class="researcher-score">Score: {{ item.score }}</span>
-                                                    <span class="researcher-citation">Citations: {{ item.citations|floatformat:0 }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <h3 class="designation-title-small">{{ item.faculty.designation }}</h3>
-                            </a>
-                            {% empty %}
-                            <p class="empty-message">No researchers found.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <div class="scores-table-container">
-                        <table class="scores-table">
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Faculty Name</th>
-                                    <th>Publications</th>
-                                    <th>Score</th>
-                                    <th>Citations</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        
+                        <!-- Tab 1: All Faculties -->
+                        <div class="faculty-tab-content active" id="all-faculties-tab">
+                            <div class="faculty-cards-grid">
                                 {% for item in faculty_scores %}
-                                <tr>
-                                    <td class="rank-cell">
-                                        {% if forloop.counter <= 3 %}
-                                            <span class="top-rank">#{{ forloop.counter }}</span>
-                                        {% else %}
-                                            #{{ forloop.counter }}
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-link">
-                                            {{ item.faculty.name }}
-                                        </a>
-                                    </td>
-                                    <td>{{ item.publication_count }}</td>
-                                    <td class="score-cell">{{ item.score }}</td>
-                                    <td>{{ item.citations|floatformat:0 }}</td>
-                                </tr>
+                                <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                                    <div class="faculty-card {% if item.badges %}has-badges{% endif %}">
+                                        <div class="faculty-card-image">
+                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                            {% if item.badges %}
+                                            <div class="faculty-badges">
+                                                {% if 'most_cited' in item.badges %}
+                                                <span class="faculty-badge badge-most-cited" title="Top 4 Most Cited">⭐</span>
+                                                {% endif %}
+                                                {% if 'leading_active' in item.badges %}
+                                                <span class="faculty-badge badge-leading-active" title="Top 4 Leading Active">🔥</span>
+                                                {% endif %}
+                                                {% if 'top_designation' in item.badges %}
+                                                <span class="faculty-badge badge-top-designation" title="Top by Designation">🏆</span>
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="faculty-card-overlay">
+                                                <div class="faculty-card-info">
+                                                    <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                    <div class="faculty-card-meta">
+                                                        <span class="faculty-card-score">Score: {{ item.score }}</span>
+                                                        <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
                                 {% empty %}
-                                <tr>
-                                    <td colspan="5" class="empty-message">No publications found for the selected period.</td>
-                                </tr>
+                                <p class="empty-message">No faculty found.</p>
                                 {% endfor %}
-                            </tbody>
-                        </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Tab 2: Most Cited -->
+                        <div class="faculty-tab-content" id="most-cited-tab">
+                            <div class="faculty-cards-grid">
+                                {% for item in all_faculty_most_cited %}
+                                <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                                    <div class="faculty-card {% if item.is_top_4 %}golden-rank{% endif %}">
+                                        <div class="faculty-card-image">
+                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                            <div class="faculty-card-overlay">
+                                                <div class="faculty-card-info">
+                                                    <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                    <div class="faculty-card-meta">
+                                                        <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                                                        <span class="faculty-card-score">Score: {{ item.score }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if item.is_top_4 %}
+                                        <div class="golden-rank-badge-below">Top 4</div>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                                {% empty %}
+                                <p class="empty-message">No faculty found.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Tab 3: Leading Active -->
+                        <div class="faculty-tab-content" id="leading-active-tab">
+                            <div class="faculty-cards-grid">
+                                {% for item in all_faculty_leading_active %}
+                                <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                                    <div class="faculty-card {% if item.is_top_4 %}golden-rank{% endif %}">
+                                        <div class="faculty-card-image">
+                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                            <div class="faculty-card-overlay">
+                                                <div class="faculty-card-info">
+                                                    <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                    <div class="faculty-card-meta">
+                                                        <span class="faculty-card-score">Score: {{ item.score }}</span>
+                                                        <span class="faculty-card-pubs">Pubs (2yr): {{ item.publication_count }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if item.is_top_4 %}
+                                        <div class="golden-rank-badge-below">Top 4</div>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                                {% empty %}
+                                <p class="empty-message">No faculty found.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Tab 4: Top by Designation -->
+                        <div class="faculty-tab-content" id="top-designation-tab">
+                            <div class="faculty-cards-grid">
+                                {% for item in all_faculty_designation_wise %}
+                                <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                                    <div class="faculty-card {% if item.is_top_1 %}golden-rank{% endif %}">
+                                        <div class="faculty-card-image">
+                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                            <div class="faculty-card-overlay">
+                                                <div class="faculty-card-info">
+                                                    <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                    <div class="faculty-card-meta">
+                                                        <span class="faculty-card-score">Score: {{ item.score }}</span>
+                                                        <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="faculty-card-designation">{{ item.designation }}</div>
+                                        {% if item.is_top_1 %}
+                                        <div class="golden-rank-badge-below">Top in {{ item.designation }}</div>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                                {% empty %}
+                                <p class="empty-message">No faculty found.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -701,6 +743,374 @@
     font-style: italic;
 }
 
+/* Faculty View Tabs */
+.faculty-view-tabs {
+    margin-top: 2rem;
+}
+
+.faculty-tab-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.faculty-tab-btn {
+    padding: 0.875rem 1.75rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: -2px;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.faculty-tab-info-btn {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.faculty-tab-info-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.faculty-tab-info-btn:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+.faculty-tab-btn.active .faculty-tab-info-btn {
+    color: var(--color-primary);
+}
+
+.faculty-tab-btn:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.faculty-tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+}
+
+.faculty-tab-content {
+    display: none;
+}
+
+.faculty-tab-content.active {
+    display: block;
+    animation: fadeInSlide 0.4s ease;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Faculty Cards Grid - 4 per row */
+.faculty-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 1200px) {
+    .faculty-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .faculty-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.faculty-card-item {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.faculty-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 3/4.2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.faculty-card-item:hover .faculty-card {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-primary);
+}
+
+.faculty-card.golden-rank {
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
+                0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)),
+        color-mix(in srgb, var(--color-primary) 6%, var(--bg-secondary)));
+    position: relative;
+    animation: prestigiousGlow 3s ease-in-out infinite;
+}
+
+.faculty-card.golden-rank::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        var(--color-primary),
+        color-mix(in srgb, var(--color-primary) 70%, transparent),
+        var(--color-primary));
+    border-radius: 16px;
+    z-index: -1;
+    opacity: 0.6;
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+@keyframes prestigiousGlow {
+    0%, 100% {
+        box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
+                    0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    }
+    50% {
+        box-shadow: 0 6px 30px color-mix(in srgb, var(--color-primary) 60%, transparent),
+                    0 0 50px color-mix(in srgb, var(--color-primary) 35%, transparent);
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.01);
+    }
+}
+
+.faculty-card-item:hover .faculty-card.golden-rank {
+    box-shadow: 0 8px 35px color-mix(in srgb, var(--color-primary) 70%, transparent),
+                0 0 60px color-mix(in srgb, var(--color-primary) 40%, transparent);
+    border-color: var(--color-primary);
+    transform: translateY(-4px) scale(1.02);
+}
+
+.faculty-card-item:hover .faculty-card.golden-rank::before {
+    opacity: 0.8;
+}
+
+.faculty-card-image {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.faculty-card.golden-rank .faculty-card-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to top, 
+        color-mix(in srgb, var(--color-primary) 85%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 60%, transparent) 30%,
+        color-mix(in srgb, var(--color-primary) 30%, transparent) 60%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.faculty-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.faculty-card-item:hover .faculty-card-image img {
+    transform: scale(1.05);
+}
+
+.faculty-badges {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    z-index: 10;
+}
+
+.faculty-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    font-size: 1rem;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.faculty-card-item:hover .faculty-badge {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.golden-rank-badge-below {
+    background: transparent;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: auto;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
+                 0 0 8px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
+                     0 0 8px rgba(0, 0, 0, 0.3);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6),
+                     0 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+        transform: scale(1.02);
+    }
+}
+
+.faculty-card-designation {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+}
+
+.faculty-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.25rem 1rem 1rem 1rem;
+    transition: all 0.4s ease;
+    z-index: 1;
+}
+
+.faculty-card.golden-rank .faculty-card-overlay {
+    background: linear-gradient(to top, 
+        rgba(0, 0, 0, 0.85) 0%, 
+        rgba(0, 0, 0, 0.7) 30%,
+        rgba(0, 0, 0, 0.5) 50%,
+        rgba(0, 0, 0, 0) 100%);
+}
+
+.faculty-card-item:hover .faculty-card-overlay {
+    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.faculty-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.faculty-card-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.faculty-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.faculty-card-score,
+.faculty-card-citation,
+.faculty-card-pubs {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 /* Top Researchers Cards */
 .researcher-section {
     margin-bottom: 3rem;
@@ -1014,6 +1424,100 @@
     padding: 1rem;
     background: color-mix(in srgb, var(--color-primary) 8%, transparent);
     border-radius: 10px;
+}
+
+/* Faculty Tab Info Modal Styles */
+.info-modal-home {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.info-modal-home.active {
+    display: flex;
+}
+
+.info-modal-content-home {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.info-modal-header-home {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.info-modal-header-home h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.info-modal-close-home {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-modal-close-home:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.info-modal-body-home {
+    padding: 1.5rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.info-modal-body-home p {
+    margin: 0 0 1rem 0;
+}
+
+.info-modal-body-home ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.info-modal-body-home li {
+    margin-bottom: 0.5rem;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
     border-left: 4px solid var(--color-primary);
 }
 
@@ -1092,6 +1596,45 @@
     
     .publications-table-container {
         overflow-x: auto;
+    }
+    
+    .faculty-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+    
+    .faculty-tab-buttons {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .faculty-tab-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
+    }
+    
+    .faculty-card-name {
+        font-size: 1rem;
+    }
+    
+    .faculty-card-score,
+    .faculty-card-citation,
+    .faculty-card-pubs {
+        font-size: 0.8rem;
+    }
+    
+    .golden-rank-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .faculty-badge {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.9rem;
     }
     
     .tabs-nav {
@@ -1198,6 +1741,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Faculty view tabs (All Faculties, Most Cited, Leading Active)
+    const facultyTabButtons = document.querySelectorAll('.faculty-tab-btn');
+    const facultyTabContents = document.querySelectorAll('.faculty-tab-content');
+    
+    facultyTabButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Don't switch tabs if clicking the info button
+            if (e.target.closest('.faculty-tab-info-btn')) {
+                return;
+            }
+            const targetTab = this.getAttribute('data-faculty-tab');
+            
+            // Remove active class from all buttons and contents
+            facultyTabButtons.forEach(btn => btn.classList.remove('active'));
+            facultyTabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding content
+            this.classList.add('active');
+            const targetContent = document.getElementById(targetTab + '-tab');
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+    
     // Info modal functionality
     const infoBtn = document.getElementById('scoring-info-btn');
     const infoModal = document.getElementById('scoring-info-modal');
@@ -1223,6 +1791,53 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Faculty Tab Info Modal Functions
+    function openFacultyTabInfoModal(tabName) {
+        const modal = document.getElementById('faculty-' + tabName + '-info-modal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeFacultyTabInfoModal(tabName) {
+        const modal = document.getElementById('faculty-' + tabName + '-info-modal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Make functions global
+    window.openFacultyTabInfoModal = openFacultyTabInfoModal;
+    window.closeFacultyTabInfoModal = closeFacultyTabInfoModal;
+    
+    // Close faculty tab info modals on background click
+    document.addEventListener('click', function(e) {
+        const modals = ['faculty-all-faculties-info-modal', 'faculty-most-cited-info-modal', 'faculty-leading-active-info-modal', 'faculty-top-designation-info-modal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+    
+    // Close faculty tab info modals on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modals = ['faculty-all-faculties-info-modal', 'faculty-most-cited-info-modal', 'faculty-leading-active-info-modal', 'faculty-top-designation-info-modal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    });
 });
 </script>
 
@@ -1292,5 +1907,100 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+<!-- Faculty Tab Info Modals -->
+<div class="info-modal-home" id="faculty-all-faculties-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>All Faculties</h3>
+            <button class="info-modal-close-home" onclick="closeFacultyTabInfoModal('all-faculties')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>This view displays all current faculty members with their research scores and citation counts. Faculty members who rank in the top 4 of any category (Most Cited, Leading Active, or Top by Designation) are marked with badges.</p>
+        </div>
+    </div>
+</div>
+
+<div class="info-modal-home" id="faculty-most-cited-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Most Cited Researchers (All Time)</h3>
+            <button class="info-modal-close-home" onclick="closeFacultyTabInfoModal('most-cited')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>This section displays all faculty members sorted by their total citation count across all their publications, from all time. The top 4 researchers are highlighted with a golden badge.</p>
+        </div>
+    </div>
+</div>
+
+<div class="info-modal-home" id="faculty-leading-active-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Leading Active Researchers (Past 2yr)</h3>
+            <button class="info-modal-close-home" onclick="closeFacultyTabInfoModal('leading-active')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>This section identifies the most active researchers based on their research score from publications released in the last two years. The score is calculated as follows:</p>
+            <ul>
+                <li><strong>Q1 publications:</strong> 10 points each</li>
+                <li><strong>Q2 publications:</strong> 7 points each</li>
+                <li><strong>Q3 publications:</strong> 5 points each</li>
+                <li><strong>Q4 publications:</strong> 3 points each</li>
+                <li><strong>A1 publications:</strong> 8 points each</li>
+                <li><strong>A2 publications:</strong> 6 points each</li>
+                <li><strong>A3 publications:</strong> 4 points each</li>
+                <li><strong>A4 publications:</strong> 2 points each</li>
+                <li><strong>Not Indexed:</strong> 1 point each</li>
+            </ul>
+            <p>The top 4 researchers are highlighted with a golden badge.</p>
+        </div>
+    </div>
+</div>
+
+<div class="info-modal-home" id="faculty-top-designation-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Top Researchers (Designation Wise)</h3>
+            <button class="info-modal-close-home" onclick="closeFacultyTabInfoModal('top-designation')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>This section showcases researchers grouped by their academic designation (Professor, Associate Professor, Assistant Professor, Lecturer). The top researcher from each designation is highlighted with a golden badge.</p>
+            <p>The selection is based on their overall research score, calculated from all their publications:</p>
+            <ul>
+                <li><strong>Q1 publications:</strong> 10 points each</li>
+                <li><strong>Q2 publications:</strong> 7 points each</li>
+                <li><strong>Q3 publications:</strong> 5 points each</li>
+                <li><strong>Q4 publications:</strong> 3 points each</li>
+                <li><strong>A1 publications:</strong> 8 points each</li>
+                <li><strong>A2 publications:</strong> 6 points each</li>
+                <li><strong>A3 publications:</strong> 4 points each</li>
+                <li><strong>A4 publications:</strong> 2 points each</li>
+                <li><strong>Not Indexed:</strong> 1 point each</li>
+            </ul>
+            <p>In case of a tie in score, the researcher with publications spanning fewer years (more concentrated research) is selected.</p>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 

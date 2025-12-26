@@ -337,9 +337,36 @@
             
             <!-- Tabs -->
             <div class="researchers-tabs-home">
-                <button class="researcher-tab-btn-home active" data-tab="most-cited">Most Cited</button>
-                <button class="researcher-tab-btn-home" data-tab="leading-active">Leading Active</button>
-                <button class="researcher-tab-btn-home" data-tab="top-designation">Top by Designation</button>
+                <button class="researcher-tab-btn-home active" data-tab="most-cited">
+                    Most Cited
+                    <button class="tab-info-btn-home" id="most-cited-info-btn" title="How are most cited researchers selected?" onclick="event.stopPropagation(); openTabInfoModal('most-cited')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                </button>
+                <button class="researcher-tab-btn-home" data-tab="leading-active">
+                    Leading Active
+                    <button class="tab-info-btn-home" id="leading-active-info-btn" title="How are leading active researchers selected?" onclick="event.stopPropagation(); openTabInfoModal('leading-active')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                </button>
+                <button class="researcher-tab-btn-home" data-tab="top-designation">
+                    Top by Designation
+                    <button class="tab-info-btn-home" id="top-designation-info-btn" title="How are top researchers by designation selected?" onclick="event.stopPropagation(); openTabInfoModal('top-designation')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                </button>
             </div>
             
             <!-- Tab Content: Most Cited -->
@@ -3166,12 +3193,54 @@ html, body {
     background: color-mix(in srgb, var(--color-primary) 5%, transparent);
 }
 
+.researcher-tab-btn-home {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
 .researcher-tab-btn-home.active {
     color: var(--color-primary);
     border-bottom-color: var(--color-primary);
     font-weight: 600;
     background: color-mix(in srgb, var(--color-primary) 3%, transparent);
     animation: tabPulse 2s ease-in-out infinite;
+}
+
+.tab-info-btn-home {
+    background: transparent;
+    border: none;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.tab-info-btn-home:hover {
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+.tab-info-btn-home svg {
+    width: 14px;
+    height: 14px;
+}
+
+.researcher-tab-btn-home.active .tab-info-btn-home {
+    color: var(--color-primary);
+}
+
+.researcher-tab-btn-home.active .tab-info-btn-home:hover {
+    background: color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
 .researcher-tab-btn-home.active::after {
@@ -3867,6 +3936,50 @@ document.addEventListener('DOMContentLoaded', function() {
             infoModal.classList.remove('active');
         }
     });
+});
+
+// Tab Info Modal Functions
+function openTabInfoModal(tabName) {
+    const modal = document.getElementById(tabName + '-info-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeTabInfoModal(tabName) {
+    const modal = document.getElementById(tabName + '-info-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Close tab info modals on background click
+document.addEventListener('click', function(e) {
+    const modals = ['most-cited-info-modal', 'leading-active-info-modal', 'top-designation-info-modal'];
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal && e.target === modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+});
+
+// Close tab info modals on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modals = ['most-cited-info-modal', 'leading-active-info-modal', 'top-designation-info-modal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+});
     
     // Count-up animation for research stats
     function animateValue(element, start, end, duration, isDecimal, decimalPlaces) {

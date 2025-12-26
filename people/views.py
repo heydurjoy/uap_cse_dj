@@ -2757,6 +2757,9 @@ def departmental_research(request):
     most_cited.sort(key=lambda x: -x['citations'])
     most_cited_researchers = most_cited[:4]  # Top 4
     
+    # Get set of top 4 most cited faculty IDs for badge checking
+    top_4_most_cited_ids = {item['faculty'].pk for item in most_cited_researchers}
+    
     # ===== SECTION 2: Leading Active Researchers (Past 2yr) =====
     # Consider only the last 2 years of research data
     recent_publications = Publication.objects.filter(
@@ -2786,6 +2789,9 @@ def departmental_research(request):
     recent_faculty_scores.sort(key=lambda x: -x['score'])
     leading_active_researchers = recent_faculty_scores[:4]  # Top 4
     
+    # Get set of top 4 leading active faculty IDs for badge checking
+    top_4_leading_active_ids = {item['faculty'].pk for item in leading_active_researchers}
+    
     # ===== SECTION 3: Top Researchers (Designation Wise) =====
     # Get top researcher from each designation using existing ranking logic
     top_by_designation = {}
@@ -2806,6 +2812,62 @@ def departmental_research(request):
         if top_by_designation[designation] is not None
     ]
     
+    # Get set of top by designation faculty IDs for badge checking
+    top_by_designation_ids = {item['faculty'].pk for item in top_researchers_designation_wise}
+    
+    # Add badge information to faculty_scores for "All Faculties" tab
+    for item in faculty_scores:
+        faculty_id = item['faculty'].pk
+        badges = []
+        if faculty_id in top_4_most_cited_ids:
+            badges.append('most_cited')
+        if faculty_id in top_4_leading_active_ids:
+            badges.append('leading_active')
+        if faculty_id in top_by_designation_ids:
+            badges.append('top_designation')
+        item['badges'] = badges
+    
+    # Create sorted lists for Most Cited and Leading Active tabs (all faculty, not just top 4)
+    # Most Cited - all faculty sorted by citations
+    all_faculty_most_cited = []
+    for item in faculty_scores:
+        all_faculty_most_cited.append({
+            'faculty': item['faculty'],
+            'citations': item['citations'],
+            'score': item['score'],
+            'publication_count': item['publication_count'],
+            'is_top_4': item['faculty'].pk in top_4_most_cited_ids,
+        })
+    all_faculty_most_cited.sort(key=lambda x: -x['citations'])
+    
+    # Leading Active - all faculty sorted by recent score
+    all_faculty_leading_active = []
+    for item in recent_faculty_scores:
+        all_faculty_leading_active.append({
+            'faculty': item['faculty'],
+            'citations': item['citations'],
+            'score': item['score'],
+            'publication_count': item['publication_count'],
+            'is_top_4': item['faculty'].pk in top_4_leading_active_ids,
+        })
+    all_faculty_leading_active.sort(key=lambda x: -x['score'])
+    
+    # Top by Designation - all faculty grouped by designation, sorted by score
+    all_faculty_designation_wise = []
+    designations_order = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
+    for designation in designations_order:
+        designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
+        designation_faculty.sort(key=lambda x: (-x['score'], x['year_span']))
+        for item in designation_faculty:
+            all_faculty_designation_wise.append({
+                'faculty': item['faculty'],
+                'citations': item['citations'],
+                'score': item['score'],
+                'publication_count': item['publication_count'],
+                'designation': designation,
+                'is_top_1': item['faculty'].pk in top_by_designation_ids,
+            })
+    
     context = {
         'publications': publications,
         'current_faculty': current_faculty,
@@ -2822,6 +2884,9 @@ def departmental_research(request):
         'most_cited_researchers': most_cited_researchers,
         'leading_active_researchers': leading_active_researchers,
         'top_researchers_designation_wise': top_researchers_designation_wise,
+        'all_faculty_most_cited': all_faculty_most_cited,
+        'all_faculty_leading_active': all_faculty_leading_active,
+        'all_faculty_designation_wise': all_faculty_designation_wise,
         'scoring_system': SCORING,
     }
     
