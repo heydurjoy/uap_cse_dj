@@ -56,9 +56,9 @@
                             </div>
                             
                             <div class="form-group">
-                                <label>Type *</label>
+                                <label>Type</label>
                                 <select name="type_{{ forloop.counter0 }}">
-                                    <option value="">Select type</option>
+                                    <option value="">Select type (optional)</option>
                                     {% for value, label in type_choices %}
                                     <option value="{{ value }}">{{ label }}</option>
                                     {% endfor %}

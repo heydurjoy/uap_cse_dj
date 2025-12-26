@@ -1745,7 +1745,8 @@ def add_publication(request, faculty_id):
             messages.error(request, 'Please enter a valid year between 1900 and 2100.')
             return redirect('people:add_publication', faculty_id=faculty_id)
         
-        if not type or type not in dict(Publication.TYPE_CHOICES):
+        # Type is optional, but if provided, must be valid
+        if type and type not in dict(Publication.TYPE_CHOICES):
             messages.error(request, 'Please select a valid publication type.')
             return redirect('people:add_publication', faculty_id=faculty_id)
         
@@ -1758,7 +1759,7 @@ def add_publication(request, faculty_id):
             faculty=faculty,
             title=title,
             pub_year=pub_year,
-            type=type,
+            type=type if type else None,
             ranking=ranking,
             link=link if link else None,
             doi=doi if doi else None,
@@ -1833,7 +1834,8 @@ def add_multiple_publications(request, faculty_id):
                 errors.append(f'Publication {i+1}: Please enter a valid year between 1900 and 2100.')
                 continue
             
-            if not type or type not in dict(Publication.TYPE_CHOICES):
+            # Type is optional, but if provided, must be valid
+            if type and type not in dict(Publication.TYPE_CHOICES):
                 errors.append(f'Publication {i+1}: Please select a valid publication type.')
                 continue
             
@@ -1847,7 +1849,7 @@ def add_multiple_publications(request, faculty_id):
                     faculty=faculty,
                     title=title,
                     pub_year=pub_year,
-                    type=type,
+                    type=type if type else None,
                     ranking=ranking,
                     link=link if link else None,
                     doi=doi if doi else None,
@@ -1881,6 +1883,227 @@ def add_multiple_publications(request, faculty_id):
     }
     
     return render(request, 'people/add_multiple_publications.html', context)
+
+
+def _detect_format_2(non_empty_lines):
+    """
+    Detect if the input is Format 2 (noisy format with metadata).
+    Format 2 characteristics:
+    - Contains Q rankings (Q1, Q2, Q3, Q4) as standalone lines
+    - Contains metadata like "NA", "ABS NA", "ABDC NA"
+    - Contains numeric metrics like "0.849", "SJR Q1"
+    - Years appear with numbers before them (e.g., "48    2023", "13    2024")
+    """
+    if len(non_empty_lines) < 5:
+        return False
+    
+    # Check for Format 2 indicators
+    q_ranking_count = 0
+    na_count = 0
+    sjr_count = 0
+    year_with_prefix_count = 0
+    
+    for line in non_empty_lines:
+        line_stripped = line.strip()
+        # Check for standalone Q rankings
+        if re.match(r'^Q[1-4]$', line_stripped):
+            q_ranking_count += 1
+        # Check for NA patterns
+        if re.match(r'^(NA|ABS NA|ABDC NA)$', line_stripped):
+            na_count += 1
+        # Check for SJR patterns
+        if 'SJR' in line_stripped:
+            sjr_count += 1
+        # Check for standalone numeric metrics (like "0.849")
+        if re.match(r'^\d+\.\d+$', line_stripped) and len(line_stripped) < 10:
+            sjr_count += 1
+        # Check for year with prefix (e.g., "48    2023", "13    2024")
+        if re.match(r'^\d+\s+20\d{2}$', line_stripped):
+            year_with_prefix_count += 1
+    
+    # Format 2 is likely if we have:
+    # - At least one Q ranking AND at least one year with prefix, OR
+    # - Multiple Q rankings, OR
+    # - Q ranking + multiple NA patterns + year with prefix
+    has_q_rankings = q_ranking_count >= 1
+    has_year_prefixes = year_with_prefix_count >= 1
+    has_metadata = na_count >= 2 or sjr_count >= 1
+    
+    return (has_q_rankings and has_year_prefixes) or (q_ranking_count >= 2) or (has_q_rankings and has_metadata and has_year_prefixes)
+
+
+def _parse_format_2(non_empty_lines, original_line_nums):
+    """
+    Parse Format 2 (noisy format with metadata).
+    Strategy:
+    1. Find all year anchors (lines containing 20\d{2})
+    2. For each year:
+       - Extract the last occurrence of year from the line
+       - Scan upward to find Q ranking (Q1-Q4)
+       - Scan upward to find title (first non-metadata line)
+    """
+    parsed_publications = []
+    
+    # Find all year anchors
+    year_anchors = []
+    for i, line in enumerate(non_empty_lines):
+        # Look for year pattern - find the last occurrence
+        year_matches = list(re.finditer(r'20\d{2}', line))
+        if year_matches:
+            # Get the last match
+            last_match = year_matches[-1]
+            year_str = last_match.group()
+            try:
+                year = int(year_str)
+                if 2000 <= year <= 2100:
+                    year_anchors.append({
+                        'line_index': i,
+                        'line': line,
+                        'year': year,
+                        'year_pos': last_match.end()
+                    })
+            except ValueError:
+                continue
+    
+    # Process each year anchor
+    for anchor in year_anchors:
+        year = anchor['year']
+        year_line_index = anchor['line_index']
+        
+        # Scan upward from year line to find Q ranking
+        q_rank = None
+        q_rank_line_index = None
+        for scan_idx in range(year_line_index - 1, -1, -1):
+            line = non_empty_lines[scan_idx].strip()
+            # Check for exact Q ranking match
+            q_match = re.match(r'^Q[1-4]$', line)
+            if q_match:
+                q_rank = q_match.group()
+                q_rank_line_index = scan_idx
+                break
+            # Stop if we hit another year (different publication)
+            if re.search(r'20\d{2}', line):
+                break
+        
+        # Scan upward from year line (or Q ranking line if found) to find title
+        start_index = year_line_index - 1
+        if q_rank and q_rank_line_index is not None:
+            # Start from line before Q ranking
+            start_index = q_rank_line_index - 1
+        
+        title = None
+        for i in range(start_index, -1, -1):
+            line = non_empty_lines[i].strip()
+            
+            # Skip if this is metadata (including author lines)
+            if _is_metadata_line(line):
+                continue
+            
+            # Skip if this is another year (different publication)
+            if re.search(r'20\d{2}', line):
+                break
+            
+            # Skip if this is a Q ranking
+            if re.match(r'^Q[1-4]$', line):
+                continue
+            
+            # Additional check: skip lines that look like author lists
+            # Author lines typically have: initials (1-3 letters) + space + capitalized name, repeated with commas
+            if ',' in line:
+                parts = [p.strip() for p in line.split(',')]
+                if len(parts) >= 2:
+                    # Check if most parts match author pattern (initials + name)
+                    author_pattern = re.compile(r'^[A-Z]{1,3}\s+[A-Z][a-z]+')
+                    author_matches = sum(1 for part in parts[:min(3, len(parts))] if author_pattern.match(part))
+                    if author_matches >= 2:
+                        continue  # Skip this line, it's an author list
+            
+            # This looks like a title
+            if len(line) >= 10:  # Minimum title length
+                title = line
+                break
+        
+        # Add if we found title (Q ranking is optional)
+        if title:
+            parsed_publications.append({
+                'title': title,
+                'authors': None,
+                'venue': None,
+                'cited': None,
+                'year': str(year),
+                'q_rank': q_rank.lower() if q_rank else None,  # Convert to lowercase to match choice values
+                'line_num': original_line_nums[year_line_index],
+            })
+    
+    return parsed_publications
+
+
+def _is_metadata_line(line):
+    """
+    Check if a line is metadata that should be ignored.
+    Metadata includes:
+    - NA, ABS NA, ABDC NA
+    - Numeric metrics (0.849, etc.)
+    - SJR patterns
+    - Author lists (lines with commas and names/initials)
+    - Journal names that are repeated
+    - Lines that are purely numeric
+    """
+    line_stripped = line.strip()
+    
+    # Exact metadata matches
+    if re.match(r'^(NA|ABS NA|ABDC NA)$', line_stripped):
+        return True
+    
+    # Pure numeric (metrics)
+    if re.match(r'^\d+\.?\d*$', line_stripped) and len(line_stripped) < 10:
+        return True
+    
+    # SJR patterns
+    if 'SJR' in line_stripped:
+        return True
+    
+    # Q ranking (already handled separately, but skip here too)
+    if re.match(r'^Q[1-4]$', line_stripped):
+        return True
+    
+    # Year with prefix (e.g., "48    2023")
+    if re.match(r'^\d+\s+20\d{2}$', line_stripped):
+        return True
+    
+    # Very short lines (likely metadata)
+    if len(line_stripped) < 5:
+        return True
+    
+    # Author lines: typically have commas, initials (single letters), and names
+    # Pattern: "D Mistry, MF Mridha, M Safran" or "BS Diba, JD Plabon, MDM Rahman"
+    # Check for multiple comma-separated parts with initials (1-3 letters followed by space and name)
+    if ',' in line_stripped:
+        # Split by comma and check if parts look like author names
+        parts = [p.strip() for p in line_stripped.split(',')]
+        if len(parts) >= 2:
+            # Check if parts look like author names (initials + name pattern)
+            author_pattern = re.compile(r'^[A-Z]{1,3}\s+[A-Z][a-z]+')
+            author_count = sum(1 for part in parts if author_pattern.match(part.strip()))
+            # If at least 2 parts look like author names, it's likely an author line
+            if author_count >= 2:
+                return True
+            # Also check for patterns like "D Mistry" or "MF Mridha" (1-3 letters + space + capitalized word)
+            if all(re.match(r'^[A-Z]{1,3}\s+[A-Z]', p.strip()) for p in parts[:min(3, len(parts))]):
+                return True
+    
+    # Journal/venue lines that are likely repeated (same text appears multiple times)
+    # These are usually shorter and don't have the complexity of titles
+    # Skip very short lines that might be journal names
+    if len(line_stripped) < 20 and not any(char.isdigit() for char in line_stripped):
+        # Check if it looks like a journal name (capitalized words, no special punctuation)
+        if re.match(r'^[A-Z][a-zA-Z\s]+$', line_stripped) and line_stripped.count(' ') < 5:
+            # Might be a journal name, but be careful - could also be a short title
+            # Only skip if it's very short
+            if len(line_stripped) < 15:
+                return True
+    
+    return False
 
 
 @login_required
@@ -1947,7 +2170,8 @@ def bulk_import_publications(request, faculty_id):
                     i += 1
                     continue
                 
-                if not type_val or type_val not in dict(Publication.TYPE_CHOICES):
+                # Type is optional, but if provided, must be valid
+                if type_val and type_val not in dict(Publication.TYPE_CHOICES):
                     errors.append(f'Publication {i+1}: Please select a valid publication type.')
                     i += 1
                     continue
@@ -1974,7 +2198,7 @@ def bulk_import_publications(request, faculty_id):
                         faculty=faculty,
                         title=title,
                         pub_year=pub_year,
-                        type=type_val,
+                        type=type_val if type_val else None,
                         ranking=ranking,
                         link=link if link else None,
                         doi=doi if doi else None,
@@ -2002,13 +2226,9 @@ def bulk_import_publications(request, faculty_id):
             messages.error(request, 'Please paste the publication data.')
             return redirect('people:bulk_import_publications', faculty_id=faculty_id)
         
-        # Parse the text - Google Scholar format:
-        # Line 1: Title
-        # Line 2: Authors (ignore)
-        # Line 3: Venue (ignore)
-        # Line 4: Citations Year (extract year using 20\d{2})
-        # 
-        # Strategy: Find lines with year pattern (20\d{2}), title is 3 lines before
+        # Parse the text - supports two formats:
+        # Format 1: Clean Google Scholar format (Title, Authors, Venue, Year)
+        # Format 2: Noisy format with metadata (Title, metadata, Q ranking, Year)
         
         parsed_publications = []
         lines = pasted_text.split('\n')
@@ -2022,54 +2242,68 @@ def bulk_import_publications(request, faculty_id):
                 non_empty_lines.append(stripped)
                 original_line_nums.append(i)
         
-        # Common header keywords to skip
-        header_keywords = ['title', 'cited', 'year', 'author', 'publication', 'venue', 'journal']
+        # Detect format type
+        is_format_2 = _detect_format_2(non_empty_lines)
         
-        # Iterate through lines looking for year pattern (20\d{2})
-        for i, line in enumerate(non_empty_lines):
-            # Skip header rows
-            line_lower = line.lower()
-            is_header = False
-            for keyword in header_keywords:
-                if keyword in line_lower and len(line) < 30:
-                    is_header = True
-                    break
-            if is_header:
-                continue
+        if is_format_2:
+            # Format 2: Noisy format with metadata
+            parsed_publications = _parse_format_2(non_empty_lines, original_line_nums)
+        else:
+            # Format 1: Clean Google Scholar format
+            # Line 1: Title
+            # Line 2: Authors (ignore)
+            # Line 3: Venue (ignore)
+            # Line 4: Citations Year (extract year using 20\d{2})
+            # Strategy: Find lines with year pattern (20\d{2}), title is 3 lines before
             
-            # Look for year pattern in this line (20\d{2})
-            year_match = re.search(r'20\d{2}', line)
-            if year_match:
-                year_str = year_match.group()
-                try:
-                    year = int(year_str)
-                    if 2000 <= year <= 2100:  # Valid year range
-                        # Title is 3 lines before the year line
-                        title_index = i - 3
-                        
-                        if title_index >= 0 and title_index < len(non_empty_lines):
-                            title = non_empty_lines[title_index].strip()
-                            
-                            # Skip if title looks like a header
-                            title_lower = title.lower()
-                            is_title_header = False
-                            for keyword in header_keywords:
-                                if keyword in title_lower and len(title) < 30:
-                                    is_title_header = True
-                                    break
-                            
-                            # Validate title (should be meaningful, not too short)
-                            if not is_title_header and len(title) >= 10:
-                                parsed_publications.append({
-                                    'title': title,
-                                    'authors': None,
-                                    'venue': None,
-                                    'cited': None,
-                                    'year': str(year),
-                                    'line_num': original_line_nums[i],
-                                })
-                except ValueError:
+            # Common header keywords to skip
+            header_keywords = ['title', 'cited', 'year', 'author', 'publication', 'venue', 'journal']
+            
+            # Iterate through lines looking for year pattern (20\d{2})
+            for i, line in enumerate(non_empty_lines):
+                # Skip header rows
+                line_lower = line.lower()
+                is_header = False
+                for keyword in header_keywords:
+                    if keyword in line_lower and len(line) < 30:
+                        is_header = True
+                        break
+                if is_header:
                     continue
+                
+                # Look for year pattern in this line (20\d{2})
+                year_match = re.search(r'20\d{2}', line)
+                if year_match:
+                    year_str = year_match.group()
+                    try:
+                        year = int(year_str)
+                        if 2000 <= year <= 2100:  # Valid year range
+                            # Title is 3 lines before the year line
+                            title_index = i - 3
+                            
+                            if title_index >= 0 and title_index < len(non_empty_lines):
+                                title = non_empty_lines[title_index].strip()
+                                
+                                # Skip if title looks like a header
+                                title_lower = title.lower()
+                                is_title_header = False
+                                for keyword in header_keywords:
+                                    if keyword in title_lower and len(title) < 30:
+                                        is_title_header = True
+                                        break
+                                
+                                # Validate title (should be meaningful, not too short)
+                                if not is_title_header and len(title) >= 10:
+                                    parsed_publications.append({
+                                        'title': title,
+                                        'authors': None,
+                                        'venue': None,
+                                        'cited': None,
+                                        'year': str(year),
+                                        'line_num': original_line_nums[i],
+                                    })
+                    except ValueError:
+                        continue
         
         if not parsed_publications:
             messages.error(request, 'No publications could be parsed from the pasted text. Please check the format.')
@@ -2151,7 +2385,8 @@ def edit_publication(request, publication_id):
             messages.error(request, 'Please enter a valid year between 1900 and 2100.')
             return redirect('people:edit_publication', publication_id=publication_id)
         
-        if not type or type not in dict(Publication.TYPE_CHOICES):
+        # Type is optional, but if provided, must be valid
+        if type and type not in dict(Publication.TYPE_CHOICES):
             messages.error(request, 'Please select a valid publication type.')
             return redirect('people:edit_publication', publication_id=publication_id)
         
@@ -2162,7 +2397,7 @@ def edit_publication(request, publication_id):
         # Update publication
         publication.title = title
         publication.pub_year = pub_year
-        publication.type = type
+        publication.type = type if type else None
         publication.ranking = ranking
         publication.link = link if link else None
         publication.doi = doi if doi else None
@@ -2222,6 +2457,79 @@ def delete_publication(request, publication_id):
 
 @login_required
 @require_http_methods(["POST"])
+@transaction.atomic
+def bulk_delete_publications(request, faculty_id):
+    """
+    Bulk delete publications.
+    Accessible to the faculty member themselves or users with manage_all_publications permission.
+    """
+    from people.permissions import Permissions
+    from django.http import JsonResponse
+    import json
+    
+    faculty = get_object_or_404(Faculty, pk=faculty_id)
+    
+    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    can_manage = False
+    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
+        can_manage = True
+    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+        can_manage = True
+    
+    if not can_manage:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to delete publications for this faculty member.'
+        }, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        publication_ids = data.get('publication_ids', [])
+        
+        if not publication_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'No publications selected for deletion.'
+            }, status=400)
+        
+        # Get publications to delete - ensure they belong to this faculty
+        publications_to_delete = Publication.objects.filter(
+            pk__in=publication_ids,
+            faculty=faculty
+        )
+        
+        if publications_to_delete.count() != len(publication_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some publication IDs do not exist or do not belong to this faculty.'
+            }, status=400)
+        
+        # Get titles for response
+        publication_titles = [pub.title for pub in publications_to_delete]
+        deleted_count = publications_to_delete.count()
+        
+        # Delete publications
+        publications_to_delete.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully deleted {deleted_count} publication(s).',
+            'deleted_count': deleted_count
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid request data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting publications: {str(e)}'
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
 def confirm_single_publication(request, faculty_id):
     """
     AJAX endpoint to confirm and save a single publication from bulk import.
@@ -2265,7 +2573,8 @@ def confirm_single_publication(request, faculty_id):
         except ValueError:
             return JsonResponse({'success': False, 'error': 'Please enter a valid year between 1900 and 2100'}, status=400)
         
-        if not type_val or type_val not in dict(Publication.TYPE_CHOICES):
+        # Type is optional, but if provided, must be valid
+        if type_val and type_val not in dict(Publication.TYPE_CHOICES):
             return JsonResponse({'success': False, 'error': 'Please select a valid publication type'}, status=400)
         
         if not ranking or ranking not in dict(Publication.RANKING_CHOICES):
@@ -2285,7 +2594,7 @@ def confirm_single_publication(request, faculty_id):
             faculty=faculty,
             title=title,
             pub_year=pub_year,
-            type=type_val,
+            type=type_val if type_val else None,
             ranking=ranking,
             link=link if link else None,
             doi=doi if doi else None,

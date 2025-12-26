@@ -63,9 +63,9 @@
                             </div>
                             
                             <div class="form-group">
-                                <label>Type *</label>
-                                <select name="type_{{ forloop.counter0 }}" required class="field-required field-empty field-pink">
-                                    <option value="">Select type</option>
+                                <label>Type</label>
+                                <select name="type_{{ forloop.counter0 }}" class="field-empty field-pink">
+                                    <option value="">Select type (optional)</option>
                                     {% for value, label in type_choices %}
                                     <option value="{{ value }}">{{ label }}</option>
                                     {% endfor %}
@@ -77,7 +77,7 @@
                                 <select name="ranking_{{ forloop.counter0 }}" required class="field-required field-empty field-pink">
                                     <option value="">Select ranking</option>
                                     {% for value, label in ranking_choices %}
-                                    <option value="{{ value }}">{{ label }}</option>
+                                    <option value="{{ value }}" {% if pub.q_rank == value %}selected{% endif %}>{{ label }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -450,22 +450,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const link = card.querySelector(`input[name="link_${index}"]`).value.trim();
             const contribution = card.querySelector(`input[name="contribution_${index}"]`).value.trim();
             
-            // Validate required fields
-            if (!title || !pubYear || !type || !ranking) {
+            // Validate required fields (type is optional)
+            if (!title || !pubYear || !ranking) {
                 // Highlight empty fields
                 if (!title) card.querySelector(`input[name="title_${index}"]`).classList.add('field-empty');
                 if (!pubYear) card.querySelector(`input[name="pub_year_${index}"]`).classList.add('field-empty');
-                if (!type) card.querySelector(`select[name="type_${index}"]`).classList.add('field-empty');
                 if (!ranking) card.querySelector(`select[name="ranking_${index}"]`).classList.add('field-empty');
                 
-                alert('Please fill in all required fields (Title, Year, Type, Ranking)');
+                alert('Please fill in all required fields (Title, Year, Ranking)');
                 return;
             }
             
             // Remove empty class if fields are filled
             card.querySelector(`input[name="title_${index}"]`).classList.remove('field-empty');
             card.querySelector(`input[name="pub_year_${index}"]`).classList.remove('field-empty');
-            card.querySelector(`select[name="type_${index}"]`).classList.remove('field-empty');
             card.querySelector(`select[name="ranking_${index}"]`).classList.remove('field-empty');
             
             // Disable button during request

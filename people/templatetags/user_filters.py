@@ -1,5 +1,6 @@
 from django import template
 import re
+from django.utils import timezone
 
 register = template.Library()
 
@@ -36,6 +37,30 @@ def greeting_name(user):
     
     # Normalize the name - remove extra spaces
     full_name = ' '.join(full_name.strip().split())
+    
+    return full_name
+
+
+@register.filter
+def cache_bust(url, obj=None):
+    """
+    Add cache-busting parameter to URLs.
+    Usage: {{ image_url|cache_bust:user }} or {{ image_url|cache_bust }}
+    If obj is provided and has updated_at, use that timestamp.
+    Otherwise, use current timestamp.
+    """
+    if not url:
+        return url
+    
+    # Get timestamp for cache busting
+    if obj and hasattr(obj, 'updated_at') and obj.updated_at:
+        timestamp = int(obj.updated_at.timestamp())
+    else:
+        timestamp = int(timezone.now().timestamp())
+    
+    # Add or update the cache-busting parameter
+    separator = '&' if '?' in url else '?'
+    return f"{url}{separator}v={timestamp}"
     
     # List of title patterns (case-insensitive matching)
     # Order matters - check longer patterns first

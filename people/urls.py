@@ -34,5 +34,6 @@ urlpatterns = [
     path('faculty/<int:faculty_id>/publications/confirm-single/', views.confirm_single_publication, name='confirm_single_publication'),
     path('publications/<int:publication_id>/edit/', views.edit_publication, name='edit_publication'),
     path('publications/<int:publication_id>/delete/', views.delete_publication, name='delete_publication'),
+    path('faculty/<int:faculty_id>/publications/bulk-delete/', views.bulk_delete_publications, name='bulk_delete_publications'),
 ]
 

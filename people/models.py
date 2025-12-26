@@ -613,62 +613,96 @@ class Faculty(models.Model):
         elif cropping_set and is_update and not picture_changed:
             try:
                 # Get the original image path
-                if self.profile_pic.name:
+                if self.profile_pic and self.profile_pic.name:
                     # Read the image file
+                    image_data = None
                     if hasattr(self.profile_pic, 'read'):
+                        # File is in memory (new upload)
                         self.profile_pic.seek(0)
                         image_data = self.profile_pic.read()
                     else:
-                        image_path = self.profile_pic.path
-                        with open(image_path, 'rb') as f:
-                            image_data = f.read()
+                        # File is on disk - check if it exists
+                        try:
+                            image_path = self.profile_pic.path
+                            if os.path.exists(image_path):
+                                with open(image_path, 'rb') as f:
+                                    image_data = f.read()
+                            else:
+                                # File doesn't exist, skip cropping and clear cropping field
+                                self.cropping = ''
+                                super().save(*args, **kwargs)
+                                return
+                        except (ValueError, AttributeError):
+                            # File path is invalid or file doesn't exist
+                            # Try to read from storage instead
+                            try:
+                                if self.profile_pic.storage.exists(self.profile_pic.name):
+                                    image_data = self.profile_pic.storage.open(self.profile_pic.name).read()
+                                else:
+                                    # File doesn't exist in storage, skip cropping
+                                    self.cropping = ''
+                                    super().save(*args, **kwargs)
+                                    return
+                            except Exception:
+                                # Can't access file, skip cropping
+                                self.cropping = ''
+                                super().save(*args, **kwargs)
+                                return
                     
-                    # Open image with PIL from bytes
-                    image = Image.open(io.BytesIO(image_data))
-                    
-                    # Parse cropping coordinates (format: "x1,y1,x2,y2")
-                    crop_coords = [int(x.strip()) for x in self.cropping.split(',')]
-                    if len(crop_coords) == 4:
-                        x1, y1, x2, y2 = crop_coords
+                    if image_data:
+                        # Open image with PIL from bytes
+                        image = Image.open(io.BytesIO(image_data))
                         
-                        # Crop the image
-                        cropped_image = image.crop((x1, y1, x2, y2))
-                        
-                        # Resize to exact 600x600 if needed
-                        if cropped_image.size != (600, 600):
-                            cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
-                        
-                        # Save to memory
-                        img_io = io.BytesIO()
-                        # Determine format from original
-                        format = image.format or 'JPEG'
-                        if format not in ['JPEG', 'PNG', 'WEBP']:
-                            format = 'JPEG'
-                        
-                        # Convert RGBA to RGB if necessary for JPEG
-                        if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
-                            rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
-                            if cropped_image.mode == 'P':
-                                cropped_image = cropped_image.convert('RGBA')
-                            rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
-                            cropped_image = rgb_image
-                        
-                        cropped_image.save(img_io, format=format, quality=95)
-                        img_io.seek(0)
-                        
-                        # Replace the original file
-                        file_name = os.path.basename(self.profile_pic.name)
-                        self.profile_pic.save(
-                            file_name,
-                            ContentFile(img_io.read()),
-                            save=False
-                        )
-                        
-                        # Clear cropping coordinates after applying
+                        # Parse cropping coordinates (format: "x1,y1,x2,y2")
+                        crop_coords = [int(x.strip()) for x in self.cropping.split(',')]
+                        if len(crop_coords) == 4:
+                            x1, y1, x2, y2 = crop_coords
+                            
+                            # Crop the image
+                            cropped_image = image.crop((x1, y1, x2, y2))
+                            
+                            # Resize to exact 600x600 if needed
+                            if cropped_image.size != (600, 600):
+                                cropped_image = cropped_image.resize((600, 600), Image.Resampling.LANCZOS)
+                            
+                            # Save to memory
+                            img_io = io.BytesIO()
+                            # Determine format from original
+                            format = image.format or 'JPEG'
+                            if format not in ['JPEG', 'PNG', 'WEBP']:
+                                format = 'JPEG'
+                            
+                            # Convert RGBA to RGB if necessary for JPEG
+                            if format == 'JPEG' and cropped_image.mode in ('RGBA', 'LA', 'P'):
+                                rgb_image = Image.new('RGB', cropped_image.size, (255, 255, 255))
+                                if cropped_image.mode == 'P':
+                                    cropped_image = cropped_image.convert('RGBA')
+                                rgb_image.paste(cropped_image, mask=cropped_image.split()[-1] if cropped_image.mode == 'RGBA' else None)
+                                cropped_image = rgb_image
+                            
+                            cropped_image.save(img_io, format=format, quality=95)
+                            img_io.seek(0)
+                            
+                            # Replace the original file
+                            file_name = os.path.basename(self.profile_pic.name)
+                            self.profile_pic.save(
+                                file_name,
+                                ContentFile(img_io.read()),
+                                save=False
+                            )
+                            
+                            # Clear cropping coordinates after applying
+                            self.cropping = ''
+                    else:
+                        # No image data available, clear cropping field
                         self.cropping = ''
+                else:
+                    # No profile picture, clear cropping field
+                    self.cropping = ''
                         
             except Exception as e:
-                # If cropping fails, just save normally
+                # If cropping fails, clear cropping field and save normally
+                self.cropping = ''
                 import traceback
                 traceback.print_exc()
         
@@ -709,6 +743,8 @@ class Publication(models.Model):
     type = models.CharField(
         max_length=20,
         choices=TYPE_CHOICES,
+        blank=True,
+        null=True,
         help_text="Type of publication"
     )
     
@@ -769,7 +805,6 @@ class Publication(models.Model):
         indexes = [
             models.Index(fields=['faculty']),
             models.Index(fields=['pub_year']),
-            models.Index(fields=['type']),
             models.Index(fields=['ranking']),
             models.Index(fields=['faculty', 'pub_year']),
         ]

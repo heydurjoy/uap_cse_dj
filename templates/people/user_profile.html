@@ -16,13 +16,13 @@
             <div class="profile-image-section">
                 {% if profile %}
                     {% if profile_type == 'faculty' and profile.profile_pic %}
-                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                        <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="{{ profile.name }}">
                     {% elif profile_type == 'staff' and profile.profile_pic %}
-                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                        <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="{{ profile.name }}">
                     {% elif profile_type == 'officer' and profile.profile_pic %}
-                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                        <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="{{ profile.name }}">
                     {% elif profile_type == 'club_member' and profile.profile_pic %}
-                        <img src="/media/{{ profile.profile_pic.name }}" alt="{{ profile.name }}">
+                        <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="{{ profile.name }}">
                     {% else %}
                         <img src="{% static 'defaults/people.png' %}" alt="Profile">
                     {% endif %}

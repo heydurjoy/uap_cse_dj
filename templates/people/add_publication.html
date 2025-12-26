@@ -43,9 +43,9 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="type">Type *</label>
-                            <select name="type" id="type" required>
-                                <option value="">Select type</option>
+                            <label for="type">Type</label>
+                            <select name="type" id="type">
+                                <option value="">Select type (optional)</option>
                                 {% for value, label in type_choices %}
                                 <option value="{{ value }}">{{ label }}</option>
                                 {% endfor %}

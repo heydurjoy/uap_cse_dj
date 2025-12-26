@@ -61,10 +61,24 @@
         {% endif %}
 
         {% if publications %}
+            <div class="bulk-actions-bar">
+                <button type="button" id="select-all-btn" class="btn btn-secondary btn-sm">Select All</button>
+                <button type="button" id="deselect-all-btn" class="btn btn-secondary btn-sm" style="display: none;">Deselect All</button>
+                <button type="button" id="delete-selected-btn" class="btn btn-danger btn-sm" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete Selected (<span id="selected-count">0</span>)
+                </button>
+            </div>
             <div class="publications-table-container">
                 <table class="publications-table">
                     <thead>
                         <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="select-all-checkbox" title="Select All">
+                            </th>
                             <th>Title</th>
                             <th>Year</th>
                             <th>Type</th>
@@ -76,6 +90,9 @@
                     <tbody>
                         {% for pub in publications %}
                         <tr>
+                            <td>
+                                <input type="checkbox" class="publication-checkbox" value="{{ pub.pk }}" data-title="{{ pub.title }}">
+                            </td>
                             <td class="title-cell">
                                 <strong>{{ pub.title }}</strong>
                                 {% if pub.doi %}
@@ -83,7 +100,7 @@
                                 {% endif %}
                             </td>
                             <td>{{ pub.pub_year }}</td>
-                            <td><span class="badge badge-type">{{ pub.get_type_display }}</span></td>
+                            <td><span class="badge badge-type">{{ pub.get_type_display|default:"—" }}</span></td>
                             <td><span class="badge badge-ranking">{{ pub.get_ranking_display }}</span></td>
                             <td>{{ pub.published_at|default:"—" }}</td>
                             <td class="actions-cell">
@@ -335,6 +352,46 @@
     font-weight: 600;
 }
 
+.bulk-actions-bar {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.publication-checkbox {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+#select-all-checkbox {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
 @media (max-width: 768px) {
     .page-header {
         flex-direction: column;
@@ -357,7 +414,194 @@
     .publications-table {
         min-width: 800px;
     }
-}
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const deselectAllBtn = document.getElementById('deselect-all-btn');
+    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const publicationCheckboxes = document.querySelectorAll('.publication-checkbox');
+
+    function updateSelectedCount() {
+        const selected = document.querySelectorAll('.publication-checkbox:checked');
+        const count = selected.length;
+        selectedCountSpan.textContent = count;
+        
+        if (count > 0) {
+            deleteSelectedBtn.style.display = 'inline-flex';
+            deselectAllBtn.style.display = 'inline-block';
+            selectAllBtn.style.display = 'none';
+        } else {
+            deleteSelectedBtn.style.display = 'none';
+            deselectAllBtn.style.display = 'none';
+            selectAllBtn.style.display = 'inline-block';
+        }
+        
+        // Update select all checkbox state
+        if (publicationCheckboxes.length > 0) {
+            const allChecked = selected.length === publicationCheckboxes.length;
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = selected.length > 0 && selected.length < publicationCheckboxes.length;
+        }
+    }
+
+    // Select all checkbox
+    selectAllCheckbox.addEventListener('change', function() {
+        publicationCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
+    });
+
+    // Select all button
+    selectAllBtn.addEventListener('click', function() {
+        publicationCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        selectAllCheckbox.checked = true;
+        updateSelectedCount();
+    });
+
+    // Deselect all button
+    deselectAllBtn.addEventListener('click', function() {
+        publicationCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        selectAllCheckbox.checked = false;
+        updateSelectedCount();
+    });
+
+    // Individual checkbox change
+    publicationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    // Delete selected button
+    deleteSelectedBtn.addEventListener('click', function() {
+        const selected = Array.from(document.querySelectorAll('.publication-checkbox:checked'));
+        const publicationIds = selected.map(checkbox => parseInt(checkbox.value));
+        
+        if (publicationIds.length === 0) {
+            alert('Please select at least one publication to delete.');
+            return;
+        }
+        
+        const count = publicationIds.length;
+        const confirmMessage = `Are you sure you want to delete ${count} publication(s)? This action cannot be undone.`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        // Store original button content
+        const originalButtonContent = deleteSelectedBtn.innerHTML;
+        
+        // Disable button during deletion
+        deleteSelectedBtn.disabled = true;
+        deleteSelectedBtn.innerHTML = 'Deleting...';
+        
+        // Send AJAX request
+        fetch('{% url "people:bulk_delete_publications" faculty.pk %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                publication_ids: publicationIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove deleted rows from table
+                selected.forEach(checkbox => {
+                    const row = checkbox.closest('tr');
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                });
+                
+                // Reset checkboxes
+                selectAllCheckbox.checked = false;
+                updateSelectedCount();
+                
+                // Show success message
+                showMessage(data.message, 'success');
+                
+                // Reload page after a short delay to refresh the list
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showMessage(data.message || 'Error deleting publications.', 'error');
+                deleteSelectedBtn.disabled = false;
+                deleteSelectedBtn.innerHTML = originalButtonContent;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('An error occurred while deleting publications.', 'error');
+            deleteSelectedBtn.disabled = false;
+            deleteSelectedBtn.innerHTML = originalButtonContent;
+        });
+    });
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Helper function to show messages
+    function showMessage(message, type) {
+        const messagesDiv = document.querySelector('.messages') || createMessagesDiv();
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+        alertDiv.textContent = message;
+        messagesDiv.appendChild(alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+
+    function createMessagesDiv() {
+        const div = document.createElement('div');
+        div.className = 'messages';
+        const section = document.querySelector('.manage-publications-section');
+        const permissionNotice = document.querySelector('.permission-notice');
+        if (permissionNotice) {
+            permissionNotice.after(div);
+        } else {
+            const pageHeader = document.querySelector('.page-header');
+            if (pageHeader) {
+                pageHeader.after(div);
+            } else {
+                section.insertBefore(div, section.firstChild);
+            }
+        }
+        return div;
+    }
+
+    // Initialize count on page load
+    updateSelectedCount();
+});
+</script>
 {% endblock %}
 

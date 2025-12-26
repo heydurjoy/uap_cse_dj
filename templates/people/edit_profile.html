@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load user_filters %}
 
 {% block title %}Edit Profile - CSE UAP{% endblock %}
 
@@ -244,20 +245,20 @@
                     <div class="current-pic-preview" id="currentPicPreview">
                         {% if profile %}
                             {% if profile_type == 'faculty' and profile.profile_pic %}
-                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                                <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="Current Profile Picture" id="currentPic">
                             {% elif profile_type == 'staff' and profile.profile_pic %}
-                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                                <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="Current Profile Picture" id="currentPic">
                             {% elif profile_type == 'officer' and profile.profile_pic %}
-                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                                <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="Current Profile Picture" id="currentPic">
                             {% elif profile_type == 'club_member' and profile.profile_pic %}
-                                <img src="/media/{{ profile.profile_pic.name }}" alt="Current Profile Picture" id="currentPic">
+                                <img src="/media/{{ profile.profile_pic.name|cache_bust:profile }}" alt="Current Profile Picture" id="currentPic">
                             {% elif user.profile_picture %}
-                                <img src="/media/{{ user.profile_picture.name }}" alt="Current Profile Picture" id="currentPic">
+                                <img src="/media/{{ user.profile_picture.name|cache_bust:user }}" alt="Current Profile Picture" id="currentPic">
                             {% else %}
                                 <img src="{% static 'defaults/people.png' %}" alt="Default Profile Picture" id="currentPic">
                             {% endif %}
                         {% elif user.profile_picture %}
-                            <img src="/media/{{ user.profile_picture.name }}" alt="Current Profile Picture" id="currentPic">
+                            <img src="/media/{{ user.profile_picture.name|cache_bust:user }}" alt="Current Profile Picture" id="currentPic">
                         {% else %}
                             <img src="{% static 'defaults/people.png' %}" alt="Default Profile Picture" id="currentPic">
                         {% endif %}
