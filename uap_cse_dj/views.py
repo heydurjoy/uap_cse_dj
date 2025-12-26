@@ -268,8 +268,11 @@ def home(request):
             designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
             if designation_faculty:
                 top_researchers[designation] = designation_faculty[0]
-    except Exception:
+    except Exception as e:
         # Handle errors gracefully - research data is optional
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error calculating research stats for home page: {str(e)}", exc_info=True)
         research_stats = None
         most_cited_researchers = None
         leading_active_researchers = None
