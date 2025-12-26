@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'academics',
     'office',
     'clubs',
+    'django_cleanup.apps.CleanupConfig',  # Must be last - automatically deletes old files when replaced
 ]
 
 # Custom User Model

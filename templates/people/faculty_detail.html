@@ -71,53 +71,41 @@
                     {% endif %}
                 </div>
                 
-                {% if faculty.google_scholar_url or faculty.researchgate_url or faculty.orcid_url or faculty.scopus_url or faculty.linkedin_url %}
                 <div class="social-links-section">
                     <h3 class="section-title">Research Profiles</h3>
                     <div class="research-links">
-                        {% if faculty.google_scholar_url %}
-                            <a href="{{ faculty.google_scholar_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="Google Scholar">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M5.242 13.769L0 9.5 12.5 0 25 9.5l-5.242 4.269C17.548 11.249 14.978 9.5 12.5 9.5c-2.477 0-5.048 1.748-7.258 4.269zM12.5 10a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15z"/>
-                                </svg>
-                                <span>Scholar</span>
-                            </a>
-                        {% endif %}
-                        {% if faculty.researchgate_url %}
-                            <a href="{{ faculty.researchgate_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="ResearchGate">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M18.524 0H5.476C2.453 0 0 2.453 0 5.476v13.048C0 21.547 2.453 24 5.476 24h13.048C21.547 24 24 21.547 24 18.524V5.476C24 2.453 21.547 0 18.524 0zM8.57 17.637h-2.87v-7.98h2.87v7.98zm-1.435-9.068c-.92 0-1.664-.744-1.664-1.664 0-.92.744-1.664 1.664-1.664.92 0 1.664.744 1.664 1.664 0 .92-.744 1.664-1.664 1.664zm12.344 9.068h-2.87v-3.86c0-1.036-.02-2.366-1.443-2.366-1.443 0-1.664 1.126-1.664 2.292v3.934h-2.87v-7.98h2.755v1.09h.04c.392-.74 1.352-1.52 2.782-1.52 2.978 0 3.525 1.96 3.525 4.508v3.922z"/>
-                                </svg>
-                                <span>ResearchGate</span>
-                            </a>
-                        {% endif %}
-                        {% if faculty.orcid_url %}
-                            <a href="{{ faculty.orcid_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="ORCID">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 16.338c-.192 0-.34-.002-.455-.006v-4.127H5.375v4.111c-.117.004-.272.006-.455.006H4.23v-5.842H7.4c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827zm4.76 3.39c-.192 0-.34-.002-.455-.006v-4.127h-1.539v4.111c-.117.004-.272.006-.455.006h-.69v-5.842h3.17c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827zm4.76 3.39c-.192 0-.34-.002-.455-.006v-4.127h-1.539v4.111c-.117.004-.272.006-.455.006h-.69v-5.842h3.17c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827z"/>
-                                </svg>
-                                <span>ORCID</span>
-                            </a>
-                        {% endif %}
-                        {% if faculty.scopus_url %}
-                            <a href="{{ faculty.scopus_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="Scopus">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M24 19.5c0 .828-.672 1.5-1.5 1.5H1.5c-.828 0-1.5-.672-1.5-1.5v-15C0 3.672.672 3 1.5 3h21c.828 0 1.5.672 1.5 1.5v15zM5.027 18.75h2.948V9.75H5.027v9zm3.198 0h2.948v-4.5c0-1.5.75-2.25 2.25-2.25s2.25.75 2.25 2.25v4.5h2.948v-4.5c0-2.25-1.5-3.75-4.5-3.75s-4.5 1.5-4.5 3.75v4.5zm10.5-9.75h-2.948v9h2.948V9z"/>
-                                </svg>
-                                <span>Scopus</span>
-                            </a>
-                        {% endif %}
-                        {% if faculty.linkedin_url %}
-                            <a href="{{ faculty.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="research-link" title="LinkedIn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                                </svg>
-                                <span>LinkedIn</span>
-                            </a>
-                        {% endif %}
+                        <a {% if faculty.google_scholar_url %}href="{{ faculty.google_scholar_url }}" target="_blank" rel="noopener noreferrer"{% else %}href="#" onclick="return false;"{% endif %} class="research-link {% if not faculty.google_scholar_url %}research-link-disabled{% endif %}" title="Google Scholar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5.242 13.769L0 9.5 12.5 0 25 9.5l-5.242 4.269C17.548 11.249 14.978 9.5 12.5 9.5c-2.477 0-5.048 1.748-7.258 4.269zM12.5 10a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15z"/>
+                            </svg>
+                            <span>Scholar</span>
+                        </a>
+                        <a {% if faculty.researchgate_url %}href="{{ faculty.researchgate_url }}" target="_blank" rel="noopener noreferrer"{% else %}href="#" onclick="return false;"{% endif %} class="research-link {% if not faculty.researchgate_url %}research-link-disabled{% endif %}" title="ResearchGate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.524 0H5.476C2.453 0 0 2.453 0 5.476v13.048C0 21.547 2.453 24 5.476 24h13.048C21.547 24 24 21.547 24 18.524V5.476C24 2.453 21.547 0 18.524 0zM8.57 17.637h-2.87v-7.98h2.87v7.98zm-1.435-9.068c-.92 0-1.664-.744-1.664-1.664 0-.92.744-1.664 1.664-1.664.92 0 1.664.744 1.664 1.664 0 .92-.744 1.664-1.664 1.664zm12.344 9.068h-2.87v-3.86c0-1.036-.02-2.366-1.443-2.366-1.443 0-1.664 1.126-1.664 2.292v3.934h-2.87v-7.98h2.755v1.09h.04c.392-.74 1.352-1.52 2.782-1.52 2.978 0 3.525 1.96 3.525 4.508v3.922z"/>
+                            </svg>
+                            <span>ResearchGate</span>
+                        </a>
+                        <a {% if faculty.orcid_url %}href="{{ faculty.orcid_url }}" target="_blank" rel="noopener noreferrer"{% else %}href="#" onclick="return false;"{% endif %} class="research-link {% if not faculty.orcid_url %}research-link-disabled{% endif %}" title="ORCID">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 16.338c-.192 0-.34-.002-.455-.006v-4.127H5.375v4.111c-.117.004-.272.006-.455.006H4.23v-5.842H7.4c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827zm4.76 3.39c-.192 0-.34-.002-.455-.006v-4.127h-1.539v4.111c-.117.004-.272.006-.455.006h-.69v-5.842h3.17c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827zm4.76 3.39c-.192 0-.34-.002-.455-.006v-4.127h-1.539v4.111c-.117.004-.272.006-.455.006h-.69v-5.842h3.17c1.587 0 2.423.838 2.423 2.309 0 1.385-.836 2.396-2.454 2.396v.037zm.195-3.39c-.034 0-.098.002-.195.006v2.653c.097.004.161.006.195.006.577 0 .98-.34.98-.838 0-.498-.403-.827-.98-.827z"/>
+                            </svg>
+                            <span>ORCID</span>
+                        </a>
+                        <a {% if faculty.scopus_url %}href="{{ faculty.scopus_url }}" target="_blank" rel="noopener noreferrer"{% else %}href="#" onclick="return false;"{% endif %} class="research-link {% if not faculty.scopus_url %}research-link-disabled{% endif %}" title="Scopus">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 19.5c0 .828-.672 1.5-1.5 1.5H1.5c-.828 0-1.5-.672-1.5-1.5v-15C0 3.672.672 3 1.5 3h21c.828 0 1.5.672 1.5 1.5v15zM5.027 18.75h2.948V9.75H5.027v9zm3.198 0h2.948v-4.5c0-1.5.75-2.25 2.25-2.25s2.25.75 2.25 2.25v4.5h2.948v-4.5c0-2.25-1.5-3.75-4.5-3.75s-4.5 1.5-4.5 3.75v4.5zm10.5-9.75h-2.948v9h2.948V9z"/>
+                            </svg>
+                            <span>Scopus</span>
+                        </a>
+                        <a {% if faculty.linkedin_url %}href="{{ faculty.linkedin_url }}" target="_blank" rel="noopener noreferrer"{% else %}href="#" onclick="return false;"{% endif %} class="research-link {% if not faculty.linkedin_url %}research-link-disabled{% endif %}" title="LinkedIn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            <span>LinkedIn</span>
+                        </a>
                     </div>
                 </div>
-                {% endif %}
                 
                 <!-- Years of Service Display -->
                 {% if service_data %}
@@ -581,12 +569,25 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.research-link:hover {
+.research-link:hover:not(.research-link-disabled) {
     background: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
     transform: translateY(-3px);
     box-shadow: 0 8px 20px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.research-link-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    pointer-events: none;
+}
+
+.research-link-disabled svg {
+    opacity: 0.5;
 }
 
 .research-link svg {
