@@ -166,10 +166,13 @@
         
         // Toggle modal
         notificationBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             e.stopPropagation();
-            notificationModal.classList.toggle('active');
-            if (notificationModal.classList.contains('active')) {
-                updateNotifications();
+            if (notificationModal) {
+                notificationModal.classList.toggle('active');
+                if (notificationModal.classList.contains('active')) {
+                    updateNotifications();
+                }
             }
         });
         
@@ -189,14 +192,41 @@
             });
         }
         
-        // Close button
+        // Close button - multiple handlers for reliability
         if (closeModal) {
+            // Direct handler
             closeModal.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                notificationModal.classList.remove('active');
+                if (notificationModal) {
+                    notificationModal.classList.remove('active');
+                }
             });
+            
+            // Also handle SVG clicks inside close button
+            const closeSvg = closeModal.querySelector('svg');
+            if (closeSvg) {
+                closeSvg.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (notificationModal) {
+                        notificationModal.classList.remove('active');
+                    }
+                });
+            }
         }
+        
+        // Event delegation backup for close button
+        document.addEventListener('click', function(e) {
+            const closeBtn = e.target.closest('#closeNotificationModal') || 
+                           e.target.closest('.close-notification-btn') ||
+                           (e.target.closest('svg') && e.target.closest('svg').parentElement && e.target.closest('svg').parentElement.id === 'closeNotificationModal');
+            if (closeBtn && notificationModal) {
+                e.preventDefault();
+                e.stopPropagation();
+                notificationModal.classList.remove('active');
+            }
+        });
         
         // Initial load
         updateNotifications();
