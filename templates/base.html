@@ -110,17 +110,74 @@
                 </form>
             </div>
             <div class="nav-main-content">
-            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <a href="{% url 'home' %}">
+            <a href="{% url 'home' %}" class="nav-logo-wrapper">
                 <img src="{% static 'images/logo.png' %}" alt="UAP CSE" class="nav-logo">
             </a>
-            <a href="{% url 'credits' %}" class="nav-love-btn" title="Made with ❤ by UAPians">
-                <span class="nav-heart">❤</span>
-            </a>
+            <div class="nav-buttons-row">
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="{% url 'credits' %}" class="nav-love-btn" title="Made with ❤ by UAPians">
+                    <span class="nav-heart">❤</span>
+                </a>
+                <div class="theme-toggle-wrapper">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <svg class="theme-icon theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg class="theme-icon theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="theme-icon theme-icon-cyan" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2.69a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"></path>
+                        </svg>
+                        <svg class="theme-icon theme-icon-lightblue" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </button>
+                    <div class="theme-menu" id="themeMenu">
+                        <div class="theme-menu-item" data-theme="cyan">
+                            <div class="theme-menu-indicator theme-indicator-cyan"></div>
+                            <span>Cyan</span>
+                        </div>
+                        <div class="theme-menu-item" data-theme="light">
+                            <div class="theme-menu-indicator theme-indicator-light"></div>
+                            <span>Light Lavender</span>
+                        </div>
+                        <div class="theme-menu-item" data-theme="dark">
+                            <div class="theme-menu-indicator theme-indicator-dark"></div>
+                            <span>Midnight Lavender</span>
+                        </div>
+                        <div class="theme-menu-item" data-theme="lightblue">
+                            <div class="theme-menu-indicator theme-indicator-lightblue"></div>
+                            <span>Light Blue</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="nav-search-btn" id="navSearchBtn" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+                <button class="notification-btn" id="notificationBtn" aria-label="Notifications">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge" style="display: none;">0</span>
+                </button>
 
             <ul class="nav-menu" id="navMenu">
                 <li class="mobile-top-bar">
@@ -214,14 +271,6 @@
                 </li>
             </ul>
             <div class="nav-actions">
-                <button class="notification-btn" id="notificationBtn" aria-label="Notifications">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <span class="notification-badge" style="display: none;">0</span>
-                </button>
-                
                 <!-- Notification Modal -->
                 <div class="notification-modal" id="notificationModal">
                     <div class="notification-modal-content">
@@ -287,7 +336,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -391,6 +440,35 @@
             mapIframe.addEventListener('error', function() {
                 console.warn('Google Maps embed failed to load');
                 this.style.display = 'none';
+            });
+        }
+        
+        // Handle mobile nav search button click
+        const navSearchBtn = document.getElementById('navSearchBtn');
+        if (navSearchBtn) {
+            navSearchBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const hamburger = document.getElementById('hamburger');
+                const navMenu = document.getElementById('navMenu');
+                const mobileSearch = document.querySelector('.mobile-search');
+                
+                // Open menu if closed
+                if (hamburger && navMenu && !navMenu.classList.contains('active')) {
+                    hamburger.click();
+                }
+                
+                // Focus search after menu animation
+                setTimeout(function() {
+                    if (mobileSearch) {
+                        const searchInput = mobileSearch.querySelector('.search-input');
+                        if (searchInput) {
+                            searchInput.focus();
+                            searchInput.select();
+                        }
+                    }
+                }, navMenu && navMenu.classList.contains('active') ? 100 : 400);
             });
         }
     });
