@@ -2782,8 +2782,8 @@ def departmental_research(request):
             'citations': faculty.citation or 0,  # For display only
         })
     
-    # Sort by score (highest first), then by publication count
-    recent_faculty_scores.sort(key=lambda x: (-x['score'], -x['publication_count']))
+    # Sort by score only (highest first)
+    recent_faculty_scores.sort(key=lambda x: -x['score'])
     leading_active_researchers = recent_faculty_scores[:4]  # Top 4
     
     # ===== SECTION 3: Top Researchers (Designation Wise) =====

@@ -292,7 +292,7 @@
 </section>
 
 <!-- Research and Publications Section -->
-{% if research_stats and top_researchers %}
+{% if research_stats %}
 <section class="research-home-section">
     <div class="container research-home-container">
         <div class="research-home-header">
@@ -322,10 +322,10 @@
             </div>
         </div>
         
-        <!-- Top Researchers by Designation -->
+        <!-- Top Researchers with Tabs -->
         <div class="top-researchers-home">
             <div class="top-researchers-header">
-                <h3 class="top-researchers-title">Top Researchers by Designation</h3>
+                <h3 class="top-researchers-title">Top Researchers</h3>
                 <button class="info-btn-home" id="top-researchers-info-btn" title="How are top researchers selected?">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -334,23 +334,90 @@
                     </svg>
                 </button>
             </div>
-            <div class="top-researchers-grid-home">
-                {% for designation in top_researchers.keys %}
-                    {% with researcher=top_researchers|get_item:designation %}
-                    <a href="{% url 'people:faculty_detail' researcher.faculty.pk %}" class="top-researcher-card-home">
-                        <div class="researcher-card-home-image">
-                            <img src="{% if researcher.faculty.profile_pic %}/media/{{ researcher.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ researcher.faculty.name }}">
-                            <div class="researcher-card-home-overlay">
-                                <div class="researcher-card-home-info">
-                                    <h3 class="researcher-name-home">{{ researcher.faculty.name }}</h3>
-                                    <div class="researcher-citation-home">Cited by: {{ researcher.citations|floatformat:0 }}</div>
+            
+            <!-- Tabs -->
+            <div class="researchers-tabs-home">
+                <button class="researcher-tab-btn-home active" data-tab="most-cited">Most Cited</button>
+                <button class="researcher-tab-btn-home" data-tab="leading-active">Leading Active</button>
+                <button class="researcher-tab-btn-home" data-tab="top-designation">Top by Designation</button>
+            </div>
+            
+            <!-- Tab Content: Most Cited -->
+            <div class="researcher-tab-content-home active" id="most-cited-tab">
+                <div class="top-researchers-grid-home">
+                    {% if most_cited_researchers %}
+                        {% for item in most_cited_researchers %}
+                        <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-card-home">
+                            <div class="researcher-card-home-image">
+                                <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                <div class="researcher-card-home-overlay">
+                                    <div class="researcher-card-home-info">
+                                        <h3 class="researcher-name-home">{{ item.faculty.name }}</h3>
+                                        <div class="researcher-citation-home">Cited by: {{ item.citations|floatformat:0 }}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="researcher-designation-home">{{ designation }}</div>
-                    </a>
-                    {% endwith %}
-                {% endfor %}
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-message-home">No researchers found.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Tab Content: Leading Active -->
+            <div class="researcher-tab-content-home" id="leading-active-tab">
+                <div class="top-researchers-grid-home">
+                    {% if leading_active_researchers %}
+                        {% for item in leading_active_researchers %}
+                        <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="top-researcher-card-home">
+                            <div class="researcher-card-home-image">
+                                <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                <div class="researcher-card-home-overlay">
+                                    <div class="researcher-card-home-info">
+                                        <h3 class="researcher-name-home">{{ item.faculty.name }}</h3>
+                                        <div class="researcher-meta-home">
+                                            <div class="researcher-score-home">Score: {{ item.score }}</div>
+                                            <div class="researcher-pubs-home">Pubs (2yr): {{ item.publication_count }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-message-home">No researchers found.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Tab Content: Top by Designation -->
+            <div class="researcher-tab-content-home" id="top-designation-tab">
+                <div class="top-researchers-grid-home">
+                    {% if top_researchers %}
+                        {% for designation in top_researchers.keys %}
+                            {% with researcher=top_researchers|get_item:designation %}
+                            <a href="{% url 'people:faculty_detail' researcher.faculty.pk %}" class="top-researcher-card-home">
+                                <div class="researcher-card-home-image">
+                                    <img src="{% if researcher.faculty.profile_pic %}/media/{{ researcher.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ researcher.faculty.name }}">
+                                    <div class="researcher-card-home-overlay">
+                                        <div class="researcher-card-home-info">
+                                            <h3 class="researcher-name-home">{{ researcher.faculty.name }}</h3>
+                                            <div class="researcher-meta-home">
+                                                <div class="researcher-score-home">Score: {{ researcher.score }}</div>
+                                                <div class="researcher-citation-home">Cited by: {{ researcher.citations|floatformat:0 }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="researcher-designation-home">{{ designation }}</div>
+                            </a>
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-message-home">No researchers found.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -3047,6 +3114,136 @@ html, body {
     margin-top: 0.25rem;
 }
 
+.researcher-meta-home {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.researcher-score-home,
+.researcher-pubs-home {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.empty-message-home {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
+/* Researcher Tabs */
+.researchers-tabs-home {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    position: relative;
+}
+
+.researcher-tab-btn-home {
+    padding: 0.875rem 1.75rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: -2px;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+}
+
+.researcher-tab-btn-home:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.researcher-tab-btn-home.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--color-primary) 3%, transparent);
+    animation: tabPulse 2s ease-in-out infinite;
+}
+
+.researcher-tab-btn-home.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    height: 4px;
+    background: var(--color-primary);
+    width: 0;
+    animation: progressBar 4s linear forwards;
+    z-index: 1;
+    border-radius: 2px 2px 0 0;
+}
+
+@keyframes tabPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+@keyframes progressBar {
+    0% {
+        width: 0;
+        opacity: 1;
+    }
+    100% {
+        width: 100%;
+        opacity: 1;
+    }
+}
+
+.researcher-tab-content-home {
+    display: none;
+}
+
+.researcher-tab-content-home.active {
+    display: block;
+    animation: fadeInSlide 0.5s ease;
+    position: relative;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Subtle pulse on content to indicate it will change */
+.researcher-tab-content-home.active .top-researchers-grid-home {
+    animation: contentPulse 4s ease-in-out infinite;
+}
+
+@keyframes contentPulse {
+    0%, 90%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    95% {
+        opacity: 0.95;
+        transform: scale(0.998);
+    }
+}
+
 /* Info Modal Styles */
 .info-modal-home {
     display: none;
@@ -3877,6 +4074,69 @@ document.addEventListener('click', function(event) {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeHodModal();
+    }
+});
+</script>
+<script>
+// Researcher Tabs Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.researcher-tab-btn-home');
+    const tabContents = document.querySelectorAll('.researcher-tab-content-home');
+    let currentTabIndex = 0;
+    let autoSwitchInterval = null;
+    
+    function switchTab(index) {
+        // Remove active class from all buttons and contents
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        // Add active class to selected button and corresponding content
+        if (tabButtons[index] && tabContents[index]) {
+            tabButtons[index].classList.add('active');
+            tabContents[index].classList.add('active');
+            currentTabIndex = index;
+        }
+    }
+    
+    function startAutoSwitch() {
+        // Clear any existing interval
+        if (autoSwitchInterval) {
+            clearInterval(autoSwitchInterval);
+        }
+        
+        // Switch tabs every 4 seconds
+        autoSwitchInterval = setInterval(function() {
+            currentTabIndex = (currentTabIndex + 1) % tabButtons.length;
+            switchTab(currentTabIndex);
+        }, 4000);
+    }
+    
+    // Manual tab switching
+    tabButtons.forEach((button, index) => {
+        button.addEventListener('click', function() {
+            switchTab(index);
+            // Restart auto-switch after manual click
+            startAutoSwitch();
+        });
+    });
+    
+    // Start auto-switching if tabs exist
+    if (tabButtons.length > 0) {
+        startAutoSwitch();
+        
+        // Pause auto-switch on hover, resume on mouse leave
+        const tabsContainer = document.querySelector('.researchers-tabs-home');
+        if (tabsContainer) {
+            tabsContainer.addEventListener('mouseenter', function() {
+                if (autoSwitchInterval) {
+                    clearInterval(autoSwitchInterval);
+                }
+            });
+            
+            tabsContainer.addEventListener('mouseleave', function() {
+                startAutoSwitch();
+            });
+        }
     }
 });
 </script>

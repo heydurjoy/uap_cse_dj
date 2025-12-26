@@ -136,6 +136,8 @@ def home(request):
 
     # Get research data for home page
     research_stats = None
+    most_cited_researchers = None
+    leading_active_researchers = None
     top_researchers = None
     try:
         from people.models import Faculty, Publication
@@ -211,7 +213,52 @@ def home(request):
         # Sort faculty by score (highest first), then by year_span (smaller is better)
         faculty_scores.sort(key=lambda x: (-x['score'], x['year_span']))
         
-        # Get top researchers by designation (only top 1 per designation)
+        # ===== SECTION 1: Most Cited Researchers (All Time) =====
+        # Rank strictly by total citation count (descending)
+        most_cited = []
+        for faculty in current_faculty:
+            most_cited.append({
+                'faculty': faculty,
+                'citations': faculty.citation or 0,
+                'score': 0,  # Not used for this ranking
+                'publication_count': 0,  # Not used for this ranking
+            })
+        # Sort by citations (descending)
+        most_cited.sort(key=lambda x: -x['citations'])
+        most_cited_researchers = most_cited[:4]  # Top 4
+        
+        # ===== SECTION 2: Leading Active Researchers (Past 2yr) =====
+        # Consider only the last 2 years of research data
+        current_year = datetime.now().year
+        recent_publications = Publication.objects.filter(
+            faculty__in=current_faculty,
+            pub_year__gte=current_year - 1
+        ).select_related('faculty')
+        
+        # Calculate scores for last 2 years only
+        recent_faculty_scores = []
+        for faculty in current_faculty:
+            faculty_recent_pubs = recent_publications.filter(faculty=faculty)
+            pub_count = faculty_recent_pubs.count()
+            
+            # Calculate score for recent publications only
+            score = 0
+            for pub in faculty_recent_pubs:
+                score += SCORING.get(pub.ranking, 0)
+            
+            recent_faculty_scores.append({
+                'faculty': faculty,
+                'publication_count': pub_count,
+                'score': score,
+                'citations': faculty.citation or 0,  # For display only
+            })
+        
+        # Sort by score only (highest first)
+        recent_faculty_scores.sort(key=lambda x: -x['score'])
+        leading_active_researchers = recent_faculty_scores[:4]  # Top 4
+        
+        # ===== SECTION 3: Top Researchers (Designation Wise) =====
+        # Get top researcher from each designation using existing ranking logic
         # Use OrderedDict to maintain order
         from collections import OrderedDict
         top_researchers = OrderedDict()
@@ -224,6 +271,8 @@ def home(request):
     except Exception:
         # Handle errors gracefully - research data is optional
         research_stats = None
+        most_cited_researchers = None
+        leading_active_researchers = None
         top_researchers = None
 
     return render(request, 'home.html', {
