@@ -1264,22 +1264,24 @@ body {
         position: fixed;
         top: 10rem;
         left: 50%;
-        transform: translateX(-50%) translateY(0) scale(1);
-
+        transform: translateX(-50%) translateY(-0.625rem) scale(0.95);
+        right: auto;
         width: 22rem;
         height: 25rem;
         max-width: 22rem;
         max-height: 25rem;
         min-width: 12.5rem; /* 200px at 16px base */
-
         padding: 0.5rem;
         line-height: 1.1;
         overflow-y: auto;
+        z-index: 10001;
+        display: none;
+        opacity: 0;
     }
 
     .notification-modal.active {
-        display: flex;
-        opacity: 1;
+        display: flex !important;
+        opacity: 1 !important;
         width: 22rem;
         height: 25rem;
         transform: translateX(-50%) translateY(0) scale(1);
