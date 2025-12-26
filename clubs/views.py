@@ -1126,7 +1126,7 @@ def delete_club_post(request, pk, post_pk):
         return redirect('people:user_profile')
     
     if request.method == 'POST':
-        post_title = post.title
+        post_title = post.short_title or post.long_title or 'Post'
         post.delete()
         messages.success(request, f'Post "{post_title}" deleted successfully!')
         return redirect('clubs:manage_posts', pk=club.pk)
