@@ -64,9 +64,9 @@
 </section>
 
 <!-- Marks Distribution Network Banner -->
-
+<section class="marks-network-banner-wrapper">
     <div class="container marks-network-container">
-        <div class="marks-network-banner" onclick="scrollToMarksDistribution()">
+        <div class="marks-network-banner" id="marks-banner">
             <div class="marks-network-bg-animation"></div>
             <div class="marks-network-content">
                 <div class="marks-network-icon">
@@ -77,7 +77,7 @@
                     </svg>
                 </div>
                 <div class="marks-network-text">
-                    <p class="marks-network-tagline">First University in Bangladesh: Publicly Available Network Showing Detailed Calculation of Every Mark Across Your 4-Year B.Sc. in CSE Journey*</p>
+                    <p class="marks-network-tagline">First University in Bangladesh: Publicly Available Network Showing Detailed Calculation of Every Mark Across Your 4-Year Journey</p>
                 </div>
                 <div class="marks-network-arrow">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -88,6 +88,7 @@
             </div>
         </div>
     </div>
+</section>
 
 
 
@@ -478,6 +479,53 @@
             </div>
         </div>
     </div>
+<!-- Most Cited Info Modal -->
+<div class="info-modal-home" id="most-cited-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Most Cited Researchers</h3>
+            <button class="info-modal-close-home" onclick="closeTabInfoModal('most-cited')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>Most Cited researchers are selected based on the total number of citations they have received across their publications.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Leading Active Info Modal -->
+<div class="info-modal-home" id="leading-active-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Leading Active Researchers</h3>
+            <button class="info-modal-close-home" onclick="closeTabInfoModal('leading-active')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>Leading Active researchers are selected based on their research activity in the last 2 years, including the number of publications and research score.</p>
+        </div>
+    </div>
+</div>
+<div class="info-modal-home" id="top-designation-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Top Researchers by Designation</h3>
+            <button class="info-modal-close-home" onclick="closeTabInfoModal('top-designation')">&times;</button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>Top researchers by designation are selected based on their highest research score within each faculty title (Professor, Associate Professor, etc.).</p>
+        </div>
+    </div>
+</div>
+
 </section>
 {% endif %}
 
@@ -1791,132 +1839,83 @@ html, body {
 .marks-network-container {
     max-width: 750px;
     margin: 0 auto;
-        padding: 2.5rem 0 3rem 0;
-    position: relative;
-}
 
+}
+.marks-network-banner-wrapper {
+    padding: 2.5rem 0 3rem 0;
+    position: relative;
+    margin-top: 1rem;
+}
 .marks-network-banner {
     position: relative;
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 0%,
-        color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)) 50%,
-        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 100%);
+
+    /* Light, high-visibility gradient */
+    background: linear-gradient(
+        120deg,
+        color-mix(in srgb, var(--color-primary) 14%, #ffffff) 0%,
+        color-mix(in srgb, var(--color-primary) 64%, var(--bg-secondary)) 35%,
+        color-mix(in srgb, var(--color-primary) 32%, #ffffff) 70%,
+        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 100%
+    );
+
+    background-size: 350% 350%;
+    animation: gradient-flow 8s ease-in-out infinite;
+  transition:
+        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
     border-radius: 999px;
     padding: 1.15rem 1.75rem;
     cursor: pointer;
     overflow: hidden;
-    border: 2px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 
-                0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset,
-                0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: subtle-pulse 3s ease-in-out infinite;
+    z-index: 2;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.12),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset;
 }
-
-@keyframes subtle-pulse {
-    0%, 100% {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1),
-                    0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset,
-                    0 0 30px color-mix(in srgb, var(--color-primary) 20%, transparent);
-    }
-    50% {
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12),
-                    0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent) inset,
-                    0 0 40px color-mix(in srgb, var(--color-primary) 30%, transparent);
-    }
-}
-
 .marks-network-banner:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
-                0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent) inset,
-                0 0 60px color-mix(in srgb, var(--color-primary) 35%, transparent),
-                0 0 100px color-mix(in srgb, var(--color-primary) 20%, transparent);
-    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
-    animation: none;
+    transform: translateY(-6px) scale(1.035);
+    box-shadow:
+        0 16px 42px rgba(0, 0, 0, 0.18),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent) inset;
 }
-
+/* Soft moving highlight */
 .marks-network-bg-animation {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
+    border-radius: 999px;
+    z-index: 1;
     background: linear-gradient(
         90deg,
         transparent 0%,
-        color-mix(in srgb, var(--color-primary) 25%, transparent) 20%,
-        color-mix(in srgb, var(--color-primary) 40%, transparent) 50%,
-        color-mix(in srgb, var(--color-primary) 25%, transparent) 80%,
+        color-mix(in srgb, #ffffff 60%, transparent) 50%,
         transparent 100%
     );
-    background-size: 300% 100%;
-    animation: shimmer 2.5s ease-in-out infinite;
-    opacity: 0.7;
-    border-radius: 999px;
+
+    background-size: 240% 100%;
+    animation: light-sweep 9s linear infinite;
+    opacity: 0.25;
+    pointer-events: none;
 }
 
-.marks-network-bg-animation::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(
-        circle at 30% 50%,
-        color-mix(in srgb, var(--color-primary) 30%, transparent) 0%,
-        transparent 50%
-    );
-    animation: sparkle 4s ease-in-out infinite;
-    border-radius: 999px;
+@keyframes gradient-flow {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-.marks-network-bg-animation::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(
-        circle at 70% 50%,
-        color-mix(in srgb, var(--color-primary) 25%, transparent) 0%,
-        transparent 50%
-    );
-    animation: sparkle 4s ease-in-out infinite 2s;
-    border-radius: 999px;
+@keyframes light-sweep {
+    from { background-position: -240% 0; }
+    to   { background-position: 240% 0; }
 }
 
-@keyframes shimmer {
-    0% {
-        background-position: -300% 0;
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .marks-network-banner,
+    .marks-network-bg-animation {
+        animation: none;
     }
-    100% {
-        background-position: 300% 0;
-    }
-}
-
-@keyframes sparkle {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.7;
-        transform: scale(1.2);
-    }
-}
-
-.marks-network-banner:hover .marks-network-bg-animation {
-    animation: shimmer 1s ease-in-out infinite;
-    opacity: 0.9;
-}
-
-.marks-network-banner:hover .marks-network-bg-animation::before,
-.marks-network-banner:hover .marks-network-bg-animation::after {
-    animation: sparkle 1.5s ease-in-out infinite;
-    opacity: 0.8;
 }
 
 .marks-network-content {
@@ -3887,21 +3886,21 @@ html, body {
 {% endblock %}
 
 {% block extra_js %}
+
 <script>
-// Scroll to Marks Distribution Section
-function scrollToMarksDistribution() {
-    const section = document.getElementById('marks-distribution-section');
-    if (section) {
-        const offset = 80; // Account for fixed navbar
-        const elementPosition = section.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
-        
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
+document.addEventListener("DOMContentLoaded", function() {
+    const banner = document.getElementById("marks-banner");
+    const section = document.getElementById("marks-distribution-section");
+
+    if (banner && section) {
+        banner.addEventListener("click", function() {
+            const offset = 80;
+            const y = section.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: y, behavior: "smooth" });
         });
     }
-}
+});
+
 
 // Top Researchers Info Modal
 document.addEventListener('DOMContentLoaded', function() {
@@ -3982,29 +3981,30 @@ document.addEventListener('keydown', function(e) {
 });
     
     // Count-up animation for research stats
+document.addEventListener("DOMContentLoaded", function() {
+
+    // Count-up animation for research stats
     function animateValue(element, start, end, duration, isDecimal, decimalPlaces) {
         const startTime = performance.now();
         const isFloat = isDecimal || end.toString().includes('.');
-        
+
         function update(currentTime) {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing function for smooth animation
+
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const current = start + (end - start) * easeOutQuart;
-            
+
             if (isFloat) {
                 const places = decimalPlaces || 2;
                 element.textContent = current.toFixed(places);
             } else {
                 element.textContent = Math.floor(current).toLocaleString();
             }
-            
+
             if (progress < 1) {
                 requestAnimationFrame(update);
             } else {
-                // Ensure final value is exact
                 if (isFloat) {
                     const places = decimalPlaces || 2;
                     element.textContent = parseFloat(end).toFixed(places);
@@ -4013,11 +4013,11 @@ document.addEventListener('keydown', function(e) {
                 }
             }
         }
-        
+
         requestAnimationFrame(update);
     }
-    
-    // Intersection Observer to trigger animation when section is visible
+
+    // Intersection Observer
     const statsSection = document.querySelector('.research-home-section');
     if (statsSection) {
         const observer = new IntersectionObserver((entries) => {
@@ -4031,7 +4031,7 @@ document.addEventListener('keydown', function(e) {
                             const isDecimal = stat.getAttribute('data-is-decimal') === 'true';
                             const decimalPlaces = parseInt(stat.getAttribute('data-decimal-places')) || 2;
                             const duration = 2000; // 2 seconds
-                            
+
                             animateValue(stat, 0, target, duration, isDecimal, decimalPlaces);
                         }
                     });
@@ -4039,13 +4039,14 @@ document.addEventListener('keydown', function(e) {
                 }
             });
         }, {
-            threshold: 0.3, // Trigger when 30% of the section is visible
-            rootMargin: '0px 0px -50px 0px' // Start animation slightly before it's fully visible
+            threshold: 0.3,
+            rootMargin: '0px 0px -50px 0px'
         });
-        
+
         observer.observe(statsSection);
     }
-});
+
+}); // End of DOMContentLoaded
 
 // Pass hero tags from Django to JavaScript
 const heroTagsData = [
