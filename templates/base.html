@@ -77,11 +77,21 @@
             }
         }
         
-        /* Active state for research link */
+        /* Active state for research link - override default active styles */
         .nav-link-research.active {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-            background-size: 200% 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent !important; /* Override .nav-link.active color */
             animation: researchGradient 2s ease infinite;
+        }
+        
+        /* Ensure active state pseudo-elements don't interfere */
+        .nav-link-research.active::before,
+        .nav-link-research.active::after {
+            display: none; /* Hide default active underline effects */
         }
     </style>
     <!-- Favicon - Multiple sizes for better browser support -->
