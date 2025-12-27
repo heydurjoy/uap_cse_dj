@@ -2816,26 +2816,25 @@ p {
     font-weight: 900;
     line-height: 1.08;
     margin: 0;
-    background: linear-gradient(135deg,
-        var(--color-primary) 0%,
-        var(--color-primary-hover) 50%,
-        var(--color-primary) 100%
-    );
-    background-size: 200% auto;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+    background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: gradientShift 3s ease-in-out infinite;
+    animation: researchGradient 3s ease infinite;
     text-shadow: none;
     -webkit-text-stroke: none;
 }
 
-@keyframes gradientShift {
-    0%, 100% {
-        background-position: 0% center;
+@keyframes researchGradient {
+    0% {
+        background-position: 0% 50%;
     }
     50% {
-        background-position: 100% center;
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
     }
 }
 

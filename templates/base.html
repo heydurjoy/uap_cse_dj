@@ -25,6 +25,64 @@
                 font-size: 100%; /* 16px on very small screens */
             }
         }
+        
+        /* Animated Research Link */
+        .nav-link-research {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: researchGradient 3s ease infinite;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .nav-link-research:hover {
+            animation: researchGradient 1s ease infinite;
+        }
+        
+        @keyframes researchGradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Fallback for browsers that don't support background-clip */
+        @supports not (-webkit-background-clip: text) {
+            .nav-link-research {
+                color: #667eea;
+                animation: researchColorPulse 2s ease infinite;
+            }
+            
+            @keyframes researchColorPulse {
+                0%, 100% {
+                    color: #667eea;
+                }
+                25% {
+                    color: #764ba2;
+                }
+                50% {
+                    color: #f093fb;
+                }
+                75% {
+                    color: #4facfe;
+                }
+            }
+        }
+        
+        /* Active state for research link */
+        .nav-link-research.active {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            background-size: 200% 100%;
+            animation: researchGradient 2s ease infinite;
+        }
     </style>
     <!-- Favicon - Multiple sizes for better browser support -->
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon.png' %}">
@@ -224,6 +282,7 @@
                 <li class="nav-divider"></li>
                 <!-- <li><a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li> -->
                 <li><a href="{% url 'designs:feature_cards_list' %}" class="nav-link">Why?</a></li>
+                <li><a href="{% url 'people:departmental_research' %}" class="nav-link nav-link-research {% if request.resolver_match.url_name == 'departmental_research' %}active{% endif %}">Research</a></li>
                 <li class="nav-dropdown">
                     <a href="#" class="nav-link dropdown-toggle">Admission <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
                     <ul class="dropdown-menu">
