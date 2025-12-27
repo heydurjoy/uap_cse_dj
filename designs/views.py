@@ -69,6 +69,11 @@ def create_feature_card(request):
             if 'picture' in request.FILES:
                 card.picture = request.FILES['picture']
             
+            # Handle cropping field
+            cropping = request.POST.get('cropping', '').strip()
+            if cropping:
+                card.cropping = cropping
+            
             card.full_clean()
             card.save()
             
@@ -121,6 +126,11 @@ def edit_feature_card(request, pk):
             # Handle image upload (only if new image provided)
             if 'picture' in request.FILES:
                 card.picture = request.FILES['picture']
+            
+            # Handle cropping field
+            cropping = request.POST.get('cropping', '').strip()
+            if cropping:
+                card.cropping = cropping
             
             card.full_clean()
             card.save()

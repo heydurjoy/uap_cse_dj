@@ -27,6 +27,9 @@ class Permissions:
     # People/Publications permissions
     MANAGE_ALL_PUBLICATIONS = 'manage_all_publications'
     
+    # Academics permissions
+    MANAGE_COURSES = 'manage_courses'
+    
     # Permission categories
     CATEGORY_OFFICE = 'office'
     CATEGORY_CLUBS = 'clubs'
@@ -116,6 +119,14 @@ PERMISSION_DEFINITIONS = [
         'category': Permissions.CATEGORY_USERS,
         'requires_role': [],
         'priority': 20,
+    },
+    {
+        'codename': Permissions.MANAGE_COURSES,
+        'name': 'Manage Courses',
+        'description': 'Can create, edit, and manage course content',
+        'category': Permissions.CATEGORY_ACADEMICS,
+        'requires_role': ['faculty', 'officer'],
+        'priority': 10,
     },
 ]
 

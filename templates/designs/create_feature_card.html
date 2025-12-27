@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load cropping %}
 
 {% block title %}Create Feature Card - CSE UAP{% endblock %}
 
@@ -10,6 +11,16 @@
             <a href="{% url 'designs:manage_feature_cards' %}" class="back-link">← Back to Feature Cards</a>
             <h1>Create Feature Card</h1>
         </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         
         <form method="post" enctype="multipart/form-data" style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
             {% csrf_token %}
@@ -42,8 +53,8 @@
                     <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
                         Description <span style="color: #dc3545;">*</span>
                     </label>
-                    <textarea name="description" id="description" required style="width: 100%; min-height: 300px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">{{ card_data.description }}</textarea>
-                    <small style="color: var(--text-secondary);">Detailed description with rich text formatting</small>
+                    <textarea name="description" id="description" required class="rich-text-textarea" placeholder="Click here to edit with rich text editor...">{{ card_data.description }}</textarea>
+                    <small style="color: var(--text-secondary);">Click on the textarea above to use the rich text editor</small>
                 </div>
                 
                 <div>
@@ -52,7 +63,23 @@
                     </label>
                     <input type="file" name="picture" id="picture" accept="image/*" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary);">
                     <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">Max 600KB. Image will be automatically compressed and resized to 600x600px (1:1 ratio) if larger.</small>
-                    <small style="color: var(--text-secondary);">Main picture for the card (will be cropped to 600x600)</small>
+                    
+                    <!-- Image Cropping Field (hidden initially, shown after image upload) -->
+                    <div id="cropping-container" style="display: none; margin-top: 1rem;">
+                        <label for="cropping" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                            Crop Image (1:1 ratio)
+                        </label>
+                        <input type="text" name="cropping" id="cropping" class="image-ratio" 
+                               data-min-width="600" data-min-height="600" 
+                               data-box-max-width="600" data-box-max-height="600" 
+                               data-ratio="1" data-image-field="picture" 
+                               data-my-name="cropping" 
+                               data-adapt-rotation="false" 
+                               data-allow-fullsize="false" 
+                               data-size-warning="true"
+                               style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary);">
+                        <small style="color: var(--text-secondary);">Crop the image to 600x600 (1:1 aspect ratio)</small>
+                    </div>
                 </div>
                 
                 <div>
@@ -75,19 +102,469 @@
     </section>
 </div>
 
-<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+<style>
+.rich-text-textarea {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    resize: none;
+    overflow: hidden;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.rich-text-textarea:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 2%, var(--bg-primary));
+}
+
+.rich-text-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    outline: none;
+}
+
+/* CKEditor Modal - Full Page */
+.ckeditor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+.ckeditor-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ckeditor-modal-content {
+    background: var(--bg-primary);
+    border-radius: 20px !important;
+    width: 98%;
+    max-width: 1600px;
+    height: 95vh;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.ckeditor-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: 20px 20px 0 0;
+}
+
+.ckeditor-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.ckeditor-modal-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.ckeditor-close-btn,
+.ckeditor-save-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ckeditor-close-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.ckeditor-close-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.ckeditor-save-btn {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.ckeditor-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.ckeditor-modal-body {
+    flex: 1;
+    padding: 1rem;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .ckeditor-modal-content {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0 !important;
+    }
+    
+    .ckeditor-modal-header {
+        border-radius: 0;
+    }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'image_cropping/js/jquery.Jcrop.min.js' %}"></script>
+<script src="{% static 'image_cropping/js/image_cropping.js' %}"></script>
 <script>
-    CKEDITOR.replace('description', {
-        height: 300,
-        toolbar: 'full',
+// CKEditor Modal - Full Page Popup
+(function() {
+    const richTextFields = {
+        'description': 'Description'
+    };
+    
+    let ckeditorLoaded = false;
+    let currentModal = null;
+    let currentEditor = null;
+    let currentTextarea = null;
+    let originalContent = '';
+    
+    function loadCKEditor(callback) {
+        if (typeof CKEDITOR !== 'undefined') {
+            ckeditorLoaded = true;
+            if (callback) callback();
+            return;
+        }
+        
+        if (ckeditorLoaded) {
+            if (callback) callback();
+            return;
+        }
+        
+        const cdnSources = [
+            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',
+            'https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.20.2/ckeditor.js',
+            'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js'
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript(index) {
+            if (index >= cdnSources.length) {
+                console.error('All CKEditor CDN sources failed');
+                alert('Failed to load editor. Please check your internet connection and refresh the page.');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = cdnSources[index];
+            script.onload = function() {
+                ckeditorLoaded = true;
+                console.log('CKEditor loaded successfully from:', cdnSources[index]);
+                if (callback) callback();
+            };
+            script.onerror = function() {
+                console.warn('Failed to load from:', cdnSources[index], 'trying next...');
+                currentIndex++;
+                tryLoadScript(currentIndex);
+            };
+            document.head.appendChild(script);
+        }
+        
+        tryLoadScript(0);
+    }
+    
+    function createModal(fieldId, fieldLabel) {
+        const modal = document.createElement('div');
+        modal.className = 'ckeditor-modal';
+        modal.id = 'ckeditor-modal-' + fieldId;
+        modal.innerHTML = `
+            <div class="ckeditor-modal-content">
+                <div class="ckeditor-modal-header">
+                    <h3 class="ckeditor-modal-title">Edit ${fieldLabel}</h3>
+                    <div class="ckeditor-modal-actions">
+                        <button type="button" class="ckeditor-close-btn" id="ckeditor-close-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Cancel
+                        </button>
+                        <button type="button" class="ckeditor-save-btn" id="ckeditor-save-${fieldId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save
+                        </button>
+                    </div>
+                </div>
+                <div class="ckeditor-modal-body">
+                    <div class="ckeditor-container" id="ckeditor-container-${fieldId}">
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading editor...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        return modal;
+    }
+    
+    function showEditor(fieldId, fieldLabel) {
+        const textarea = document.getElementById(fieldId);
+        if (!textarea) {
+            console.error('Textarea not found:', fieldId);
+            return;
+        }
+        
+        originalContent = textarea.value;
+        currentTextarea = textarea;
+        
+        let modal = document.getElementById('ckeditor-modal-' + fieldId);
+        if (!modal) {
+            modal = createModal(fieldId, fieldLabel);
+        }
+        currentModal = modal;
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        loadCKEditor(function() {
+            if (typeof CKEDITOR === 'undefined') {
+                console.error('CKEDITOR is still undefined');
+                return;
+            }
+            
+            const container = document.getElementById('ckeditor-container-' + fieldId);
+            if (!container) {
+                console.error('Container not found');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            const editorTextarea = document.createElement('textarea');
+            editorTextarea.id = 'ckeditor-textarea-' + fieldId;
+            editorTextarea.value = originalContent;
+            container.appendChild(editorTextarea);
+            
+            try {
+                const modalBody = container.closest('.ckeditor-modal-body');
+                const modalContent = container.closest('.ckeditor-modal-content');
+                const headerHeight = modalContent ? modalContent.querySelector('.ckeditor-modal-header').offsetHeight : 80;
+                const availableHeight = modalBody ? (modalBody.offsetHeight - 20) : window.innerHeight - headerHeight - 40;
+                
+                currentEditor = CKEDITOR.replace(editorTextarea, {
+                    toolbar: 'Full',
+                    height: availableHeight + 'px',
+                    width: '100%',
+                    removePlugins: 'elementspath',
+                    resize_enabled: false
+                });
+                
+                currentEditor.on('instanceReady', function() {
+                    const editorInstance = this;
+                    setTimeout(function() {
+                        if (modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            editorInstance.resize('100%', newHeight + 'px');
+                        }
+                    }, 100);
+                });
+                
+                let resizeTimeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(function() {
+                        if (currentEditor && modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            currentEditor.resize('100%', newHeight + 'px');
+                        }
+                    }, 250);
+                });
+            } catch (e) {
+                console.error('Error initializing CKEditor:', e);
+            }
+        });
+        
+        const closeBtn = document.getElementById('ckeditor-close-' + fieldId);
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                closeEditor(false);
+            };
+        }
+        
+        const saveBtn = document.getElementById('ckeditor-save-' + fieldId);
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                closeEditor(true);
+            };
+        }
+        
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeEditor(false);
+            }
+        };
+        
+        const escapeHandler = function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeEditor(false);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+    
+    function closeEditor(save) {
+        if (currentModal) {
+            if (save && currentEditor) {
+                currentEditor.updateElement();
+                const editorTextarea = document.getElementById(currentEditor.element.$.id);
+                if (editorTextarea && currentTextarea) {
+                    currentTextarea.value = editorTextarea.value;
+                }
+            } else if (!save && currentTextarea) {
+                currentTextarea.value = originalContent;
+            }
+            
+            if (currentEditor) {
+                try {
+                    currentEditor.destroy();
+                } catch (e) {
+                    console.error('Error destroying editor:', e);
+                }
+                currentEditor = null;
+            }
+            
+            currentModal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            const container = currentModal.querySelector('.ckeditor-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            currentModal = null;
+            currentTextarea = null;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        Object.keys(richTextFields).forEach(function(fieldId) {
+            const textarea = document.getElementById(fieldId);
+            if (textarea) {
+                textarea.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showEditor(fieldId, richTextFields[fieldId]);
+                });
+            }
+        });
+        
+        // Handle image upload to show cropping widget
+        const pictureInput = document.getElementById('picture');
+        if (pictureInput) {
+            pictureInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.id = 'picture-preview';
+                        img.style.maxWidth = '600px';
+                        img.style.maxHeight = '600px';
+                        img.style.marginTop = '1rem';
+                        img.style.borderRadius = '8px';
+                        img.style.border = '1px solid var(--border-color)';
+                        
+                        const container = document.getElementById('cropping-container');
+                        if (container) {
+                            // Remove existing preview if any
+                            const existingPreview = document.getElementById('picture-preview');
+                            if (existingPreview) {
+                                existingPreview.remove();
+                            }
+                            
+                            container.insertBefore(img, container.firstChild.nextSibling);
+                            container.style.display = 'block';
+                            
+                            // Initialize image cropping after a short delay
+                            setTimeout(function() {
+                                if (typeof jQuery !== 'undefined' && jQuery.fn.Jcrop) {
+                                    // The image cropping widget should auto-initialize
+                                    // But we can trigger it manually if needed
+                                }
+                            }, 100);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
     });
+})();
 </script>
 {% endblock %}
-
-
-
-
-
-
-
-
