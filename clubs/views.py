@@ -37,8 +37,20 @@ def check_club_convener_access(user, club):
     return False
 
 
+def check_club_president_access(user, club):
+    """Check if user is the president of the given club"""
+    if not user.is_authenticated:
+        return False
+    if not club or not club.president:
+        return False
+    # Check if user has club_member profile and is the president
+    if hasattr(user, 'club_member_profile') and user.club_member_profile:
+        return user.club_member_profile.pk == club.president.pk
+    return False
+
+
 def check_club_management_access(user, club=None):
-    """Check if user can manage clubs (level 4+ Faculty/Officer OR convener of the club)"""
+    """Check if user can manage clubs (level 4+ Faculty/Officer OR convener OR president of the club)"""
     if not user.is_authenticated:
         return False
     # Level 4+ Faculty/Officers can manage all clubs
@@ -46,6 +58,9 @@ def check_club_management_access(user, club=None):
         return True
     # Conveners can manage their own clubs
     if club and check_club_convener_access(user, club):
+        return True
+    # Presidents can manage their own clubs
+    if club and check_club_president_access(user, club):
         return True
     return False
 
@@ -545,16 +560,28 @@ def add_club_position(request, pk):
                         return redirect('clubs:manage_positions', pk=club.pk)
                 
                 # Check if AllowedEmail already exists
-                allowed_email, created = AllowedEmail.objects.get_or_create(
-                    email=new_member_email,
-                    defaults={
-                        'user_type': 'club_member',
-                        'is_power_user': False,
-                        'is_active': True,
-                        'is_blocked': False,
-                        'created_by': request.user,
-                    }
-                )
+                # If it exists for a different club, we can't use it (email is unique)
+                existing_allowed_email = AllowedEmail.objects.filter(email=new_member_email).first()
+                if existing_allowed_email:
+                    if existing_allowed_email.club and existing_allowed_email.club != club:
+                        messages.error(request, f'Email {new_member_email} is already associated with another club ({existing_allowed_email.club.name}). Each email can only be associated with one club.')
+                        return redirect('clubs:manage_positions', pk=club.pk)
+                    # If it exists but not linked to a club, link it to this club
+                    allowed_email = existing_allowed_email
+                    if not allowed_email.club:
+                        allowed_email.club = club
+                        allowed_email.save()
+                else:
+                    # Create new AllowedEmail linked to this club
+                    allowed_email = AllowedEmail.objects.create(
+                        email=new_member_email,
+                        user_type='club_member',
+                        is_power_user=False,
+                        is_active=True,
+                        is_blocked=False,
+                        created_by=request.user,
+                        club=club,  # Link to this club
+                    )
                 
                 # Generate a dummy username from email
                 username_base = new_member_email.split('@')[0]
@@ -739,6 +766,8 @@ def edit_club_position(request, pk, position_pk):
 def delete_club_position(request, pk, position_pk):
     """
     Delete a club position.
+    Note: This only removes the position. The member's AllowedEmail and ClubMember profile
+    remain intact, so they can still be in other clubs or be re-added to this club later.
     """
     club = get_object_or_404(Club, pk=pk)
     position = get_object_or_404(ClubPosition, pk=position_pk, club=club)
@@ -749,8 +778,18 @@ def delete_club_position(request, pk, position_pk):
     
     if request.method == 'POST':
         position_title = position.position_title
+        # Get member info before deletion (for informational message)
+        member_info = None
+        if position.club_member:
+            member_info = position.club_member.name or position.club_member.base_user.email if hasattr(position.club_member, 'base_user') else 'Unknown'
+        
+        # Delete the position (this does NOT delete the ClubMember or AllowedEmail)
         position.delete()
-        messages.success(request, f'Position "{position_title}" deleted successfully!')
+        
+        if member_info:
+            messages.success(request, f'Position "{position_title}" for {member_info} deleted successfully! The member\'s account and allowed email remain intact.')
+        else:
+            messages.success(request, f'Position "{position_title}" deleted successfully!')
         return redirect('clubs:manage_positions', pk=club.pk)
     
     context = {
@@ -1146,20 +1185,20 @@ def delete_club_post(request, pk, post_pk):
 def manage_club_allowed_emails(request, pk):
     """
     Manage allowed emails for club members.
-    Only conveners can create allowed emails for their clubs.
+    Conveners and presidents can manage allowed emails for their clubs.
     """
     club = get_object_or_404(Club, pk=pk)
     
-    if not check_club_convener_access(request.user, club):
+    if not check_club_management_access(request.user, club):
         messages.error(request, 'You do not have permission to manage allowed emails for this club.')
         return redirect('people:user_profile')
     
-    # Get allowed emails for club members created by the current user only
+    # Get allowed emails for this specific club
     from people.models import AllowedEmail
     allowed_emails = AllowedEmail.objects.filter(
         user_type='club_member',
         is_power_user=False,
-        created_by=request.user  # Only show emails created by current user
+        club=club  # Filter by club instead of created_by
     ).order_by('-created_at')
     
     # Search functionality
@@ -1181,11 +1220,11 @@ def manage_club_allowed_emails(request, pk):
 def create_club_allowed_email(request, pk):
     """
     Create allowed email for club members.
-    Only conveners can create these, and they are restricted to club_member type and level 1.
+    Conveners and presidents can create these, and they are restricted to club_member type and level 1.
     """
     club = get_object_or_404(Club, pk=pk)
     
-    if not check_club_convener_access(request.user, club):
+    if not check_club_management_access(request.user, club):
         messages.error(request, 'You do not have permission to create allowed emails for this club.')
         return redirect('people:user_profile')
     
@@ -1200,46 +1239,86 @@ def create_club_allowed_email(request, pk):
                     'form_data': request.POST,
                 })
             
-            # Check if email already exists
             from people.models import AllowedEmail
-            if AllowedEmail.objects.filter(email=email).exists():
-                messages.error(request, f'Email {email} is already in the allowed list.')
-                return render(request, 'clubs/create_allowed_email.html', {
-                    'club': club,
-                    'form_data': request.POST,
-                })
             
-            # Create allowed email - fixed to club_member type
-            allowed_email = AllowedEmail.objects.create(
-                email=email,
-                user_type='club_member',
-                is_power_user=False,
-                is_active=True,
-                is_blocked=False,
-                created_by=request.user,  # Track who created this email
-            )
+            # Check if email already exists
+            existing_email = AllowedEmail.objects.filter(email=email, user_type='club_member').first()
             
-            # Send invitation email
+            if existing_email:
+                # Email already exists - check if it's for this club or another club
+                if existing_email.club == club:
+                    # Email already exists for this club - just send invitation
+                    allowed_email = existing_email
+                    email_already_exists = True
+                else:
+                    # Email exists for a different club - update it to this club and send invitation
+                    # Note: Since email is unique, we update the club association
+                    existing_email.club = club
+                    existing_email.created_by = request.user  # Update creator
+                    existing_email.save()
+                    allowed_email = existing_email
+                    email_already_exists = True
+            else:
+                # Email doesn't exist - create new allowed email
+                allowed_email = AllowedEmail.objects.create(
+                    email=email,
+                    user_type='club_member',
+                    is_power_user=False,
+                    is_active=True,
+                    is_blocked=False,
+                    created_by=request.user,  # Track who created this email
+                    club=club,  # Link to this specific club
+                )
+                email_already_exists = False
+            
+            # Send invitation email using Brevo API (like password reset)
             email_sent = False
             email_error = None
-            try:
-                # Get convener name
-                convener_name = 'Club Convener'
-                if request.user.user_type == 'faculty' and hasattr(request.user, 'faculty_profile'):
-                    convener_name = request.user.faculty_profile.name or convener_name
-                elif request.user.user_type == 'officer' and hasattr(request.user, 'officer_profile'):
-                    convener_name = request.user.officer_profile.name or convener_name
-                elif request.user.user_type == 'club_member' and hasattr(request.user, 'club_member_profile'):
-                    convener_name = request.user.club_member_profile.name or convener_name
-                
-                # Build signup URL
-                signup_url = request.build_absolute_uri(reverse('signup'))
-                
-                # Email content
-                subject = f'Invitation to Join {club.name} - CSE UAP'
-                message = f'''Hello,
+            
+            # Get inviter name (convener or president)
+            inviter_name = 'Club Administrator'
+            if request.user.user_type == 'faculty' and hasattr(request.user, 'faculty_profile'):
+                inviter_name = request.user.faculty_profile.name or inviter_name
+            elif request.user.user_type == 'officer' and hasattr(request.user, 'officer_profile'):
+                inviter_name = request.user.officer_profile.name or inviter_name
+            elif request.user.user_type == 'club_member' and hasattr(request.user, 'club_member_profile'):
+                inviter_name = request.user.club_member_profile.name or inviter_name
+            
+            # Build signup URL
+            import os
+            FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
+            if FRONTEND_DOMAIN_ENV:
+                DOMAIN = FRONTEND_DOMAIN_ENV.rstrip('/')
+            else:
+                protocol = 'https' if request.is_secure() else 'http'
+                DOMAIN = f"{protocol}://{request.get_host()}"
+            
+            signup_url = f"{DOMAIN}{reverse('signup')}"
+            
+            # Email content
+            subject = f'Invitation to Join {club.name} - CSE UAP'
+            html_content = f'''
+                <p>Hello,</p>
+                <p>You have been invited by {inviter_name} to join <strong>{club.name}</strong> as a club member at the Department of Computer Science and Engineering (CSE), University of Asia Pacific (UAP).</p>
+                <p>To complete your registration, please follow these steps:</p>
+                <ol>
+                    <li>Visit the signup page: <a href="{signup_url}">{signup_url}</a></li>
+                    <li>Enter your email address: <strong>{email}</strong></li>
+                    <li>Fill in your full name and create a password (minimum 8 characters)</li>
+                    <li>Click "Sign Up" to create your account</li>
+                </ol>
+                <p>Once you sign up, you will be able to:</p>
+                <ul>
+                    <li>Access club information and announcements</li>
+                    <li>Participate in club activities</li>
+                    <li>Connect with other club members</li>
+                </ul>
+                <p>If you have any questions or need assistance, please contact the club administrator or the CSE department.</p>
+                <p>Best regards,<br>CSE UAP Team</p>
+            '''
+            text_content = f'''Hello,
 
-You have been invited by {convener_name} to join {club.name} as a club member at the Department of Computer Science and Engineering (CSE), University of Asia Pacific (UAP).
+You have been invited by {inviter_name} to join {club.name} as a club member at the Department of Computer Science and Engineering (CSE), University of Asia Pacific (UAP).
 
 To complete your registration, please follow these steps:
 
@@ -1253,31 +1332,136 @@ Once you sign up, you will be able to:
 - Participate in club activities
 - Connect with other club members
 
-If you have any questions or need assistance, please contact the club convener or the CSE department.
+If you have any questions or need assistance, please contact the club administrator or the CSE department.
 
 Best regards,
 CSE UAP Team'''
-                
-                send_mail(
-                    subject=subject,
-                    message=message,
-                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@uap-cse.edu'),
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
-                email_sent = True
-            except Exception as e:
-                email_error = str(e)
-                # Log the error but don't fail the entire operation
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f'Failed to send invitation email to {email}: {email_error}')
+            
+            BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
+            EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@uap-cse.edu')
+            
+            # Send email via Brevo API
+            if BREVO_API_KEY:
+                try:
+                    import requests
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    
+                    brevo_url = 'https://api.brevo.com/v3/smtp/email'
+                    headers = {
+                        'accept': 'application/json',
+                        'api-key': BREVO_API_KEY,
+                        'content-type': 'application/json'
+                    }
+                    payload = {
+                        'sender': {'name': 'CSE UAP', 'email': EMAIL_FROM},
+                        'to': [{'email': email}],
+                        'subject': subject,
+                        'htmlContent': html_content,
+                        'textContent': text_content
+                    }
+                    logger.info(f"Attempting to send club invitation email to {email} via Brevo API")
+                    response = requests.post(brevo_url, json=payload, headers=headers, timeout=10)
+                    response.raise_for_status()
+                    email_sent = True
+                    logger.info(f"✅ Club invitation email sent successfully to {email} via Brevo API")
+                except requests.exceptions.RequestException as e:
+                    email_error = f"Brevo API error: {str(e)}"
+                    if hasattr(e, 'response') and e.response is not None:
+                        try:
+                            error_detail = e.response.json()
+                            email_error = f"Brevo API error: {error_detail}"
+                            logger.error(f"Brevo API response: {error_detail}")
+                        except:
+                            email_error = f"Brevo API error: {e.response.status_code} - {e.response.text}"
+                    logger.exception(f"❌ Failed to send via Brevo API: {email_error}")
+                    # Fallback to SMTP
+                    try:
+                        EMAIL_HOST = os.getenv('EMAIL_HOST')
+                        EMAIL_PORT = os.getenv('EMAIL_PORT', '587')
+                        EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+                        EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+                        
+                        if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+                            logger.info(f"Attempting SMTP fallback for {email}")
+                            from django.core.mail import get_connection
+                            connection = get_connection(
+                                host=EMAIL_HOST,
+                                port=int(EMAIL_PORT),
+                                username=EMAIL_HOST_USER,
+                                password=EMAIL_HOST_PASSWORD,
+                                use_tls=True,
+                                fail_silently=False
+                            )
+                            send_mail(
+                                subject=subject,
+                                message=text_content,
+                                from_email=EMAIL_FROM,
+                                recipient_list=[email],
+                                connection=connection
+                            )
+                            email_sent = True
+                            logger.info(f"✅ Club invitation email sent successfully to {email} via SMTP fallback")
+                        else:
+                            logger.warning("SMTP credentials not configured, cannot use SMTP fallback")
+                            email_error = "SMTP credentials not configured"
+                    except Exception as smtp_err:
+                        email_error = f"SMTP fallback failed: {str(smtp_err)}"
+                        logger.exception(f"❌ SMTP fallback also failed: {email_error}")
+                except Exception as e:
+                    email_error = f"Unexpected error: {str(e)}"
+                    logger.exception(f"❌ Unexpected error sending email: {email_error}")
+            else:
+                # Try SMTP if BREVO_API_KEY is not set
+                try:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning("⚠️ BREVO_API_KEY not set, attempting SMTP fallback")
+                    
+                    EMAIL_HOST = os.getenv('EMAIL_HOST')
+                    EMAIL_PORT = os.getenv('EMAIL_PORT', '587')
+                    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+                    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+                    
+                    if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+                        from django.core.mail import get_connection
+                        connection = get_connection(
+                            host=EMAIL_HOST,
+                            port=int(EMAIL_PORT),
+                            username=EMAIL_HOST_USER,
+                            password=EMAIL_HOST_PASSWORD,
+                            use_tls=True,
+                            fail_silently=False
+                        )
+                        send_mail(
+                            subject=subject,
+                            message=text_content,
+                            from_email=EMAIL_FROM,
+                            recipient_list=[email],
+                            connection=connection
+                        )
+                        email_sent = True
+                        logger.info(f"✅ Club invitation email sent successfully to {email} via SMTP")
+                    else:
+                        email_error = "Email credentials not configured (BREVO_API_KEY and SMTP credentials missing)"
+                        logger.warning(f"⚠️ {email_error}")
+                except Exception as e:
+                    email_error = f"SMTP error: {str(e)}"
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.exception(f"❌ Failed to send email: {email_error}")
             
             # Show appropriate message based on email sending result
-            if email_sent:
-                messages.success(request, f'Allowed email "{email}" created successfully and invitation email sent! The user can now sign up as a club member.')
+            if email_already_exists:
+                if email_sent:
+                    messages.success(request, f'Invitation email sent to "{email}"! The email is already in the allowed list for this club.')
+                else:
+                    messages.warning(request, f'Email "{email}" is already in the allowed list, but failed to send invitation email. Error: {email_error}.')
             else:
-                messages.warning(request, f'Allowed email "{email}" created successfully, but failed to send invitation email. Error: {email_error}. The user can still sign up using their email address.')
+                if email_sent:
+                    messages.success(request, f'Allowed email "{email}" created successfully and invitation email sent! The user can now sign up as a club member.')
+                else:
+                    messages.warning(request, f'Allowed email "{email}" created successfully, but failed to send invitation email. Error: {email_error}. The user can still sign up using their email address.')
             
             return redirect('clubs:manage_allowed_emails', pk=club.pk)
             
@@ -1297,26 +1481,38 @@ CSE UAP Team'''
 @login_required
 def delete_club_allowed_email(request, pk, email_pk):
     """
-    Delete an allowed email. Only the creator can delete it.
+    Delete an allowed email. Only club managers (convener or president) can delete emails for their club.
+    Note: This only removes the email from this club's allowed list. If the member is in other clubs,
+    their AllowedEmail will remain (though since email is unique, this is a limitation).
     """
     club = get_object_or_404(Club, pk=pk)
     
-    if not check_club_convener_access(request.user, club):
+    if not check_club_management_access(request.user, club):
         messages.error(request, 'You do not have permission to delete allowed emails for this club.')
         return redirect('people:user_profile')
     
     from people.models import AllowedEmail
-    allowed_email = get_object_or_404(AllowedEmail, pk=email_pk, user_type='club_member', is_power_user=False)
+    allowed_email = get_object_or_404(AllowedEmail, pk=email_pk, user_type='club_member', is_power_user=False, club=club)
     
-    # Check if the current user is the creator
-    if allowed_email.created_by != request.user:
-        messages.error(request, 'You can only delete allowed emails that you created.')
+    # Check if this email belongs to this club
+    if allowed_email.club != club:
+        messages.error(request, 'This email does not belong to this club.')
         return redirect('clubs:manage_allowed_emails', pk=club.pk)
     
     if request.method == 'POST':
         email_address = allowed_email.email
+        
+        # Check if member is in positions in this club - warn but allow deletion
+        from clubs.models import ClubPosition
+        positions_in_club = ClubPosition.objects.filter(club=club, club_member__base_user__email=email_address).exists()
+        if positions_in_club:
+            messages.warning(request, f'Warning: Member with email "{email_address}" is currently in a position in this club. Removing the allowed email will not remove them from positions, but they may lose access.')
+        
+        # Delete the allowed email (this only removes it from this club's list)
+        # Since email is unique, this will delete the AllowedEmail entirely
+        # TODO: In the future, consider making email non-unique or using a many-to-many relationship
         allowed_email.delete()
-        messages.success(request, f'Allowed email "{email_address}" deleted successfully!')
+        messages.success(request, f'Allowed email "{email_address}" removed from this club successfully!')
         return redirect('clubs:manage_allowed_emails', pk=club.pk)
     
     context = {

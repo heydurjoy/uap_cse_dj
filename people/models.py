@@ -204,6 +204,16 @@ class AllowedEmail(models.Model):
         help_text="The user who created this allowed email"
     )
     
+    # Club relationship (for club_member type emails)
+    club = models.ForeignKey(
+        'clubs.Club',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='allowed_emails',
+        help_text="The club this email is associated with (for club_member type)"
+    )
+    
     blocked_at = models.DateTimeField(
         null=True,
         blank=True,

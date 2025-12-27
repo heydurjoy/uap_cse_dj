@@ -151,7 +151,9 @@ def home(request):
         ).select_related('base_user')
         
         # Get all publications from current faculty
+        # Match exact query pattern from departmental_research view
         publications = Publication.objects.filter(faculty__in=current_faculty)
+        publications = publications.select_related('faculty')
         
         # Scoring system
         SCORING = {

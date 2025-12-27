@@ -41,7 +41,7 @@
                 </p>
                 <p><strong>Created:</strong> {{ allowed_email.created_at|date:"M d, Y" }}</p>
             </div>
-            <p class="warning-text">This action cannot be undone. The email will be permanently removed from the allowed list.</p>
+            <p class="warning-text">This will remove the email from this club's allowed list. If the member is in positions in this club, they will remain in those positions but may lose access. The member's account and membership in other clubs will not be affected.</p>
             
             <form method="post" action="{% url 'clubs:delete_allowed_email' club.pk allowed_email.pk %}" class="delete-form">
                 {% csrf_token %}

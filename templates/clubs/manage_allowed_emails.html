@@ -23,7 +23,7 @@
         
         <!-- Info Box -->
         <div class="info-box">
-            <p><strong>Manage Your Club Members:</strong> This page shows only members you have created. Add email addresses to allow club members to create accounts and join this club. All members created through this will be set as <strong>Club Member</strong> type. Permissions can be granted later by power users.</p>
+            <p><strong>Manage Your Club Members:</strong> This page shows all allowed emails for <strong>{{ club.name }}</strong>. Add email addresses to allow club members to create accounts and join this club. All members created through this will be set as <strong>Club Member</strong> type. Permissions can be granted later by power users. Note: Removing a member from this club will not affect their membership in other clubs.</p>
         </div>
         
         <!-- Filters and Actions -->
@@ -99,21 +99,12 @@
                         </td>
                         <td>{{ email.created_at|date:"M d, Y" }}</td>
                         <td class="actions-col">
-                            {% if email.created_by == user %}
-                            <a href="{% url 'clubs:delete_allowed_email' club.pk email.pk %}" class="action-icon-btn delete-icon-btn" title="Delete (You created this)">
+                            <a href="{% url 'clubs:delete_allowed_email' club.pk email.pk %}" class="action-icon-btn delete-icon-btn" title="Remove from this club">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                 </svg>
                             </a>
-                            {% else %}
-                            <span class="action-icon-btn delete-icon-btn disabled" title="You can only delete emails you created" style="opacity: 0.5; cursor: not-allowed;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                            </span>
-                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
