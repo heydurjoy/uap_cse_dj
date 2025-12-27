@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Curriculum - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-curriculum-page">
+        <div class="page-header">
+            <a href="{% url 'designs:manage_curricula' %}" class="back-link">← Back to Curricula</a>
+            <h1>Edit Curriculum</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data" style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color); max-width: 700px; margin: 0 auto;">
+            {% csrf_token %}
+            
+            <div style="display: grid; gap: 1.5rem;">
+                <div>
+                    <label for="short_title" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Short Title <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="short_title" id="short_title" value="{{ curriculum.short_title }}" maxlength="50" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                </div>
+                
+                <div>
+                    <label for="program" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Program <span style="color: #dc3545;">*</span>
+                    </label>
+                    <select name="program" id="program" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                        <option value="bachelor" {% if curriculum.program == 'bachelor' %}selected{% endif %}>Bachelor</option>
+                        <option value="master" {% if curriculum.program == 'master' %}selected{% endif %}>Master</option>
+                        <option value="phd" {% if curriculum.program == 'phd' %}selected{% endif %}>PhD</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="publishing_year" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                            Publishing Year <span style="color: #dc3545;">*</span>
+                        </label>
+                        <input type="number" name="publishing_year" id="publishing_year" value="{{ curriculum.publishing_year }}" min="2000" max="2100" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    </div>
+                    
+                    <div>
+                        <label for="version" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                            Version <span style="color: #dc3545;">*</span>
+                        </label>
+                        <input type="number" name="version" id="version" value="{{ curriculum.version }}" step="0.1" min="0" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="running_since_year" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                            Running Since Year <span style="color: #dc3545;">*</span>
+                        </label>
+                        <input type="text" name="running_since_year" id="running_since_year" value="{{ curriculum.running_since_year }}" maxlength="10" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    </div>
+                    
+                    <div>
+                        <label for="running_since_semester" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                            Running Since Semester <span style="color: #dc3545;">*</span>
+                        </label>
+                        <select name="running_since_semester" id="running_since_semester" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                            <option value="spring" {% if curriculum.running_since_semester == 'spring' %}selected{% endif %}>Spring</option>
+                            <option value="fall" {% if curriculum.running_since_semester == 'fall' %}selected{% endif %}>Fall</option>
+                        </select>
+                        <small style="color: var(--text-secondary);">Spring comes before Fall in sorting</small>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="pdf" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        PDF File
+                    </label>
+                    <div style="margin-bottom: 0.5rem;">
+                        <p style="color: var(--text-secondary); margin: 0 0 0.5rem 0;">Current file: 
+                            <a href="/media/{{ curriculum.pdf.name }}" target="_blank" style="color: var(--color-primary);">{{ curriculum.pdf.name|slice:"20:" }}</a>
+                        </p>
+                    </div>
+                    <input type="file" name="pdf" id="pdf" accept=".pdf" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">Max 10MB. PDF format only.</small>
+                    <small style="color: var(--text-secondary);">Leave empty to keep current file, or upload a new PDF</small>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                        Update Curriculum
+                    </button>
+                    <a href="{% url 'designs:manage_curricula' %}" class="btn-secondary" style="flex: 1; padding: 0.75rem 1.5rem; text-align: center; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<style>
+.edit-curriculum-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
+{% endblock %}
+

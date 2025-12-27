@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Permission - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="edit-permission-page">
+        <div class="page-header">
+            <a href="{% url 'people:manage_permissions' %}" class="back-link">← Back to Permissions</a>
+            <h1>Edit Permission</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="post" style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color); max-width: 700px; margin: 0 auto;">
+            {% csrf_token %}
+            
+            <div style="display: grid; gap: 1.5rem;">
+                <div>
+                    <label for="codename" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Codename <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="codename" id="codename" value="{{ permission.codename }}" maxlength="100" required pattern="[a-z_]+" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font-family: monospace;">
+                    <small style="color: var(--text-secondary);">Lowercase with underscores only (e.g., 'post_notices', 'manage_courses')</small>
+                </div>
+                
+                <div>
+                    <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Name <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="name" id="name" value="{{ permission.name }}" maxlength="255" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    <small style="color: var(--text-secondary);">Human-readable name (e.g., 'Post Notices', 'Manage Courses')</small>
+                </div>
+                
+                <div>
+                    <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Description
+                    </label>
+                    <textarea name="description" id="description" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); resize: vertical;">{{ permission.description|default:'' }}</textarea>
+                    <small style="color: var(--text-secondary);">Detailed explanation of what this permission allows</small>
+                </div>
+                
+                <div>
+                    <label for="category" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Category
+                    </label>
+                    <select name="category" id="category" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                        <option value="">— None —</option>
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}" {% if permission.category == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <small style="color: var(--text-secondary);">Group this permission with similar ones</small>
+                </div>
+                
+                <div>
+                    <label for="requires_role" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Requires Role
+                    </label>
+                    <input type="text" name="requires_role" id="requires_role" value="{{ permission.requires_role|join:',' }}" placeholder="faculty,officer" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    <small style="color: var(--text-secondary);">Comma-separated user types (e.g., 'faculty,officer'). Leave empty for any role.</small>
+                </div>
+                
+                <div>
+                    <label for="priority" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        Priority
+                    </label>
+                    <input type="number" name="priority" id="priority" value="{{ permission.priority }}" min="0" max="999" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                    <small style="color: var(--text-secondary);">Display order (lower = more important). Use 10, 20, 30, etc. for grouping.</small>
+                </div>
+                
+                <div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="is_active" id="is_active" {% if permission.is_active %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                        <span style="font-weight: 600; color: var(--text-primary);">Is Active</span>
+                    </label>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Whether this permission is currently available for assignment</small>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                        Update Permission
+                    </button>
+                    <a href="{% url 'people:manage_permissions' %}" class="btn-secondary" style="flex: 1; padding: 0.75rem 1.5rem; text-align: center; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<style>
+.edit-permission-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
+{% endblock %}
+

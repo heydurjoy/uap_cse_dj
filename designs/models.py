@@ -167,3 +167,62 @@ class AcademicCalendar(models.Model):
     
     def __str__(self):
         return f"Academic Calendar {self.year}"
+
+
+class Curricula(models.Model):
+    """Curriculum documents with versioning"""
+    SEMESTER_CHOICES = [
+        ('spring', 'Spring'),
+        ('fall', 'Fall'),
+    ]
+    
+    short_title = models.CharField(
+        max_length=50,
+        help_text="Short title for the curriculum (max 50 characters)"
+    )
+    program = models.ForeignKey(
+        'academics.Program',
+        on_delete=models.CASCADE,
+        related_name='curricula',
+        help_text="Program this curriculum belongs to"
+    )
+    publishing_year = models.IntegerField(
+        help_text="Year when the curriculum was published"
+    )
+    version = models.FloatField(
+        help_text="Version number of the curriculum (e.g., 1.0, 2.5)"
+    )
+    running_since_year = models.CharField(
+        max_length=10,
+        default='2024',
+        help_text="Year when this curriculum started running (e.g., '2024')"
+    )
+    running_since_semester = models.CharField(
+        max_length=10,
+        choices=SEMESTER_CHOICES,
+        default='spring',
+        help_text="Semester when this curriculum started running (Spring comes before Fall)"
+    )
+    pdf = models.FileField(
+        upload_to='curricula/',
+        help_text="PDF file of the curriculum (Max 10MB)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        # Note: Custom ordering with Spring before Fall is handled in views using annotate
+        # Default ordering here is a fallback
+        ordering = ['program', '-running_since_year', 'running_since_semester', '-version']
+        verbose_name = 'Curriculum'
+        verbose_name_plural = 'Curricula'
+        unique_together = [['short_title', 'program', 'publishing_year', 'version', 'running_since_year', 'running_since_semester']]
+    
+    def __str__(self):
+        semester_display = dict(self.SEMESTER_CHOICES).get(self.running_since_semester, self.running_since_semester)
+        return f"{self.program.name} - {self.short_title} (Running since {semester_display} {self.running_since_year}) - v{self.version}"
+    
+    def get_running_since_display(self):
+        """Get formatted running since string"""
+        semester_display = dict(self.SEMESTER_CHOICES).get(self.running_since_semester, self.running_since_semester)
+        return f"{semester_display} {self.running_since_year}"

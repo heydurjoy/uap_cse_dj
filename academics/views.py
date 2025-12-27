@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Case, When, IntegerField
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Program, Course, CourseOutcome, ProgramOutcome, BLOOMS_CHOICES
@@ -289,15 +289,23 @@ def courses_list(request):
         .prefetch_related('outcomes__program_outcome', 'prerequisites')\
         .order_by('program', 'year_semester', 'course_code')
     
-    # Filter by program if specified
+    # Filter by program if specified, or default to BSc in CSE
     program_id = request.GET.get('program')
     selected_program = None
+    
     if program_id:
         try:
             selected_program = Program.objects.get(pk=program_id)
             courses_queryset = courses_queryset.filter(program=selected_program)
         except Program.DoesNotExist:
             selected_program = None
+    else:
+        # Default to first program if no program is selected
+        selected_program = programs.first()
+        if selected_program:
+            # Filter courses by default program
+            # Note: courses_queryset.filter(program=selected_program) uses the ForeignKey relationship
+            courses_queryset = courses_queryset.filter(program=selected_program)
     
     # Search functionality
     search_query = request.GET.get('search', '')
@@ -333,85 +341,112 @@ def courses_list(request):
     
     # Organize courses by program and calculate lifetime stats
     programs_with_courses = []
-    for program in programs:
-        program_courses = [c for c in courses_list if c.program == program]
-        if program_courses or not selected_program:  # Show program if it has courses or if no filter is applied
-            # Calculate lifetime statistics for this program
-            lifetime_stats = {
-                'program_outcomes': {},  # PO1-PO12: {credits, marks}
-                'blooms': {},  # K1-K6: {credits, marks}
-                'knowledge': {},  # K1-K8: {credits, marks}
-                'problem': {},  # P1-P7: {credits, marks}
-                'activity': {},  # A1-A5: {credits, marks}
-            }
+    # If a program is selected, only process that program
+    # Otherwise, process all programs
+    programs_to_process = [selected_program] if selected_program else programs
+    
+    for program in programs_to_process:
+        if not program:
+            continue
+        # Filter courses for this program using the ForeignKey relationship
+        # courses_list is already filtered by selected_program if one is selected
+        program_courses = [c for c in courses_list if c.program.id == program.id]
+        
+        # Calculate lifetime statistics for this program
+        lifetime_stats = {
+            'program_outcomes': {},  # PO1-PO12: {credits, marks}
+            'blooms': {},  # K1-K6: {credits, marks}
+            'knowledge': {},  # K1-K8: {credits, marks}
+            'problem': {},  # P1-P7: {credits, marks}
+            'activity': {},  # A1-A5: {credits, marks}
+        }
+        
+        for course in program_courses:
+            outcomes = course.outcomes.all()
+            course_credit = float(course.credit_hours)
             
-            for course in program_courses:
-                outcomes = course.outcomes.all()
-                course_credit = float(course.credit_hours)
+            for outcome in outcomes:
+                # Program Outcomes
+                if outcome.program_outcome and outcome.program_outcome.code:
+                    po_code = outcome.program_outcome.code
+                    if po_code not in lifetime_stats['program_outcomes']:
+                        lifetime_stats['program_outcomes'][po_code] = {'credits': 0, 'marks': 0}
+                    lifetime_stats['program_outcomes'][po_code]['credits'] += course_credit
+                    lifetime_stats['program_outcomes'][po_code]['marks'] += outcome.total_assessment_marks
                 
-                for outcome in outcomes:
-                    # Program Outcomes
-                    if outcome.program_outcome and outcome.program_outcome.code:
-                        po_code = outcome.program_outcome.code
-                        if po_code not in lifetime_stats['program_outcomes']:
-                            lifetime_stats['program_outcomes'][po_code] = {'credits': 0, 'marks': 0}
-                        lifetime_stats['program_outcomes'][po_code]['credits'] += course_credit
-                        lifetime_stats['program_outcomes'][po_code]['marks'] += outcome.total_assessment_marks
-                    
-                    # Bloom's levels
-                    if outcome.blooms_level:
-                        bloom = outcome.blooms_level
-                        if bloom not in lifetime_stats['blooms']:
-                            lifetime_stats['blooms'][bloom] = {'credits': 0, 'marks': 0}
-                        lifetime_stats['blooms'][bloom]['credits'] += course_credit
-                        lifetime_stats['blooms'][bloom]['marks'] += outcome.total_assessment_marks
-                    
-                    # Knowledge profiles
-                    if outcome.knowledge_profile:
-                        kp = outcome.knowledge_profile
-                        if kp not in lifetime_stats['knowledge']:
-                            lifetime_stats['knowledge'][kp] = {'credits': 0, 'marks': 0}
-                        lifetime_stats['knowledge'][kp]['credits'] += course_credit
-                        lifetime_stats['knowledge'][kp]['marks'] += outcome.total_assessment_marks
-                    
-                    # Problem attributes
-                    if outcome.problem_attribute:
-                        pa = outcome.problem_attribute
-                        if pa not in lifetime_stats['problem']:
-                            lifetime_stats['problem'][pa] = {'credits': 0, 'marks': 0}
-                        lifetime_stats['problem'][pa]['credits'] += course_credit
-                        lifetime_stats['problem'][pa]['marks'] += outcome.total_assessment_marks
-                    
-                    # Activity attributes
-                    if outcome.activity_attribute:
-                        aa = outcome.activity_attribute
-                        if aa not in lifetime_stats['activity']:
-                            lifetime_stats['activity'][aa] = {'credits': 0, 'marks': 0}
-                        lifetime_stats['activity'][aa]['credits'] += course_credit
-                        lifetime_stats['activity'][aa]['marks'] += outcome.total_assessment_marks
-            
-            # Calculate total marks for each category
-            lifetime_stats['totals'] = {
-                'program_outcomes': sum(data['marks'] for data in lifetime_stats['program_outcomes'].values()),
-                'blooms': sum(data['marks'] for data in lifetime_stats['blooms'].values()),
-                'knowledge': sum(data['marks'] for data in lifetime_stats['knowledge'].values()),
-                'problem': sum(data['marks'] for data in lifetime_stats['problem'].values()),
-                'activity': sum(data['marks'] for data in lifetime_stats['activity'].values()),
-            }
-            
-            # Get Program Outcomes for this program
-            import re
-            program_outcomes_list = list(ProgramOutcome.objects.filter(program=program))
-            program_outcomes_list = sorted(
-                program_outcomes_list,
-                key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0
-            )
-            
+                # Bloom's levels
+                if outcome.blooms_level:
+                    bloom = outcome.blooms_level
+                    if bloom not in lifetime_stats['blooms']:
+                        lifetime_stats['blooms'][bloom] = {'credits': 0, 'marks': 0}
+                    lifetime_stats['blooms'][bloom]['credits'] += course_credit
+                    lifetime_stats['blooms'][bloom]['marks'] += outcome.total_assessment_marks
+                
+                # Knowledge profiles
+                if outcome.knowledge_profile:
+                    kp = outcome.knowledge_profile
+                    if kp not in lifetime_stats['knowledge']:
+                        lifetime_stats['knowledge'][kp] = {'credits': 0, 'marks': 0}
+                    lifetime_stats['knowledge'][kp]['credits'] += course_credit
+                    lifetime_stats['knowledge'][kp]['marks'] += outcome.total_assessment_marks
+                
+                # Problem attributes
+                if outcome.problem_attribute:
+                    pa = outcome.problem_attribute
+                    if pa not in lifetime_stats['problem']:
+                        lifetime_stats['problem'][pa] = {'credits': 0, 'marks': 0}
+                    lifetime_stats['problem'][pa]['credits'] += course_credit
+                    lifetime_stats['problem'][pa]['marks'] += outcome.total_assessment_marks
+                
+                # Activity attributes
+                if outcome.activity_attribute:
+                    aa = outcome.activity_attribute
+                    if aa not in lifetime_stats['activity']:
+                        lifetime_stats['activity'][aa] = {'credits': 0, 'marks': 0}
+                    lifetime_stats['activity'][aa]['credits'] += course_credit
+                    lifetime_stats['activity'][aa]['marks'] += outcome.total_assessment_marks
+        
+        # Calculate total marks for each category
+        lifetime_stats['totals'] = {
+            'program_outcomes': sum(data['marks'] for data in lifetime_stats['program_outcomes'].values()),
+            'blooms': sum(data['marks'] for data in lifetime_stats['blooms'].values()),
+            'knowledge': sum(data['marks'] for data in lifetime_stats['knowledge'].values()),
+            'problem': sum(data['marks'] for data in lifetime_stats['problem'].values()),
+            'activity': sum(data['marks'] for data in lifetime_stats['activity'].values()),
+        }
+        
+        # Get Program Outcomes for this program
+        import re
+        program_outcomes_list = list(ProgramOutcome.objects.filter(program=program))
+        program_outcomes_list = sorted(
+            program_outcomes_list,
+            key=lambda po: int(re.search(r'\d+', po.code).group()) if re.search(r'\d+', po.code) else 0
+        )
+        
+        # Get curricula for this program
+        curricula = None
+        try:
+            from designs.models import Curricula
+            # Filter by program ForeignKey directly
+            curricula = Curricula.objects.filter(program=program).annotate(
+                semester_order=Case(
+                    When(running_since_semester='spring', then=1),
+                    When(running_since_semester='fall', then=2),
+                    default=3,
+                    output_field=IntegerField()
+                )
+            ).order_by('-running_since_year', 'semester_order', '-version')
+        except ImportError:
+            curricula = None
+        
+        # Only add program if it has courses or curricula, or if it's the selected program (even with no courses/curricula)
+        if program_courses or curricula or (selected_program and program == selected_program):
             programs_with_courses.append({
                 'program': program,
                 'courses': program_courses,
-                'lifetime_stats': lifetime_stats,
+                'lifetime_stats': lifetime_stats if program_courses else None,
                 'program_outcomes': program_outcomes_list,
+                'curricula': curricula,
             })
     
     context = {

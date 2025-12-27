@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Curricula - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-curricula-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Curricula</h1>
+        </div>
+        
+        <div class="toolbar" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'designs:create_curriculum' %}" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem;">
+                + Create Curriculum
+            </a>
+        </div>
+        
+        <div class="curricula-table-container" style="background: var(--bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+            <table class="curricula-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border-bottom: 2px solid var(--border-color);">
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Program</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Short Title</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Publishing Year</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Version</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Running Since</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">PDF File</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if curricula %}
+                        {% for curriculum in curricula %}
+                            <tr class="curriculum-row" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">{{ curriculum.program.name }}</td>
+                                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">{{ curriculum.short_title }}</td>
+                                <td style="padding: 1rem; color: var(--text-primary);">{{ curriculum.publishing_year }}</td>
+                                <td style="padding: 1rem; color: var(--text-primary);">v{{ curriculum.version }}</td>
+                                <td style="padding: 1rem; color: var(--text-primary);">{{ curriculum.get_running_since_display }}</td>
+                                <td style="padding: 1rem; color: var(--text-primary);">
+                                    <a href="/media/{{ curriculum.pdf.name }}" target="_blank" style="color: var(--color-primary); text-decoration: none;">
+                                        {{ curriculum.pdf.name|slice:"20:" }}
+                                    </a>
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                        <a href="{% url 'designs:edit_curriculum' curriculum.pk %}" class="action-btn edit-btn" title="Edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                            </svg>
+                                        </a>
+                                        <a href="{% url 'designs:delete_curriculum' curriculum.pk %}" class="action-btn delete-btn" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                                No curricula found. <a href="{% url 'designs:create_curriculum' %}" style="color: var(--color-primary);">Create one</a> to get started.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-curricula-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.curriculum-row:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.edit-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.delete-btn {
+    background: color-mix(in srgb, #dc3545 10%, var(--bg-secondary));
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+}
+</style>
+{% endblock %}
+

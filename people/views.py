@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail, Publication
+from .permissions import PERMISSION_DEFINITIONS
 import re
 
 
@@ -2941,3 +2942,178 @@ def departmental_research(request):
     }
     
     return render(request, 'people/departmental_research.html', context)
+
+
+# ==============================================================================
+# PERMISSION OBJECTS MANAGEMENT (Power Users Only)
+# ==============================================================================
+
+@login_required
+def manage_permissions(request):
+    """Manage Permission objects - CRUD operations for power users"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can manage permission objects.')
+        return redirect('people:user_profile')
+    
+    # Get filters
+    search_query = request.GET.get('search', '').strip()
+    category_filter = request.GET.get('category', 'all')
+    
+    # Get all permissions
+    permissions = Permission.objects.all()
+    
+    # Filter by category
+    if category_filter != 'all':
+        permissions = permissions.filter(category=category_filter)
+    
+    # Filter by search query
+    if search_query:
+        permissions = permissions.filter(
+            Q(codename__icontains=search_query) |
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Order by category, priority, name
+    permissions = permissions.order_by('category', 'priority', 'name')
+    
+    # Get category choices
+    category_choices = [
+        ('all', 'All Categories'),
+        ('office', 'Office'),
+        ('clubs', 'Clubs'),
+        ('designs', 'Designs'),
+        ('users', 'User Management'),
+        ('academics', 'Academics'),
+    ]
+    
+    context = {
+        'permissions': permissions,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'category_choices': category_choices,
+    }
+    
+    return render(request, 'people/manage_permissions.html', context)
+
+
+@login_required
+def create_permission(request):
+    """Create a new Permission object"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can create permission objects.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        try:
+            permission = Permission()
+            permission.codename = request.POST.get('codename', '').strip()
+            permission.name = request.POST.get('name', '').strip()
+            permission.description = request.POST.get('description', '').strip()
+            permission.category = request.POST.get('category', '').strip() or None
+            
+            # Handle requires_role (JSON field)
+            requires_role_str = request.POST.get('requires_role', '').strip()
+            if requires_role_str:
+                # Split by comma and clean
+                roles = [r.strip() for r in requires_role_str.split(',') if r.strip()]
+                permission.requires_role = roles
+            else:
+                permission.requires_role = []
+            
+            # Handle priority
+            priority_str = request.POST.get('priority', '100').strip()
+            if priority_str:
+                permission.priority = int(priority_str)
+            else:
+                permission.priority = 100
+            
+            permission.is_active = request.POST.get('is_active') == 'on'
+            
+            permission.full_clean()
+            permission.save()
+            
+            messages.success(request, f'Permission "{permission.name}" created successfully!')
+            return redirect('people:manage_permissions')
+        except Exception as e:
+            messages.error(request, f'Error creating permission: {str(e)}')
+            return render(request, 'people/create_permission.html', {
+                'permission_data': request.POST,
+                'category_choices': Permission.CATEGORY_CHOICES,
+            })
+    
+    context = {
+        'category_choices': Permission.CATEGORY_CHOICES,
+    }
+    return render(request, 'people/create_permission.html', context)
+
+
+@login_required
+def edit_permission(request, pk):
+    """Edit an existing Permission object"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can edit permission objects.')
+        return redirect('people:user_profile')
+    
+    permission = get_object_or_404(Permission, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            permission.codename = request.POST.get('codename', '').strip()
+            permission.name = request.POST.get('name', '').strip()
+            permission.description = request.POST.get('description', '').strip()
+            permission.category = request.POST.get('category', '').strip() or None
+            
+            # Handle requires_role (JSON field)
+            requires_role_str = request.POST.get('requires_role', '').strip()
+            if requires_role_str:
+                roles = [r.strip() for r in requires_role_str.split(',') if r.strip()]
+                permission.requires_role = roles
+            else:
+                permission.requires_role = []
+            
+            # Handle priority
+            priority_str = request.POST.get('priority', '100').strip()
+            if priority_str:
+                permission.priority = int(priority_str)
+            
+            permission.is_active = request.POST.get('is_active') == 'on'
+            
+            permission.full_clean()
+            permission.save()
+            
+            messages.success(request, f'Permission "{permission.name}" updated successfully!')
+            return redirect('people:manage_permissions')
+        except Exception as e:
+            messages.error(request, f'Error updating permission: {str(e)}')
+    
+    context = {
+        'permission': permission,
+        'category_choices': Permission.CATEGORY_CHOICES,
+    }
+    return render(request, 'people/edit_permission.html', context)
+
+
+@login_required
+def delete_permission(request, pk):
+    """Delete a Permission object"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can delete permission objects.')
+        return redirect('people:user_profile')
+    
+    permission = get_object_or_404(Permission, pk=pk)
+    
+    # Check if permission is in use
+    user_permissions_count = UserPermission.objects.filter(permission=permission, is_active=True).count()
+    
+    if request.method == 'POST':
+        name = permission.name
+        permission.delete()
+        messages.success(request, f'Permission "{name}" deleted successfully!')
+        return redirect('people:manage_permissions')
+    
+    context = {
+        'permission': permission,
+        'user_permissions_count': user_permissions_count,
+    }
+    return render(request, 'people/delete_permission.html', context)

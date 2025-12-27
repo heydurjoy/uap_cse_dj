@@ -25,5 +25,11 @@ urlpatterns = [
     path('manage-hero-tags/<int:pk>/edit/', views.edit_hero_tag, name='edit_hero_tag'),
     path('manage-hero-tags/<int:pk>/delete/', views.delete_hero_tag, name='delete_hero_tag'),
     path('manage-hero-tags/update-order/', views.update_hero_tag_order, name='update_hero_tag_order'),
+    # Curricula Management
+    path('manage-curricula/', views.manage_curricula, name='manage_curricula'),
+    path('manage-curricula/create/', views.create_curriculum, name='create_curriculum'),
+    path('manage-curricula/<int:pk>/edit/', views.edit_curriculum, name='edit_curriculum'),
+    path('manage-curricula/<int:pk>/delete/', views.delete_curriculum, name='delete_curriculum'),
+    path('curricula/<int:pk>/pdf/', views.serve_curriculum_pdf, name='serve_curriculum_pdf'),
 ]
 

@@ -20,7 +20,7 @@
                     class="tab-link {% if active_tab == 'permissions' %}active{% endif %}"
                     style="padding: 1rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if active_tab == 'permissions' %}var(--color-primary){% else %}transparent{% endif %}; font-weight: {% if active_tab == 'permissions' %}600{% else %}400{% endif %}; transition: all 0.3s;"
                 >
-                    Manage Permissions
+                    Manage User Permissions
                 </a>
                 <a 
                     href="{% url 'people:manage_user_permissions_list' %}?tab=allowed_emails{% if search_query %}&search={{ search_query }}{% endif %}{% if user_type_filter != 'all' %}&user_type={{ user_type_filter }}{% endif %}"
@@ -28,6 +28,13 @@
                     style="padding: 1rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if active_tab == 'allowed_emails' %}var(--color-primary){% else %}transparent{% endif %}; font-weight: {% if active_tab == 'allowed_emails' %}600{% else %}400{% endif %}; transition: all 0.3s;"
                 >
                     Manage Allowed Emails
+                </a>
+                <a 
+                    href="{% url 'people:manage_permissions' %}"
+                    class="tab-link {% if active_tab == 'permission_objects' %}active{% endif %}"
+                    style="padding: 1rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid {% if active_tab == 'permission_objects' %}var(--color-primary){% else %}transparent{% endif %}; font-weight: {% if active_tab == 'permission_objects' %}600{% else %}400{% endif %}; transition: all 0.3s;"
+                >
+                    Manage Permission Objects
                 </a>
             </div>
         </div>

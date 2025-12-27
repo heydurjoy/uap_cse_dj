@@ -5,7 +5,7 @@ from django.db.models import Max
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 from ckeditor.fields import RichTextField
-from .models import FeatureCard, AdmissionElement, AcademicCalendar, HeroTags
+from .models import FeatureCard, AdmissionElement, AcademicCalendar, HeroTags, Curricula
 
 
 def feature_cards_list(request):
@@ -375,12 +375,95 @@ def admission_element_detail(request, pk):
             except ImportError:
                 pass
     
+    # Get curricula based on admission element title
+    # Normalize title for better pattern matching - handle variations like:
+    # "BSc in CSE", "B.Sc. in CSE", "BSC in CSE", "Bachelor in Computer Science"
+    # "MCSE", "MSc in CSE", "M.Sc. in CSE", "Master in Computer Science"
+    import re
+    curricula = None
+    
+    # Normalize: remove punctuation, convert to lowercase, normalize whitespace
+    title_normalized = re.sub(r'[^\w\s]', '', element.title.lower())
+    title_normalized = re.sub(r'\s+', ' ', title_normalized).strip()
+    
+    # Check for Bachelor program variations
+    # Patterns: bsc, b.sc, bachelor, bachelor's, bachelor of science
+    # Combined with: cse, computer, computer science, engineering
+    is_bachelor = False
+    is_master = False
+    
+    # Bachelor patterns - check for common variations
+    bachelor_patterns = [
+        r'\bb\.?sc\.?\b',  # BSc, B.Sc., BSC, B.S.C.
+        r'\bbachelor',      # bachelor, bachelor's
+        r'\bundergraduate', # undergraduate
+    ]
+    
+    # CSE/Computer Science patterns
+    cse_patterns = [
+        r'\bcse\b',         # CSE
+        r'\bcomputer',      # computer
+        r'\bengineering',   # engineering
+    ]
+    
+    # Check if title matches bachelor patterns
+    has_bachelor = any(re.search(pattern, title_normalized, re.IGNORECASE) for pattern in bachelor_patterns)
+    has_cse = any(re.search(pattern, title_normalized, re.IGNORECASE) for pattern in cse_patterns)
+    
+    # Bachelor program detected if it has bachelor keyword AND CSE keyword
+    if has_bachelor and has_cse:
+        is_bachelor = True
+    
+    # Master patterns - check for common variations
+    master_patterns = [
+        r'\bmcse\b',        # MCSE
+        r'\bm\.?sc\.?\b',   # MSc, M.Sc., MSC, M.S.C.
+        r'\bmaster',        # master, master's, masters
+        r'\bgraduate',      # graduate
+        r'\bpostgraduate',  # postgraduate
+    ]
+    
+    # Check if title matches master patterns
+    has_master = any(re.search(pattern, title_normalized, re.IGNORECASE) for pattern in master_patterns)
+    
+    # Master program detected if it has master keyword AND CSE keyword, OR just MCSE
+    if has_master and has_cse:
+        is_master = True
+    elif re.search(r'\bmcse\b', title_normalized, re.IGNORECASE):
+        # MCSE alone is enough (it's a specific program name)
+        is_master = True
+    
+    # Filter curricula based on detected program
+    from django.db.models import Case, When, IntegerField
+    
+    if is_bachelor and program:
+        # Filter by program ForeignKey
+        curricula = Curricula.objects.filter(program=program).annotate(
+            semester_order=Case(
+                When(running_since_semester='spring', then=1),
+                When(running_since_semester='fall', then=2),
+                default=3,
+                output_field=IntegerField()
+            )
+        ).order_by('-running_since_year', 'semester_order', '-version')
+    elif is_master and program:
+        # Filter by program ForeignKey
+        curricula = Curricula.objects.filter(program=program).annotate(
+            semester_order=Case(
+                When(running_since_semester='spring', then=1),
+                When(running_since_semester='fall', then=2),
+                default=3,
+                output_field=IntegerField()
+            )
+        ).order_by('-running_since_year', 'semester_order', '-version')
+    
     context = {
         'element': element,
         'program': program,
         'courses': courses,
         'lifetime_stats': lifetime_stats if program and courses else None,
         'program_outcomes': program_outcomes,
+        'curricula': curricula,
     }
     
     return render(request, 'designs/admission_element_detail.html', context)
@@ -694,3 +777,210 @@ def update_hero_tag_order(request):
             'success': False,
             'message': f'Error updating order: {str(e)}'
         }, status=500)
+
+
+# ==============================================================================
+# CURRICULA MANAGEMENT
+# ==============================================================================
+
+@login_required
+def manage_curricula(request):
+    """Manage curricula - only for users with manage_academic_calendars permission"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to manage curricula.')
+        return redirect('people:user_profile')
+    
+    # Get all curricula and sort them properly
+    # Spring should come before Fall, so we need custom sorting
+    from django.db.models import Case, When, IntegerField
+    curricula = Curricula.objects.annotate(
+        semester_order=Case(
+            When(running_since_semester='spring', then=1),
+            When(running_since_semester='fall', then=2),
+            default=3,
+            output_field=IntegerField()
+        )
+    ).order_by('program', '-running_since_year', 'semester_order', '-version')
+    
+    context = {
+        'curricula': curricula,
+    }
+    return render(request, 'designs/manage_curricula.html', context)
+
+
+@login_required
+def create_curriculum(request):
+    """Create a new curriculum"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to create curricula.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        try:
+            curriculum = Curricula()
+            curriculum.short_title = request.POST.get('short_title', '').strip()
+            curriculum.program = request.POST.get('program', 'bachelor')
+            
+            # Handle publishing_year
+            publishing_year_str = request.POST.get('publishing_year', '').strip()
+            if publishing_year_str:
+                curriculum.publishing_year = int(publishing_year_str)
+            else:
+                messages.error(request, 'Publishing year is required.')
+                return render(request, 'designs/create_curriculum.html', {
+                    'curriculum_data': request.POST,
+                })
+            
+            # Handle version
+            version_str = request.POST.get('version', '').strip()
+            if version_str:
+                curriculum.version = float(version_str)
+            else:
+                messages.error(request, 'Version is required.')
+                return render(request, 'designs/create_curriculum.html', {
+                    'curriculum_data': request.POST,
+                })
+            
+            # Handle running_since_year
+            curriculum.running_since_year = request.POST.get('running_since_year', '').strip()
+            if not curriculum.running_since_year:
+                messages.error(request, 'Running since year is required.')
+                return render(request, 'designs/create_curriculum.html', {
+                    'curriculum_data': request.POST,
+                })
+            
+            # Handle running_since_semester
+            curriculum.running_since_semester = request.POST.get('running_since_semester', 'spring')
+            
+            if 'pdf' in request.FILES:
+                curriculum.pdf = request.FILES['pdf']
+            else:
+                messages.error(request, 'PDF file is required.')
+                return render(request, 'designs/create_curriculum.html', {
+                    'curriculum_data': request.POST,
+                })
+            
+            curriculum.full_clean()
+            curriculum.save()
+            
+            messages.success(request, f'Curriculum "{curriculum.short_title}" created successfully!')
+            return redirect('designs:manage_curricula')
+        except ValueError as e:
+            messages.error(request, f'Invalid input: {str(e)}')
+            return render(request, 'designs/create_curriculum.html', {
+                'curriculum_data': request.POST,
+            })
+        except Exception as e:
+            messages.error(request, f'Error creating curriculum: {str(e)}')
+            return render(request, 'designs/create_curriculum.html', {
+                'curriculum_data': request.POST,
+            })
+    
+    return render(request, 'designs/create_curriculum.html')
+
+
+@login_required
+def edit_curriculum(request, pk):
+    """Edit an existing curriculum"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to edit curricula.')
+        return redirect('people:user_profile')
+    
+    curriculum = get_object_or_404(Curricula, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            curriculum.short_title = request.POST.get('short_title', '').strip()
+            curriculum.program = request.POST.get('program', 'bachelor')
+            
+            # Handle publishing_year
+            publishing_year_str = request.POST.get('publishing_year', '').strip()
+            if publishing_year_str:
+                curriculum.publishing_year = int(publishing_year_str)
+            
+            # Handle version
+            version_str = request.POST.get('version', '').strip()
+            if version_str:
+                curriculum.version = float(version_str)
+            
+            # Handle running_since_year
+            running_since_year = request.POST.get('running_since_year', '').strip()
+            if running_since_year:
+                curriculum.running_since_year = running_since_year
+            
+            # Handle running_since_semester
+            running_since_semester = request.POST.get('running_since_semester', 'spring')
+            if running_since_semester:
+                curriculum.running_since_semester = running_since_semester
+            
+            # Handle PDF upload (only if new file provided)
+            if 'pdf' in request.FILES:
+                curriculum.pdf = request.FILES['pdf']
+            
+            curriculum.full_clean()
+            curriculum.save()
+            
+            messages.success(request, f'Curriculum "{curriculum.short_title}" updated successfully!')
+            return redirect('designs:manage_curricula')
+        except ValueError as e:
+            messages.error(request, f'Invalid input: {str(e)}')
+        except Exception as e:
+            messages.error(request, f'Error updating curriculum: {str(e)}')
+    
+    context = {
+        'curriculum': curriculum,
+    }
+    return render(request, 'designs/edit_curriculum.html', context)
+
+
+@login_required
+def delete_curriculum(request, pk):
+    """Delete a curriculum"""
+    if not request.user.has_permission('manage_academic_calendars'):
+        messages.error(request, 'You do not have permission to delete curricula.')
+        return redirect('people:user_profile')
+    
+    curriculum = get_object_or_404(Curricula, pk=pk)
+    
+    if request.method == 'POST':
+        short_title = curriculum.short_title
+        curriculum.delete()
+        messages.success(request, f'Curriculum "{short_title}" deleted successfully!')
+        return redirect('designs:manage_curricula')
+    
+    context = {
+        'curriculum': curriculum,
+    }
+    return render(request, 'designs/delete_curriculum.html', context)
+
+
+def serve_curriculum_pdf(request, pk):
+    """
+    Serve curriculum PDF with proper headers for iframe embedding.
+    Public access - no authentication required.
+    """
+    curriculum = get_object_or_404(Curricula, pk=pk)
+    
+    if not curriculum.pdf:
+        return HttpResponse("PDF not found", status=404)
+    
+    try:
+        # Get the file path
+        file_path = curriculum.pdf.path
+        
+        # Serve the file with proper headers
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type='application/pdf'
+        )
+        response['Content-Disposition'] = f'inline; filename="{curriculum.pdf.name}"'
+        response['X-Content-Type-Options'] = 'nosniff'
+        
+        # Allow iframe embedding from same origin
+        response['X-Frame-Options'] = 'SAMEORIGIN'
+        
+        return response
+    except FileNotFoundError:
+        return HttpResponse("PDF file not found on server", status=404)
+    except Exception as e:
+        return HttpResponse(f"Error serving PDF: {str(e)}", status=500)

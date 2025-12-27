@@ -19,26 +19,36 @@
                 {{ element.content|safe }}
             </div>
 
-            {% if element.curriculum_pdf %}
-            <div class="curriculum-download">
-                <h3>Curriculum</h3>
-                <a href="{{ element.curriculum_pdf.url }}" target="_blank" class="download-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Download Curriculum PDF
-                </a>
-            </div>
-            {% endif %}
-
             {% if program and courses %}
                <div class="program-courses-section">
-                <h2 class="courses-section-title">Curriculum & Course Learning Outcomes</h2>
-                <p class="courses-section-subtitle">Complete list of courses for {{ program.name }}</p>
+                <!-- Tabs -->
+                <div class="courses-tabs-container" style="margin-top: 3rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border-color);">
+                    <div class="courses-tabs" style="display: flex; gap: 0.5rem;">
+                        <button 
+                            class="courses-tab-link active" 
+                            data-tab="courses"
+                            style="padding: 0.75rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid var(--color-primary); font-weight: 600; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; transition: all 0.3s; font-size: 1rem;"
+                        >
+                            Courses
+                        </button>
+                        {% if curricula %}
+                        <button 
+                            class="courses-tab-link" 
+                            data-tab="curricula"
+                            style="padding: 0.75rem 2rem; text-decoration: none; color: var(--text-secondary); border-bottom: 3px solid transparent; font-weight: 400; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; transition: all 0.3s; font-size: 1rem;"
+                        >
+                            Curricula
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
 
-                <div class="semester-filter-pills">
+                <!-- Courses Tab Content -->
+                <div id="courses-tab-content" class="tab-content active">
+                    <h2 class="courses-section-title">Curriculum & Course Learning Outcomes</h2>
+                    <p class="courses-section-subtitle">Complete list of courses for {{ program.name }}</p>
+
+                    <div class="semester-filter-pills">
                     <button class="semester-pill active" data-semester="all">All Semesters</button>
                     <button class="semester-pill" data-semester="1-1">1-1</button>
                     <button class="semester-pill" data-semester="1-2">1-2</button>
@@ -355,6 +365,7 @@
 
             <div class="courses-grid">
                 {% for course in course_type_group.list %}
+                <a href="{% url 'academics:course_detail' course.pk %}" class="course-tile-link">
                 <div class="course-tile">
 
                     <div class="course-tile-header">
@@ -405,7 +416,7 @@
                     {% endif %}
 
                     {% if course.course_outline_pdf %}
-                    <a href="{{ course.course_outline_pdf.url }}" target="_blank" class="course-pdf-link-tile">
+                    <a href="{{ course.course_outline_pdf.url }}" target="_blank" class="course-pdf-link-tile" onclick="event.stopPropagation();">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -416,6 +427,7 @@
                     </a>
                     {% endif %}
                 </div>
+                </a>
                 {% endfor %}
             </div>
 
@@ -425,22 +437,80 @@
 
                       </div>
                     {% endfor %}
+                </div>
+                <!-- End Courses Tab Content -->
 
+                <!-- Curricula Tab Content -->
+                {% if curricula %}
+                <div id="curricula-tab-content" class="tab-content" style="display: none;">
+                    <h2 class="courses-section-title">Available Curricula</h2>
+                    <p class="courses-section-subtitle">Curriculum documents for {{ program.name }}</p>
+                    
+                    <div class="curricula-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                        {% for curriculum in curricula %}
+                        <div class="curriculum-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.3;">
+                                    {{ curriculum.short_title }}
+                                </h4>
+                                <span style="padding: 0.25rem 0.75rem; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); border-radius: 6px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">
+                                    v{{ curriculum.version }}
+                                </span>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600;">
+                                    Applicable since {{ curriculum.get_running_since_display }} {{ curriculum.running_since_year }}
+                                </p>
+                                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                                    <span style="padding: 0.2rem 0.6rem; background: var(--bg-secondary); color: var(--text-primary); border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                                        {{ curriculum.program.name }}
+                                    </span>
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                                    Published: {{ curriculum.publishing_year }}
+                                </p>
+                            </div>
+                            
+                            <a href="{% url 'designs:serve_curriculum_pdf' curriculum.pk %}" target="_blank" class="curriculum-view-link" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; width: 100%; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                View PDF
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- End Curricula Tab Content -->
+                {% endif %}
             </div>
             {% endif %}
+            
+            <!-- Browse Courses and Curricula Button -->
+            <div class="browse-courses-section" style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--border-color); text-align: center;">
+                <a href="{% url 'academics:courses_list' %}" class="browse-courses-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Browse Courses and Curricula
+                </a>
+            </div>
         </div>
     </section>
 </div>
 
 <style>
 .admission-element-page {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
 }
 
 .admission-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .back-link {
@@ -451,7 +521,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
 }
 
 .back-link:hover {
@@ -460,7 +531,7 @@
 }
 
 .admission-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
@@ -470,7 +541,7 @@
 .admission-content {
     background: var(--bg-secondary);
     border-radius: 20px;
-    padding: 3rem;
+    padding: 2rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--border-color);
 }
@@ -652,11 +723,30 @@
 
 /* Program Courses Section */
 .program-courses-section {
-    margin-top: 4rem;
-    padding-top: 3rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
     border-top: 2px solid var(--border-color);
     width: 100%;
     overflow: visible;
+}
+
+/* Courses Tabs */
+.courses-tab-link:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.courses-tab-link.active {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 .courses-section-title {
@@ -1432,10 +1522,132 @@
     }
 }
 
+/* Curricula Cards Styles */
+.curriculum-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-color: var(--color-primary);
+}
+
+.curriculum-view-link:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    text-decoration: none;
+}
+
+.curriculum-view-link svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .curricula-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .curricula-cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .curriculum-card {
+        padding: 1.25rem !important;
+    }
+}
+
+/* Browse Courses Button */
+.browse-courses-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+    text-align: center;
+}
+
+.browse-courses-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.browse-courses-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-md);
+    text-decoration: none;
+    color: white;
+}
+
+.browse-courses-btn svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .browse-courses-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .browse-courses-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const tabLinks = document.querySelectorAll('.courses-tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all tabs and contents
+            tabLinks.forEach(t => {
+                t.classList.remove('active');
+                t.style.color = 'var(--text-secondary)';
+                t.style.fontWeight = '400';
+                t.style.borderBottomColor = 'transparent';
+            });
+            
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            this.style.color = 'var(--text-primary)';
+            this.style.fontWeight = '600';
+            this.style.borderBottomColor = 'var(--color-primary)';
+            
+            // Show corresponding content
+            const targetContent = document.getElementById(targetTab + '-tab-content');
+            if (targetContent) {
+                targetContent.classList.add('active');
+                targetContent.style.display = 'block';
+            }
+        });
+    });
+    
     const pills = document.querySelectorAll('.semester-pill');
     const semesterGroups = document.querySelectorAll('.course-semester-group');
 
@@ -1512,5 +1724,15 @@ window.toggleYouShouldKnow = function() {
         btn.classList.remove('active');
     }
 };
+
 </script>
+
+<style>
+/* Course Tile Link Styles */
+.course-tile-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+</style>
 {% endblock %}

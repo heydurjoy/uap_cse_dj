@@ -28,6 +28,7 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <input type="hidden" name="search" value="{{ search_query }}" id="search-hidden">
                     <div class="filter-group">
                         <label for="search-input">Search:</label>
                         <input type="text" name="search" id="search-input" placeholder="Search by course code or title..." value="{{ search_query }}" class="search-input">
@@ -42,11 +43,42 @@
             <!-- Courses by Program -->
             {% if programs_with_courses %}
                 {% for program_data in programs_with_courses %}
-                    {% if program_data.courses %}
+                    {% if program_data.courses or program_data.curricula %}
                     <div class="program-section" data-program="{{ program_data.program.id }}">
                         <h2 class="program-title">{{ program_data.program.name }}</h2>
-                        <p class="program-subtitle">{{ program_data.courses|length }} course{{ program_data.courses|length|pluralize }} available</p>
+                        <p class="program-subtitle">
+                            {% if program_data.courses %}{{ program_data.courses|length }} course{{ program_data.courses|length|pluralize }} available{% endif %}
+                            {% if program_data.courses and program_data.curricula %} • {% endif %}
+                            {% if program_data.curricula %}{{ program_data.curricula|length }} curriculum{{ program_data.curricula|length|pluralize }} available{% endif %}
+                        </p>
 
+                        <!-- Tabs -->
+                        <div class="courses-tabs-container" style="margin-bottom: 2rem; border-bottom: 2px solid var(--border-color);">
+                            <div class="courses-tabs" style="display: flex; gap: 0.5rem;">
+                                {% if program_data.courses %}
+                                <button 
+                                    class="courses-tab-link active" 
+                                    data-tab="courses-{{ program_data.program.id }}"
+                                    style="padding: 0.75rem 2rem; text-decoration: none; color: var(--text-primary); border-bottom: 3px solid var(--color-primary); font-weight: 600; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; transition: all 0.3s; font-size: 1rem;"
+                                >
+                                    Courses
+                                </button>
+                                {% endif %}
+                                {% if program_data.curricula %}
+                                <button 
+                                    class="courses-tab-link {% if not program_data.courses %}active{% endif %}" 
+                                    data-tab="curricula-{{ program_data.program.id }}"
+                                    style="padding: 0.75rem 2rem; text-decoration: none; color: {% if not program_data.courses %}var(--text-primary){% else %}var(--text-secondary){% endif %}; border-bottom: 3px solid {% if not program_data.courses %}var(--color-primary){% else %}transparent{% endif %}; font-weight: {% if not program_data.courses %}600{% else %}400{% endif %}; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; transition: all 0.3s; font-size: 1rem;"
+                                >
+                                    Curricula
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Courses Tab Content -->
+                        {% if program_data.courses %}
+                        <div id="courses-{{ program_data.program.id }}-tab-content" class="tab-content active" style="display: block;">
                         <div class="semester-filter-pills" data-program="{{ program_data.program.id }}">
                             <button class="semester-pill active" data-semester="all">All Semesters</button>
                             <button class="semester-pill" data-semester="1-1">1-1</button>
@@ -381,6 +413,59 @@
                             {% endwith %}
                         </div>
                         {% endfor %}
+                        </div>
+                        <!-- End Courses Tab Content -->
+                        {% endif %}
+
+                        <!-- Curricula Tab Content -->
+                        {% if program_data.curricula %}
+                        <div id="curricula-{{ program_data.program.id }}-tab-content" class="tab-content" style="display: {% if program_data.courses %}none{% else %}block{% endif %};">
+                            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.25rem;">
+                                Available Curricula
+                            </h3>
+                            <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 2rem;">
+                                Curriculum documents for {{ program_data.program.name }}
+                            </p>
+                            
+                            <div class="curricula-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                                {% for curriculum in program_data.curricula %}
+                                <div class="curriculum-card" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                        <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.3;">
+                                            {{ curriculum.short_title }}
+                                        </h4>
+                                        <span style="padding: 0.25rem 0.75rem; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); border-radius: 6px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">
+                                            v{{ curriculum.version }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 1rem;">
+                                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600;">
+                                            Applicable since {{ curriculum.get_running_since_display }} {{ curriculum.running_since_year }}
+                                        </p>
+                                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                                            <span style="padding: 0.2rem 0.6rem; background: var(--bg-secondary); color: var(--text-primary); border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                                                {{ curriculum.program.name }}
+                                            </span>
+                                        </div>
+                                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                                            Published: {{ curriculum.publishing_year }}
+                                        </p>
+                                    </div>
+                                    
+                                    <a href="{% url 'designs:serve_curriculum_pdf' curriculum.pk %}" target="_blank" class="curriculum-view-link" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; width: 100%; justify-content: center;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        View PDF
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- End Curricula Tab Content -->
+                        {% endif %}
                     </div>
                     {% endif %}
                 {% endfor %}
@@ -395,13 +480,13 @@
 
 <style>
 .courses-list-page {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
 }
 
 .courses-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .back-link {
@@ -412,7 +497,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
 }
 
 .back-link:hover {
@@ -421,7 +507,7 @@
 }
 
 .courses-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
@@ -431,15 +517,15 @@
 .courses-content {
     background: var(--bg-secondary);
     border-radius: 20px;
-    padding: 3rem;
+    padding: 2rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--border-color);
 }
 
 /* Filters Section */
 .courses-filters {
-    margin-bottom: 3rem;
-    padding: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.25rem;
     background: var(--bg-primary);
     border-radius: 12px;
     border: 1px solid var(--border-color);
@@ -529,6 +615,25 @@
 .program-section:first-child {
     border-top: none;
     padding-top: 0;
+}
+
+/* Courses Tabs */
+.courses-tab-link:hover {
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.courses-tab-link.active {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 .program-title {
@@ -1289,11 +1394,129 @@
         min-width: 500px;
     }
 }
+
+/* Curricula Cards Styles */
+.curriculum-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-color: var(--color-primary);
+}
+
+.curriculum-view-link:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    text-decoration: none;
+}
+
+.curriculum-view-link svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .curricula-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .curricula-cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .curriculum-card {
+        padding: 1.25rem !important;
+    }
+}
 </style>
 
 <script>
-// Semester filter functionality
+// Auto-submit filter form on program change
 document.addEventListener('DOMContentLoaded', function() {
+    const programSelect = document.getElementById('program-select');
+    const filterForm = document.querySelector('.filter-form');
+    
+    if (programSelect && filterForm) {
+        programSelect.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    }
+    
+    // Initialize tabs - show first active tab on page load
+    document.querySelectorAll('.program-section').forEach(section => {
+        const activeTab = section.querySelector('.courses-tab-link.active');
+        const activeContent = section.querySelector('.tab-content.active');
+        
+        if (activeTab && activeContent) {
+            // Ensure active content is visible
+            activeContent.style.display = 'block';
+            activeTab.style.color = 'var(--text-primary)';
+            activeTab.style.fontWeight = '600';
+            activeTab.style.borderBottomColor = 'var(--color-primary)';
+            
+            // Hide other tab contents
+            section.querySelectorAll('.tab-content').forEach(content => {
+                if (!content.classList.contains('active')) {
+                    content.style.display = 'none';
+                }
+            });
+            
+            // Style inactive tabs
+            section.querySelectorAll('.courses-tab-link').forEach(tab => {
+                if (!tab.classList.contains('active')) {
+                    tab.style.color = 'var(--text-secondary)';
+                    tab.style.fontWeight = '400';
+                    tab.style.borderBottomColor = 'transparent';
+                }
+            });
+        }
+    });
+    
+    // Tab switching functionality
+    // Handle tab switching for each program
+    const tabLinks = document.querySelectorAll('.courses-tab-link');
+    
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            const programSection = this.closest('.program-section');
+            
+            if (!programSection) return;
+            
+            // Get all tabs and contents for this program section
+            const programTabs = programSection.querySelectorAll('.courses-tab-link');
+            const programContents = programSection.querySelectorAll('.tab-content');
+            
+            // Remove active class from all tabs and contents in this program
+            programTabs.forEach(t => {
+                t.classList.remove('active');
+                t.style.color = 'var(--text-secondary)';
+                t.style.fontWeight = '400';
+                t.style.borderBottomColor = 'transparent';
+            });
+            
+            programContents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            this.style.color = 'var(--text-primary)';
+            this.style.fontWeight = '600';
+            this.style.borderBottomColor = 'var(--color-primary)';
+            
+            // Show corresponding content
+            const targetContent = programSection.querySelector('#' + targetTab + '-tab-content');
+            if (targetContent) {
+                targetContent.classList.add('active');
+                targetContent.style.display = 'block';
+            }
+        });
+    });
+    
+    // Semester filter functionality
     const semesterPillGroups = document.querySelectorAll('.semester-filter-pills');
 
     semesterPillGroups.forEach(pillGroup => {

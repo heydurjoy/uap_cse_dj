@@ -1,6 +1,6 @@
 from django.contrib import admin
 from image_cropping import ImageCroppingMixin
-from .models import FeatureCard, HeroTags, AdmissionElement, AcademicCalendar
+from .models import FeatureCard, HeroTags, AdmissionElement, AcademicCalendar, Curricula
 
 
 @admin.register(FeatureCard)
@@ -61,5 +61,22 @@ class AcademicCalendarAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Calendar Information', {
             'fields': ('year', 'pdf')
+        }),
+    )
+
+
+@admin.register(Curricula)
+class CurriculaAdmin(admin.ModelAdmin):
+    list_display = ['short_title', 'program', 'publishing_year', 'version', 'running_since_year', 'running_since_semester', 'created_at']
+    list_filter = ['program', 'publishing_year', 'running_since_year', 'running_since_semester', 'created_at', 'updated_at']
+    search_fields = ['short_title', 'running_since_year']
+    ordering = ['program', '-running_since_year', 'running_since_semester', '-version']
+    fieldsets = (
+        ('Curriculum Information', {
+            'fields': ('short_title', 'program', 'publishing_year', 'version', 'pdf')
+        }),
+        ('Running Since', {
+            'fields': ('running_since_year', 'running_since_semester'),
+            'description': 'When this curriculum started running. Spring comes before Fall in sorting.'
         }),
     )

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Permission - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="delete-permission-page">
+        <div class="page-header">
+            <a href="{% url 'people:manage_permissions' %}" class="back-link">← Back to Permissions</a>
+            <h1>Delete Permission</h1>
+        </div>
+        
+        <div style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color); max-width: 600px; margin: 0 auto;">
+            <div style="background: color-mix(in srgb, #dc3545 15%, var(--bg-secondary)); border: 1px solid #dc3545; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                <p style="color: var(--text-primary); margin: 0; font-weight: 600;">
+                    ⚠️ Warning: This action cannot be undone.
+                </p>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <p style="color: var(--text-primary); margin: 0 0 0.5rem 0; font-weight: 600;">Are you sure you want to delete the permission:</p>
+                <h2 style="color: var(--color-primary); margin: 0; font-size: 1.5rem;">{{ permission.name }}</h2>
+                <p style="color: var(--text-secondary); margin: 0.5rem 0 0 0; font-family: monospace; font-size: 0.9rem;">
+                    Codename: {{ permission.codename }}
+                </p>
+                {% if permission.category %}
+                    <p style="color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                        Category: {{ permission.get_category_display }}
+                    </p>
+                {% endif %}
+            </div>
+            
+            {% if user_permissions_count > 0 %}
+                <div style="background: color-mix(in srgb, #ffc107 15%, var(--bg-secondary)); border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="color: var(--text-primary); margin: 0; font-weight: 600;">
+                        ⚠️ This permission is currently assigned to <strong>{{ user_permissions_count }}</strong> user(s).
+                    </p>
+                    <p style="color: var(--text-secondary); margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                        Deleting this permission will remove it from all users. Consider deactivating it instead if you want to prevent new assignments.
+                    </p>
+                </div>
+            {% endif %}
+            
+            <form method="post" style="display: flex; gap: 1rem;">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger" style="flex: 1; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    Yes, Delete
+                </button>
+                <a href="{% url 'people:manage_permissions' %}" class="btn-secondary" style="flex: 1; padding: 0.75rem 1.5rem; text-align: center; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.delete-permission-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, #dc3545 30%, transparent);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+</style>
+{% endblock %}
+
