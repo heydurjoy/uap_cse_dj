@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Hero Tags - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-hero-tags-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Hero Tags</h1>
+        </div>
+        
+        <div class="toolbar" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'designs:create_hero_tag' %}" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem;">
+                + Create Hero Tag
+            </a>
+        </div>
+        
+        <div class="info-box" style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border: 1px solid var(--color-primary); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: var(--text-primary);">
+            <strong>Note:</strong> Hero tags are displayed in the hero section of the homepage. Drag and drop rows to reorder them. Only active tags are shown on the website.
+        </div>
+        
+        <div class="tags-table-container" style="background: var(--bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+            <table class="tags-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)); border-bottom: 2px solid var(--border-color);">
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary); width: 50px;">SL</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text-primary);">Title</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary);">Status</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: var(--text-primary); width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tags-tbody">
+                    {% if hero_tags %}
+                        {% for tag in hero_tags %}
+                            <tr class="tag-row" data-tag-id="{{ tag.pk }}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s; cursor: move;">
+                                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">
+                                    <span class="drag-handle" style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: move;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;">
+                                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                                        </svg>
+                                        {{ tag.sl }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem; color: var(--text-primary); font-weight: 500; font-size: 1.1rem;">
+                                    {{ tag.title }}
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    {% if tag.is_active %}
+                                        <span style="color: #28a745; font-weight: 600;">Active</span>
+                                    {% else %}
+                                        <span style="color: var(--text-secondary);">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                        <a href="{% url 'designs:edit_hero_tag' tag.pk %}" class="action-btn edit-btn" title="Edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                            </svg>
+                                        </a>
+                                        <a href="{% url 'designs:delete_hero_tag' tag.pk %}" class="action-btn delete-btn" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                                No hero tags found. <a href="{% url 'designs:create_hero_tag' %}" style="color: var(--color-primary);">Create one</a> to get started.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-hero-tags-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.tag-row:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.tag-row.dragging {
+    opacity: 0.5;
+    background: color-mix(in srgb, var(--color-primary) 15%, var(--bg-secondary));
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.edit-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.delete-btn {
+    background: color-mix(in srgb, #dc3545 10%, var(--bg-secondary));
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}
+</style>
+
+<script>
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('tags-tbody');
+    if (!tbody) return;
+    
+    let draggedRow = null;
+    
+    // Make rows draggable
+    const rows = tbody.querySelectorAll('.tag-row');
+    rows.forEach(row => {
+        row.draggable = true;
+        
+        row.addEventListener('dragstart', function(e) {
+            draggedRow = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        });
+        
+        row.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            rows.forEach(r => r.classList.remove('drag-over'));
+        });
+        
+        row.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const afterElement = getDragAfterElement(tbody, e.clientY);
+            if (afterElement == null) {
+                tbody.appendChild(draggedRow);
+            } else {
+                tbody.insertBefore(draggedRow, afterElement);
+            }
+        });
+        
+        row.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            if (this !== draggedRow) {
+                this.classList.add('drag-over');
+            }
+        });
+        
+        row.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        
+        row.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (draggedRow && draggedRow !== this) {
+                const afterElement = getDragAfterElement(tbody, e.clientY);
+                if (afterElement == null) {
+                    tbody.appendChild(draggedRow);
+                } else {
+                    tbody.insertBefore(draggedRow, afterElement);
+                }
+                
+                // Update order on server
+                updateOrder();
+            }
+        });
+    });
+    
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.tag-row:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+    
+    function updateOrder() {
+        const rows = tbody.querySelectorAll('.tag-row');
+        const tagIds = Array.from(rows).map(row => row.dataset.tagId);
+        
+        // Get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+        
+        fetch('{% url "designs:update_hero_tag_order" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ tag_ids: tagIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update SL numbers in the UI
+                rows.forEach((row, index) => {
+                    const slCell = row.querySelector('.drag-handle');
+                    if (slCell) {
+                        const slText = slCell.textContent.trim();
+                        const newSl = index + 1;
+                        slCell.innerHTML = slCell.innerHTML.replace(/\d+/, newSl);
+                    }
+                });
+            } else {
+                alert('Error updating order: ' + (data.message || 'Unknown error'));
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating order. Please refresh the page.');
+            location.reload();
+        });
+    }
+});
+</script>
+{% endblock %}
+
