@@ -31,5 +31,11 @@ urlpatterns = [
     path('manage-curricula/<int:pk>/edit/', views.edit_curriculum, name='edit_curriculum'),
     path('manage-curricula/<int:pk>/delete/', views.delete_curriculum, name='delete_curriculum'),
     path('curricula/<int:pk>/pdf/', views.serve_curriculum_pdf, name='serve_curriculum_pdf'),
+    # Admission Elements Management (Power Users Only)
+    path('manage-admission-elements/', views.manage_admission_elements, name='manage_admission_elements'),
+    path('manage-admission-elements/create/', views.create_admission_element, name='create_admission_element'),
+    path('manage-admission-elements/<int:pk>/edit/', views.edit_admission_element, name='edit_admission_element'),
+    path('manage-admission-elements/<int:pk>/delete/', views.delete_admission_element, name='delete_admission_element'),
+    path('manage-admission-elements/update-order/', views.update_admission_element_order, name='update_admission_element_order'),
 ]
 

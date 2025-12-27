@@ -179,7 +179,7 @@
             
             <!-- Action Buttons -->
             <div class="actions-grid">
-                <!-- Edit Profile - Available to all -->
+                <!-- 1. Edit Profile - Available to all -->
                 <a href="{% url 'people:edit_profile' %}" class="action-card">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -193,7 +193,7 @@
                     </div>
                 </a>
                 
-                <!-- View Public Profile - Faculty only -->
+                <!-- 2. View Public Profile - Faculty/Officer -->
                 {% if profile_type == 'faculty' %}
                 <a href="{% url 'people:faculty_detail' profile.pk %}" class="action-card">
                     <div class="action-icon">
@@ -207,8 +207,39 @@
                         <p class="action-desc">See public view</p>
                     </div>
                 </a>
+                {% elif profile_type == 'officer' %}
+                <a href="{% url 'people:officer_detail' profile.pk %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">View Public Profile</h3>
+                        <p class="action-desc">See public view</p>
+                    </div>
+                </a>
+                {% endif %}
                 
-                <!-- Manage Publications - Faculty only -->
+                <!-- 3. My Permissions -->
+                {% if user.is_power_user %}
+                <a href="{% url 'people:manage_own_permissions' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">My Permissions</h3>
+                        <p class="action-desc">View & manage</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 4. Manage Publications - Faculty only -->
+                {% if profile_type == 'faculty' %}
                 <a href="{% url 'people:manage_publications' profile.pk %}" class="action-card">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -226,7 +257,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- Manage All Publications - for users with manage_all_publications permission or power users -->
+                <!-- 5. Manage All Publications -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_all_publications' %}
                 <a href="{% url 'people:faculty_list' %}" class="action-card">
                     <div class="action-icon">
@@ -245,57 +276,7 @@
                 </a>
                 {% endif %}
                 
-                {% if profile_type == 'officer' %}
-                <a href="{% url 'people:officer_detail' profile.pk %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">View Public Profile</h3>
-                        <p class="action-desc">See public view</p>
-                    </div>
-                </a>
-                {% endif %}
-                
-                <!-- Manage Your Posts - for users with post_notices permission or power users -->
-                {% if user.is_power_user or user|has_granted_permission:'post_notices' %}
-                <a href="{% url 'office:manage_posts' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Manage Your Posts</h3>
-                        <p class="action-desc">Your posts & notices</p>
-                    </div>
-                </a>
-                {% endif %}
-                
-                <!-- Manage All Posts - for users with manage_all_posts permission or power users -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_all_posts' %}
-                <a href="{% url 'office:manage_posts' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            <line x1="8" y1="9" x2="16" y2="9"></line>
-                            <line x1="8" y1="13" x2="16" y2="13"></line>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Manage All Posts</h3>
-                        <p class="action-desc">All posts & notices</p>
-                    </div>
-                </a>
-                {% endif %}
-                
-                <!-- Manage Courses - for users with manage_courses permission or power users -->
+                <!-- 6. Manage Courses -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_courses' %}
                 <a href="{% url 'academics:manage_courses' %}" class="action-card">
                     <div class="action-icon">
@@ -313,7 +294,76 @@
                 </a>
                 {% endif %}
                 
-                <!-- Manage Routines - for users with post_routines permission or power users -->
+                <!-- 7. Manage Curricula -->
+                {% if user.is_power_user or user|has_granted_permission:'manage_academic_calendars' %}
+                <a href="{% url 'designs:manage_curricula' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Curricula</h3>
+                        <p class="action-desc">Curriculum documents</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 8. Manage Your Posts -->
+                {% if user.is_power_user or user|has_granted_permission:'post_notices' %}
+                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Your Posts</h3>
+                        <p class="action-desc">Your posts & notices</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 9. Manage All Posts -->
+                {% if user.is_power_user or user|has_granted_permission:'manage_all_posts' %}
+                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            <line x1="8" y1="9" x2="16" y2="9"></line>
+                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage All Posts</h3>
+                        <p class="action-desc">All posts & notices</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 10. Head Message -->
+                {% if user.is_power_user or user|has_granted_permission:'edit_head_message' %}
+                <a href="{% url 'designs:manage_head_message' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Head Message</h3>
+                        <p class="action-desc">HoD message</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 11. Manage Routines -->
                 {% if user.is_power_user or user|has_granted_permission:'post_routines' %}
                 <a href="{% url 'office:manage_routines' %}" class="action-card">
                     <div class="action-icon">
@@ -331,81 +381,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- Publish Admission Test Results (Faculty and Officers) - for users with permission or power users -->
-                {% if user.is_power_user or user|has_granted_permission:'post_admission_results' %}
-                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
-                    <a href="{% url 'office:manage_admission_results' %}" class="action-card">
-                        <div class="action-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg>
-                        </div>
-                        <div class="action-content">
-                            <h3 class="action-title">Admission Results</h3>
-                            <p class="action-desc">Publish test results</p>
-                        </div>
-                    </a>
-                    {% endif %}
-                {% endif %}
-                
-                <!-- Manage Clubs (Faculty or Officers) - for users with permission or power users -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_club_settings' %}
-                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
-                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
-                        <div class="action-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <div class="action-content">
-                            <h3 class="action-title">Manage Clubs</h3>
-                            <p class="action-desc">Create & edit clubs</p>
-                        </div>
-                    </a>
-                    {% endif %}
-                {% endif %}
-                
-                <!-- Manage Feature Cards - for users with permission or power users -->
-                {% if user.is_power_user or user|has_granted_permission:'edit_feature_cards' %}
-                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Feature Cards</h3>
-                        <p class="action-desc">Homepage cards</p>
-                    </div>
-                </a>
-                {% endif %}
-                
-                <!-- Manage Head Message - for users with permission or power users -->
-                {% if user.is_power_user or user|has_granted_permission:'edit_head_message' %}
-                <a href="{% url 'designs:manage_head_message' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Head Message</h3>
-                        <p class="action-desc">HoD message</p>
-                    </div>
-                </a>
-                {% endif %}
-                
-                <!-- Manage Academic Calendars - for users with permission or power users -->
+                <!-- 12. Academic Calendars -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_academic_calendars' %}
                 <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card">
                     <div class="action-icon">
@@ -427,42 +403,50 @@
                         <p class="action-desc">Manage calendars</p>
                     </div>
                 </a>
-                
-                <!-- Manage Curricula -->
-                <a href="{% url 'designs:manage_curricula' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Manage Curricula</h3>
-                        <p class="action-desc">Curriculum documents</p>
-                    </div>
-                </a>
                 {% endif %}
                 
-                <!-- Manage My Permissions -->
-                {% if user.is_power_user %}
-                <a href="{% url 'people:manage_own_permissions' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">My Permissions</h3>
-                        <p class="action-desc">View & manage</p>
-                    </div>
-                </a>
+                <!-- 13. Admission Results -->
+                {% if user.is_power_user or user|has_granted_permission:'post_admission_results' %}
+                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    <a href="{% url 'office:manage_admission_results' %}" class="action-card">
+                        <div class="action-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="action-content">
+                            <h3 class="action-title">Admission Results</h3>
+                            <p class="action-desc">Publish test results</p>
+                        </div>
+                    </a>
+                    {% endif %}
                 {% endif %}
                 
-                <!-- Manage Users (Power Users Only) -->
+                <!-- 14. Manage Clubs -->
+                {% if user.is_power_user or user|has_granted_permission:'manage_club_settings' %}
+                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
+                        <div class="action-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="action-content">
+                            <h3 class="action-title">Manage Clubs</h3>
+                            <p class="action-desc">Create & edit clubs</p>
+                        </div>
+                    </a>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- 15. Manage Users -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_users' %}" class="action-card">
                     <div class="action-icon">
@@ -480,7 +464,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- Manage Faculty (Power Users Only) -->
+                <!-- 16. Manage Faculty -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_faculty' %}" class="action-card">
                     <div class="action-icon">
@@ -496,7 +480,25 @@
                 </a>
                 {% endif %}
                 
-                <!-- Manage Hero Tags (Power Users Only) -->
+                <!-- 17. Feature Cards -->
+                {% if user.is_power_user or user|has_granted_permission:'edit_feature_cards' %}
+                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Feature Cards</h3>
+                        <p class="action-desc">Homepage cards</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 18. Hero Tags -->
                 {% if user.is_power_user %}
                 <a href="{% url 'designs:manage_hero_tags' %}" class="action-card">
                     <div class="action-icon">
@@ -508,6 +510,24 @@
                     <div class="action-content">
                         <h3 class="action-title">Hero Tags</h3>
                         <p class="action-desc">Homepage tags</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 19. Admission Elements -->
+                {% if user.is_power_user %}
+                <a href="{% url 'designs:manage_admission_elements' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Admission Elements</h3>
+                        <p class="action-desc">Manage admission pages</p>
                     </div>
                 </a>
                 {% endif %}
@@ -998,24 +1018,37 @@
 
 @media (max-width: 1400px) {
     .actions-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .actions-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 .action-card {
     background: var(--bg-secondary);
     border-radius: 12px;
-    padding: 1.25rem;
-    border-left: 4px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--border-color);
     text-decoration: none;
     color: inherit;
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 1rem;
     transition: all 0.3s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     position: relative;
     overflow: hidden;
+    min-height: 80px;
 }
 
 /* Color labels for different card types */
@@ -1105,24 +1138,26 @@
     align-items: center;
     justify-content: center;
     color: var(--color-primary);
-    margin-bottom: 0.25rem;
 }
 
 .action-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 }
 
 .action-content {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .action-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 0.25rem 0;
+    margin: 0;
     line-height: 1.3;
 }
 
@@ -1136,7 +1171,7 @@
 /* Responsive */
 @media (max-width: 1200px) {
     .actions-grid {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
 }
 
@@ -1171,7 +1206,31 @@
     }
     
     .actions-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem;
+    }
+    
+    .action-card {
+        padding: 0.875rem 1rem;
+        min-height: 75px;
+    }
+    
+    .action-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .action-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .action-title {
+        font-size: 0.9rem;
+    }
+    
+    .action-desc {
+        font-size: 0.75rem;
     }
     
     .manage-permissions-button {

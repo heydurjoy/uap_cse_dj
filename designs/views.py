@@ -542,6 +542,174 @@ def update_hero_tag_order(request):
 
 
 # ==============================================================================
+# ADMISSION ELEMENTS MANAGEMENT
+# ==============================================================================
+
+@login_required
+def manage_admission_elements(request):
+    """Manage admission elements - only for power users"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can manage admission elements.')
+        return redirect('people:user_profile')
+    
+    elements = AdmissionElement.objects.order_by('sl')
+    
+    context = {
+        'elements': elements,
+    }
+    return render(request, 'designs/manage_admission_elements.html', context)
+
+
+@login_required
+def create_admission_element(request):
+    """Create a new admission element"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can create admission elements.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        try:
+            element = AdmissionElement()
+            element.sl = int(request.POST.get('sl', 0))
+            element.title = request.POST.get('title', '').strip()
+            element.content = request.POST.get('content', '')
+            
+            # Handle curriculum PDF upload (optional)
+            if 'curriculum_pdf' in request.FILES:
+                element.curriculum_pdf = request.FILES['curriculum_pdf']
+            
+            element.full_clean()
+            element.save()
+            
+            messages.success(request, f'Admission element "{element.title}" created successfully!')
+            return redirect('designs:manage_admission_elements')
+        except Exception as e:
+            messages.error(request, f'Error creating admission element: {str(e)}')
+            return render(request, 'designs/create_admission_element.html', {
+                'element_data': request.POST,
+            })
+    
+    # Get the next available serial number
+    max_sl = AdmissionElement.objects.aggregate(Max('sl'))['sl__max']
+    next_sl = (max_sl or 0) + 1
+    
+    context = {
+        'next_sl': next_sl,
+    }
+    return render(request, 'designs/create_admission_element.html', context)
+
+
+@login_required
+def edit_admission_element(request, pk):
+    """Edit an existing admission element"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can edit admission elements.')
+        return redirect('people:user_profile')
+    
+    element = get_object_or_404(AdmissionElement, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            element.sl = int(request.POST.get('sl', 0))
+            element.title = request.POST.get('title', '').strip()
+            element.content = request.POST.get('content', '')
+            
+            # Handle curriculum PDF upload (only if new file provided)
+            if 'curriculum_pdf' in request.FILES:
+                element.curriculum_pdf = request.FILES['curriculum_pdf']
+            
+            element.full_clean()
+            element.save()
+            
+            messages.success(request, f'Admission element "{element.title}" updated successfully!')
+            return redirect('designs:manage_admission_elements')
+        except Exception as e:
+            messages.error(request, f'Error updating admission element: {str(e)}')
+    
+    context = {
+        'element': element,
+    }
+    return render(request, 'designs/edit_admission_element.html', context)
+
+
+@login_required
+def delete_admission_element(request, pk):
+    """Delete an admission element"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can delete admission elements.')
+        return redirect('people:user_profile')
+    
+    element = get_object_or_404(AdmissionElement, pk=pk)
+    
+    if request.method == 'POST':
+        element_title = element.title
+        element.delete()
+        messages.success(request, f'Admission element "{element_title}" deleted successfully!')
+        return redirect('designs:manage_admission_elements')
+    
+    context = {
+        'element': element,
+    }
+    return render(request, 'designs/delete_admission_element.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_admission_element_order(request):
+    """Update the order (serial numbers) of admission elements via drag and drop"""
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'Only power users can update admission element order.'
+        }, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        element_ids = data.get('element_ids', [])
+        
+        if not element_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'No elements provided for reordering.'
+            }, status=400)
+        
+        # Verify all elements exist
+        elements = AdmissionElement.objects.filter(pk__in=element_ids)
+        if elements.count() != len(element_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some elements do not exist.'
+            }, status=400)
+        
+        # First, set all serial numbers to negative values to avoid unique constraint conflicts
+        # Use a large negative offset to ensure no conflicts
+        offset = -10000
+        for index, element_id in enumerate(element_ids):
+            AdmissionElement.objects.filter(pk=element_id).update(sl=offset - index)
+        
+        # Now assign the correct serial numbers
+        for index, element_id in enumerate(element_ids, start=1):
+            AdmissionElement.objects.filter(pk=element_id).update(sl=index)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Admission element order updated successfully!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating order: {str(e)}'
+        }, status=500)
+
+
+# ==============================================================================
 # CURRICULA MANAGEMENT
 # ==============================================================================
 
