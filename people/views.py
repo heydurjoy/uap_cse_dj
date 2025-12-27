@@ -397,6 +397,51 @@ def user_profile(request):
 
 
 @login_required
+@require_http_methods(["GET"])
+def get_power_users(request):
+    """
+    API endpoint to get list of power users for the "Need More Permissions" modal.
+    Returns JSON with power users' information.
+    """
+    power_users = BaseUser.objects.filter(
+        is_power_user=True,
+        is_active=True
+    ).select_related('faculty_profile', 'staff_profile', 'officer_profile', 'club_member_profile').order_by('first_name', 'last_name', 'email')
+    
+    power_users_list = []
+    for user in power_users:
+        # Get user's name based on profile type
+        name = None
+        try:
+            if user.faculty_profile:
+                name = user.faculty_profile.name
+            elif user.staff_profile:
+                name = user.staff_profile.name
+            elif user.officer_profile:
+                name = user.officer_profile.name
+            elif user.club_member_profile:
+                name = user.club_member_profile.name
+        except:
+            pass
+        
+        # Fallback to full name or email
+        if not name:
+            name = user.get_full_name() or user.email or user.username
+        
+        power_users_list.append({
+            'id': user.id,
+            'name': name,
+            'email': user.email or user.username,
+            'user_type': user.user_type or 'N/A',
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'power_users': power_users_list
+    })
+
+
+@login_required
 def edit_profile(request):
     """
     Allow users to edit their own profile information.

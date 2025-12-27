@@ -19,5 +19,11 @@ urlpatterns = [
     path('manage-academic-calendars/create/', views.create_academic_calendar, name='create_academic_calendar'),
     path('manage-academic-calendars/<int:pk>/edit/', views.edit_academic_calendar, name='edit_academic_calendar'),
     path('manage-academic-calendars/<int:pk>/delete/', views.delete_academic_calendar, name='delete_academic_calendar'),
+    # Hero Tags Management (Power Users Only)
+    path('manage-hero-tags/', views.manage_hero_tags, name='manage_hero_tags'),
+    path('manage-hero-tags/create/', views.create_hero_tag, name='create_hero_tag'),
+    path('manage-hero-tags/<int:pk>/edit/', views.edit_hero_tag, name='edit_hero_tag'),
+    path('manage-hero-tags/<int:pk>/delete/', views.delete_hero_tag, name='delete_hero_tag'),
+    path('manage-hero-tags/update-order/', views.update_hero_tag_order, name='update_hero_tag_order'),
 ]
 

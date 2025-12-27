@@ -2,9 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Max
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
+from django.views.decorators.http import require_http_methods
 from ckeditor.fields import RichTextField
-from .models import FeatureCard, AdmissionElement, AcademicCalendar
+from .models import FeatureCard, AdmissionElement, AcademicCalendar, HeroTags
 
 
 def feature_cards_list(request):
@@ -518,3 +519,168 @@ def delete_academic_calendar(request, pk):
         'calendar': calendar,
     }
     return render(request, 'designs/delete_academic_calendar.html', context)
+
+
+# ==============================================================================
+# HERO TAGS MANAGEMENT (Power Users Only)
+# ==============================================================================
+
+@login_required
+def manage_hero_tags(request):
+    """Manage hero tags - only for power users"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can manage hero tags.')
+        return redirect('people:user_profile')
+    
+    hero_tags = HeroTags.objects.all().order_by('sl')
+    
+    context = {
+        'hero_tags': hero_tags,
+    }
+    return render(request, 'designs/manage_hero_tags.html', context)
+
+
+@login_required
+def create_hero_tag(request):
+    """Create a new hero tag"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can create hero tags.')
+        return redirect('people:user_profile')
+    
+    if request.method == 'POST':
+        try:
+            tag = HeroTags()
+            
+            # Handle sl
+            sl_str = request.POST.get('sl', '').strip()
+            if sl_str:
+                tag.sl = int(sl_str)
+            else:
+                # Auto-assign sl if not provided
+                max_sl = HeroTags.objects.aggregate(max_sl=Max('sl'))['max_sl']
+                tag.sl = (max_sl + 1) if max_sl else 1
+            
+            tag.title = request.POST.get('title', '').strip()
+            tag.is_active = request.POST.get('is_active') == 'on'
+            
+            tag.full_clean()
+            tag.save()
+            
+            messages.success(request, 'Hero tag created successfully!')
+            return redirect('designs:manage_hero_tags')
+        except Exception as e:
+            messages.error(request, f'Error creating hero tag: {str(e)}')
+            return render(request, 'designs/create_hero_tag.html', {
+                'tag_data': request.POST,
+            })
+    
+    # Get next available sl
+    max_sl = HeroTags.objects.aggregate(max_sl=Max('sl'))['max_sl']
+    next_sl = (max_sl + 1) if max_sl else 1
+    
+    context = {
+        'next_sl': next_sl,
+    }
+    return render(request, 'designs/create_hero_tag.html', context)
+
+
+@login_required
+def edit_hero_tag(request, pk):
+    """Edit an existing hero tag"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can edit hero tags.')
+        return redirect('people:user_profile')
+    
+    tag = get_object_or_404(HeroTags, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            sl_str = request.POST.get('sl', '').strip()
+            if sl_str:
+                tag.sl = int(sl_str)
+            tag.title = request.POST.get('title', '').strip()
+            tag.is_active = request.POST.get('is_active') == 'on'
+            
+            tag.full_clean()
+            tag.save()
+            
+            messages.success(request, 'Hero tag updated successfully!')
+            return redirect('designs:manage_hero_tags')
+        except Exception as e:
+            messages.error(request, f'Error updating hero tag: {str(e)}')
+    
+    context = {
+        'tag': tag,
+    }
+    return render(request, 'designs/edit_hero_tag.html', context)
+
+
+@login_required
+def delete_hero_tag(request, pk):
+    """Delete a hero tag"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can delete hero tags.')
+        return redirect('people:user_profile')
+    
+    tag = get_object_or_404(HeroTags, pk=pk)
+    
+    if request.method == 'POST':
+        tag_title = tag.title
+        tag.delete()
+        messages.success(request, f'Hero tag "{tag_title}" deleted successfully!')
+        return redirect('designs:manage_hero_tags')
+    
+    context = {
+        'tag': tag,
+    }
+    return render(request, 'designs/delete_hero_tag.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_hero_tag_order(request):
+    """Update the order (serial numbers) of hero tags via drag and drop"""
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'Only power users can update hero tag order.'
+        }, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        tag_ids = data.get('tag_ids', [])
+        
+        if not tag_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'No tags provided for reordering.'
+            }, status=400)
+        
+        # Verify all tags exist
+        tags = HeroTags.objects.filter(pk__in=tag_ids)
+        if tags.count() != len(tag_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some tags do not exist.'
+            }, status=400)
+        
+        # Update serial numbers based on the order provided
+        for index, tag_id in enumerate(tag_ids, start=1):
+            HeroTags.objects.filter(pk=tag_id).update(sl=index)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Hero tag order updated successfully!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating order: {str(e)}'
+        }, status=500)
