@@ -479,6 +479,53 @@
             </div>
         </div>
     </div>
+<!-- Most Cited Info Modal -->
+<div class="info-modal-home" id="most-cited-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Most Cited Researchers</h3>
+            <button class="info-modal-close-home" onclick="closeTabInfoModal('most-cited')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>Most Cited researchers are selected based on the total number of citations they have received across their publications.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Leading Active Info Modal -->
+<div class="info-modal-home" id="leading-active-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Leading Active Researchers</h3>
+            <button class="info-modal-close-home" onclick="closeTabInfoModal('leading-active')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>Leading Active researchers are selected based on their research activity in the last 2 years, including the number of publications and research score.</p>
+        </div>
+    </div>
+</div>
+<div class="info-modal-home" id="top-designation-info-modal">
+    <div class="info-modal-content-home">
+        <div class="info-modal-header-home">
+            <h3>Top Researchers by Designation</h3>
+            <button class="info-modal-close-home" onclick="closeTabInfoModal('top-designation')">&times;</button>
+        </div>
+        <div class="info-modal-body-home">
+            <p>Top researchers by designation are selected based on their highest research score within each faculty title (Professor, Associate Professor, etc.).</p>
+        </div>
+    </div>
+</div>
+
 </section>
 {% endif %}
 
@@ -3839,6 +3886,7 @@ html, body {
 {% endblock %}
 
 {% block extra_js %}
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const banner = document.getElementById("marks-banner");
