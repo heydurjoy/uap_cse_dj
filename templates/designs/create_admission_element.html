@@ -1,0 +1,691 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Admission Element - CSE UAP{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="create-admission-element-page">
+        <div class="page-header">
+            <a href="{% url 'designs:manage_admission_elements' %}" class="back-link">← Back to Admission Elements</a>
+            <h1>Create Admission Element</h1>
+        </div>
+
+        <div class="admission-form-container">
+            <form method="post" enctype="multipart/form-data" class="admission-form">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="sl">
+                                Serial Number (SL) <span style="color: #dc3545;">*</span>
+                            </label>
+                            <input type="number" name="sl" id="sl"
+                                   value="{{ next_sl|default:1 }}"
+                                   required>
+                            <small class="form-help">Controls the order in which elements appear (lower = first).</small>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="title">
+                                Title <span style="color: #dc3545;">*</span>
+                            </label>
+                            <input type="text" name="title" id="title"
+                                   value="{{ element_data.title|default_if_none:'' }}"
+                                   maxlength="255" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Content</h3>
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea name="content" id="content" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{{ element_data.content|default_if_none:'' }}</textarea>
+                        <small class="form-help">Click on the textarea above to use the rich text editor. Use the fullscreen button in the toolbar for a better editing experience.</small>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Curriculum PDF</h3>
+                    <div class="form-group">
+                        <label for="curriculum_pdf">Curriculum PDF (optional)</label>
+                        <input type="file" name="curriculum_pdf" id="curriculum_pdf" accept="application/pdf">
+                        <small class="form-help">Attach a curriculum or related PDF (max size per system settings).</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Create Admission Element</button>
+                    <a href="{% url 'designs:manage_admission_elements' %}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.create-admission-element-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.admission-form-container {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="file"],
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: 'Lexend', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.form-help {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.rich-text-field {
+    min-height: 200px;
+}
+
+.rich-text-textarea {
+    font-family: 'Lexend', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    resize: none;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.rich-text-textarea:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 2%, var(--bg-tertiary));
+}
+
+.rich-text-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--glow-shadow);
+    outline: none;
+}
+
+/* CKEditor full-screen modal (same behavior as club post editor) */
+.ckeditor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+.ckeditor-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ckeditor-modal-content {
+    background: var(--bg-primary);
+    border-radius: 20px !important;
+    width: 98%;
+    max-width: 1600px;
+    height: 95vh;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.ckeditor-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: 20px 20px 0 0;
+}
+
+.ckeditor-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.ckeditor-modal-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.ckeditor-close-btn,
+.ckeditor-save-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.95rem;
+}
+
+.ckeditor-close-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.ckeditor-close-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.ckeditor-save-btn {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.ckeditor-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-shadow);
+}
+
+.ckeditor-modal-body {
+    flex: 1;
+    padding: 1rem;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.ckeditor-container .cke {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container .cke_contents {
+    flex: 1 !important;
+    min-height: 0 !important;
+}
+
+.ckeditor-container .cke_inner {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.ckeditor-container .cke_wysiwyg_div {
+    min-height: 100% !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    font-family: 'Lexend', sans-serif;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary));
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .create-admission-element-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+</style>
+
+<!-- CKEditor Modal - Full Page Popup (same behaviour as edit_profile, bound to 'content') -->
+<script>
+(function() {
+    const richTextFields = {
+        'content': 'Content'
+    };
+    
+    let ckeditorLoaded = false;
+    let currentModal = null;
+    let currentEditor = null;
+    let currentTextarea = null;
+    let originalContent = '';
+    
+    function loadCKEditor(callback) {
+        if (typeof CKEDITOR !== 'undefined') {
+            ckeditorLoaded = true;
+            if (callback) callback();
+            return;
+        }
+        
+        if (ckeditorLoaded) {
+            if (callback) callback();
+            return;
+        }
+        
+        const cdnSources = [
+            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',
+            'https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.20.2/ckeditor.js',
+            'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js'
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript(index) {
+            if (index >= cdnSources.length) {
+                console.error('All CKEditor CDN sources failed');
+                alert('Failed to load editor. Please check your internet connection and refresh the page.');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = cdnSources[index];
+            script.onload = function() {
+                ckeditorLoaded = true;
+                if (callback) callback();
+            };
+            script.onerror = function() {
+                currentIndex++;
+                tryLoadScript(currentIndex);
+            };
+            document.head.appendChild(script);
+        }
+        
+        tryLoadScript(0);
+    }
+    
+    function createModal(fieldId, fieldLabel) {
+        const modal = document.createElement('div');
+        modal.className = 'ckeditor-modal';
+        modal.id = 'ckeditor-modal-' + fieldId;
+        modal.innerHTML = `
+            <div class="ckeditor-modal-content">
+                <div class="ckeditor-modal-header">
+                    <h3 class="ckeditor-modal-title">Edit ${fieldLabel}</h3>
+                    <div class="ckeditor-modal-actions">
+                        <button type="button" class="ckeditor-close-btn" id="ckeditor-close-${fieldId}">
+                            Cancel
+                        </button>
+                        <button type="button" class="ckeditor-save-btn" id="ckeditor-save-${fieldId}">
+                            Save
+                        </button>
+                    </div>
+                </div>
+                <div class="ckeditor-modal-body">
+                    <div class="ckeditor-container" id="ckeditor-container-${fieldId}">
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading editor...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        return modal;
+    }
+    
+    function showEditor(fieldId, fieldLabel) {
+        const textarea = document.getElementById(fieldId);
+        if (!textarea) {
+            console.error('Textarea not found:', fieldId);
+            return;
+        }
+        
+        originalContent = textarea.value;
+        currentTextarea = textarea;
+        
+        let modal = document.getElementById('ckeditor-modal-' + fieldId);
+        if (!modal) {
+            modal = createModal(fieldId, fieldLabel);
+        }
+        currentModal = modal;
+        
+        modal.classList.add('active');
+        
+        loadCKEditor(function() {
+            if (typeof CKEDITOR === 'undefined') {
+                console.error('CKEDITOR is still undefined');
+                return;
+            }
+            
+            const container = document.getElementById('ckeditor-container-' + fieldId);
+            if (!container) {
+                console.error('Container not found');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            const editorTextarea = document.createElement('textarea');
+            editorTextarea.id = 'ckeditor-textarea-' + fieldId;
+            editorTextarea.value = originalContent;
+            container.appendChild(editorTextarea);
+            
+            try {
+                const modalBody = container.closest('.ckeditor-modal-body');
+                const modalContent = container.closest('.ckeditor-modal-content');
+                const headerHeight = modalContent ? modalContent.querySelector('.ckeditor-modal-header').offsetHeight : 80;
+                const availableHeight = modalBody ? (modalBody.offsetHeight - 20) : window.innerHeight - headerHeight - 40;
+                
+                currentEditor = CKEDITOR.replace(editorTextarea, {
+                    toolbar: 'Full',
+                    height: availableHeight + 'px',
+                    width: '100%',
+                    removePlugins: 'elementspath',
+                    resize_enabled: false
+                });
+                
+                currentEditor.on('instanceReady', function() {
+                    const editorInstance = this;
+                    const editorElement = editorInstance.container;
+                    const editorInner = editorElement.findOne('.cke_inner');
+                    const editorContents = editorElement.findOne('.cke_contents');
+                    
+                    if (editorInner) {
+                        editorInner.setStyle('height', '100%');
+                        editorInner.setStyle('display', 'flex');
+                        editorInner.setStyle('flex-direction', 'column');
+                    }
+                    
+                    if (editorContents) {
+                        editorContents.setStyle('flex', '1');
+                        editorContents.setStyle('min-height', '0');
+                    }
+                    
+                    setTimeout(function() {
+                        if (modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            editorInstance.resize('100%', newHeight + 'px');
+                        }
+                    }, 100);
+                });
+                
+                let resizeTimeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(function() {
+                        if (currentEditor && modalBody) {
+                            const newHeight = modalBody.offsetHeight - 20;
+                            currentEditor.resize('100%', newHeight + 'px');
+                        }
+                    }, 250);
+                });
+            } catch (e) {
+                console.error('Error initializing CKEditor:', e);
+            }
+        });
+        
+        const closeBtn = document.getElementById('ckeditor-close-' + fieldId);
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                closeEditor(false);
+            };
+        }
+        
+        const saveBtn = document.getElementById('ckeditor-save-' + fieldId);
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                closeEditor(true);
+            };
+        }
+        
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeEditor(false);
+            }
+        };
+        
+        const escapeHandler = function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeEditor(false);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+    
+    function closeEditor(save) {
+        if (currentModal) {
+            if (save && currentEditor) {
+                currentEditor.updateElement();
+                const editorTextarea = document.getElementById(currentEditor.element.$.id);
+                if (editorTextarea && currentTextarea) {
+                    currentTextarea.value = editorTextarea.value;
+                }
+            } else if (!save && currentTextarea) {
+                currentTextarea.value = originalContent;
+            }
+            
+            if (currentEditor) {
+                try {
+                    currentEditor.destroy();
+                } catch (e) {
+                    console.error('Error destroying editor:', e);
+                }
+                currentEditor = null;
+            }
+            
+            currentModal.classList.remove('active');
+            
+            const container = currentModal.querySelector('.ckeditor-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            currentModal = null;
+            currentTextarea = null;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        Object.keys(richTextFields).forEach(function(fieldId) {
+            const textarea = document.getElementById(fieldId);
+            if (textarea) {
+                textarea.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showEditor(fieldId, richTextFields[fieldId]);
+                });
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}
+
+

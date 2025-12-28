@@ -1,4 +1,41 @@
 {% extends 'base.html' %}
+
+{% block title %}Admission Information - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="admission-element-detail-page" style="max-width: 900px; margin: 0 auto; padding: 2rem 1rem;">
+        <div class="page-header" style="margin-bottom: 1.5rem;">
+            <a href="{% url 'home' %}#admission" class="back-link" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">
+                ← Back to Admission Section
+            </a>
+            <h1 style="margin-top: 0.75rem; font-size: 2.2rem; color: var(--text-primary);">
+                {{ element.title }}
+            </h1>
+        </div>
+
+        <article style="background: var(--bg-secondary); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color);">
+            <div class="content" style="color: var(--text-primary); line-height: 1.7;">
+                {{ element.content|safe }}
+            </div>
+
+            {% if element.curriculum_pdf %}
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <h2 style="font-size: 1.3rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+                        Related Curriculum / PDF
+                    </h2>
+                    <a href="/media/{{ element.curriculum_pdf.name }}" target="_blank"
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--color-primary); color: var(--color-primary); text-decoration: none; font-weight: 500;">
+                        View PDF
+                    </a>
+                </div>
+            {% endif %}
+        </article>
+    </section>
+</div>
+{% endblock %}
+
+{% extends 'base.html' %}
 {% load static %}
 {% load academics_filters %}
 {% load course_extras %}

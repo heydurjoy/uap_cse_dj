@@ -164,13 +164,22 @@
                                             {% if item.badges %}
                                             <div class="faculty-badges">
                                                 {% if 'most_cited' in item.badges %}
-                                                <span class="faculty-badge badge-most-cited" title="Top 4 Most Cited">⭐</span>
-                                                {% endif %}
-                                                {% if 'leading_active' in item.badges %}
-                                                <span class="faculty-badge badge-leading-active" title="Top 4 Leading Active">🔥</span>
-                                                {% endif %}
+<span class="faculty-badge badge-most-cited" title="Top 4 Most Cited">
+  <i class="fa-solid fa-star"></i>
+</span>
+{% endif %}
+
+{% if 'leading_active' in item.badges %}
+<span class="faculty-badge badge-leading-active" title="Top 4 Leading Active">
+  <i class="fa-solid fa-bolt"></i>
+</span>
+{% endif %}
+
                                                 {% if 'top_designation' in item.badges %}
-                                                <span class="faculty-badge badge-top-designation" title="Top by Designation">🏆</span>
+                                                <span class="faculty-badge badge-top-designation" title="Top by Designation">
+                                                      <i class="fa-solid fa-trophy"></i>
+                                                   </span>
+
                                                 {% endif %}
                                             </div>
                                             {% endif %}
@@ -861,13 +870,18 @@
     }
 }
 
-.faculty-card-item {
+.faculty-card-item{
     text-decoration: none;
     color: inherit;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all 0.3s ease;
+    display: block;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center bottom;
+    transform-style: preserve-3d;
+    will-change: transform;
+    position: relative;
+    overflow: visible;
+    perspective: 1200px;
+    perspective-origin: 50% 100%;
 }
 
 .faculty-card {
@@ -879,112 +893,54 @@
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    width: 100%;
-    aspect-ratio: 3/4.2;
+    cursor: pointer;
+    height: 100%;
+    min-height: 280px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+}
+
+/* Apple-like hover: scale up and tilt the card backward (leaning back) - straight, no side rotation */
+.faculty-card-item:hover {
+    transform: scale(1.08) translateY(-8px) rotateX(12deg) rotateY(0deg) rotateZ(0deg);
+    z-index: 100;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .faculty-card-item:hover .faculty-card {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     border-color: var(--color-primary);
+    border-width: 2px;
 }
-
-.faculty-card.golden-rank {
-    border: 2px solid rgba(0, 0, 0, 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
-                0 0 30px rgba(0, 0, 0, 0.2);
-    background: var(--bg-secondary);
-    position: relative;
-    animation: prestigiousGlow 3s ease-in-out infinite;
-}
-
-.faculty-card.golden-rank::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, 
-        rgba(0, 0, 0, 0.8),
-        rgba(0, 0, 0, 0.5),
-        rgba(0, 0, 0, 0.8));
-    border-radius: 16px;
-    z-index: -1;
-    opacity: 0.6;
-    animation: borderGlow 3s ease-in-out infinite;
-}
-
-@keyframes prestigiousGlow {
-    0%, 100% {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
-                    0 0 30px rgba(0, 0, 0, 0.2);
-    }
-    50% {
-        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6),
-                    0 0 50px rgba(0, 0, 0, 0.35);
-    }
-}
-
-@keyframes borderGlow {
-    0%, 100% {
-        opacity: 0.6;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.9;
-        transform: scale(1.01);
-    }
-}
-
-.faculty-card-item:hover .faculty-card.golden-rank {
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.7),
-                0 0 60px rgba(0, 0, 0, 0.4);
-    border-color: rgba(0, 0, 0, 0.5);
-    transform: translateY(-4px) scale(1.02);
-}
-
-.faculty-card-item:hover .faculty-card.golden-rank::before {
-    opacity: 0.8;
-}
-
 .faculty-card-image {
-    position: relative;
     width: 100%;
-    flex: 1;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
     overflow: hidden;
-    min-height: 0;
-}
-
-.faculty-card.golden-rank .faculty-card-image::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    background: linear-gradient(to top, 
-        rgba(0, 0, 0, 0.85) 0%,
-        rgba(0, 0, 0, 0.6) 30%,
-        rgba(0, 0, 0, 0.3) 60%,
-        transparent 100%);
-    pointer-events: none;
-    z-index: 2;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faculty-card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faculty-card-item:hover .faculty-card-image img {
     transform: scale(1.05);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
+.faculty-cards-grid:hover .faculty-card-item:not(:hover) {
+    transform: scale(0.92);
+    opacity: 0.6;
+    filter: blur(2px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .faculty-badges {
     position: absolute;
     top: 0.5rem;
@@ -1014,49 +970,71 @@
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
+.badge-most-cited i {
+  color: #f4c430; /* gold */
+}
 
+.badge-leading-active i {
+  color: #ff5a3c; /* energetic */
+}
 .golden-rank-badge-below {
     background: transparent;
-    color: var(--color-primary);
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
     font-weight: 700;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
-                 0 0 8px color-mix(in srgb, var(--color-primary) 50%, transparent);
     position: absolute;
     bottom: 0.5rem;
     left: 0;
     right: 0;
     z-index: 4;
-    animation: badgeFloat 3s ease-in-out infinite, badgePulse 2s ease-in-out infinite;
+    margin-bottom: 1.5rem;
     pointer-events: none;
+
+    /* Gradient text using theme colors */
+    background: linear-gradient(
+        90deg,
+        var(--color-primary),
+        color-mix(in srgb, var(--color-primary) 70%, white 30%),
+        color-mix(in srgb, var(--color-primary) 50%, white 50%)
+    );
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* Subtle shadow */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3),
+                 0 0 6px color-mix(in srgb, var(--color-primary) 60%, transparent);
+
+    /* Animation */
+    animation: gradientSlide 4s ease-in-out infinite, badgePulse 3s ease-in-out infinite alternate;
 }
 
-@keyframes badgeFloat {
-    0%, 100% {
-        transform: translateY(0);
+@keyframes gradientSlide {
+    0% {
+        background-position: 0% 50%;
     }
     50% {
-        transform: translateY(-8px);
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
     }
 }
 
 @keyframes badgePulse {
     0%, 100% {
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
-                     0 0 8px color-mix(in srgb, var(--color-primary) 50%, transparent);
+        transform: scale(1);
     }
     50% {
-        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6),
-                     0 0 16px color-mix(in srgb, var(--color-primary) 70%, transparent);
+        transform: scale(1.05);
     }
 }
 
 .faculty-card-designation {
-    background: var(--bg-tertiary);
+
     color: var(--text-secondary);
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
@@ -1072,17 +1050,7 @@
     right: 0;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
     padding: 1.25rem 1rem 1rem 1rem;
-    transition: all 0.4s ease;
-    z-index: 1;
-}
-
-.faculty-card.golden-rank .faculty-card-overlay {
-    background: linear-gradient(to top, 
-        rgba(0, 0, 0, 0.85) 0%, 
-        rgba(0, 0, 0, 0.7) 30%,
-        rgba(0, 0, 0, 0.5) 50%,
-        rgba(0, 0, 0, 0) 100%);
-    padding-bottom: 3.5rem; /* Extra space for the badge below */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faculty-card-item:hover .faculty-card-overlay {
@@ -1090,14 +1058,15 @@
     background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
 }
 
-.faculty-card-item:hover .faculty-card.golden-rank .faculty-card-overlay {
-    padding-bottom: 3.75rem; /* Maintain extra space on hover */
-}
 
 .faculty-card-info {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+}
+.faculty-badge i {
+  font-size: 0.9rem;
+  color: gold;
 }
 
 .faculty-card-header {
@@ -1617,63 +1586,63 @@
     .header-content {
         flex-direction: column;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .ranking-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .publications-table-container {
         overflow-x: auto;
     }
-    
+
     .faculty-cards-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         gap: 1rem;
     }
-    
+
     .faculty-tab-buttons {
         overflow-x: auto;
         flex-wrap: nowrap;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .faculty-tab-btn {
         white-space: nowrap;
         flex-shrink: 0;
         padding: 0.75rem 1.25rem;
         font-size: 0.875rem;
     }
-    
+
     .faculty-card-name {
         font-size: 1rem;
     }
-    
+
     .faculty-card-score,
     .faculty-card-citation,
     .faculty-card-pubs {
         font-size: 0.8rem;
     }
-    
+
     .golden-rank-badge {
         font-size: 0.7rem;
         padding: 0.3rem 0.6rem;
     }
-    
+
     .faculty-badge {
         width: 1.75rem;
         height: 1.75rem;
         font-size: 0.9rem;
     }
-    
+
     .tabs-nav {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .tab-btn {
         width: 100%;
         justify-content: flex-start;
@@ -1681,24 +1650,24 @@
         border-left: 3px solid transparent;
         margin-bottom: 0;
     }
-    
+
     .tab-btn.active {
         border-left-color: var(--color-primary);
         border-bottom-color: var(--border-color);
     }
-    
+
     .top-researchers-list {
         gap: 1rem;
     }
-    
+
     .researcher-section {
         margin-bottom: 2rem;
     }
-    
+
     .researcher-section-title {
         font-size: 1.25rem;
     }
-    
+
     .researcher-card {
         width: 100%;
         max-width: 300px;
