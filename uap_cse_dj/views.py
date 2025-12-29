@@ -280,6 +280,14 @@ def home(request):
         leading_active_researchers = None
         top_researchers = None
 
+    # Get gallery items for homepage showcase (only featured ones)
+    gallery_items = None
+    try:
+        from office.models import Gallery
+        gallery_items = Gallery.objects.filter(featured=True).order_by('sl', '-created_at')[:20]
+    except Exception:
+        gallery_items = None
+
     return render(request, 'home.html', {
         'feature_cards': feature_cards,
         'hero_tags': hero_tags,
@@ -290,6 +298,7 @@ def home(request):
         'most_cited_researchers': most_cited_researchers,
         'leading_active_researchers': leading_active_researchers,
         'top_researchers': top_researchers,
+        'gallery_items': gallery_items,
     })
 
 

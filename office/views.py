@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.http import JsonResponse, Http404, HttpResponse, FileResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -11,7 +11,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from datetime import datetime
 import os
-from .models import Post, PostAttachment, AdmissionResult, POST_TYPE_CHOICES, ClassRoutine, ExamRoutine, SEMESTER_CHOICES, EXAM_TYPE_CHOICES, EXAM_SECTION_CHOICES
+from .models import Post, PostAttachment, AdmissionResult, POST_TYPE_CHOICES, ClassRoutine, ExamRoutine, Gallery, SEMESTER_CHOICES, EXAM_TYPE_CHOICES, EXAM_SECTION_CHOICES
 from django.utils import timezone
 
 
@@ -1645,30 +1645,204 @@ def serve_admission_pdf(request, pk):
         return HttpResponse(f"Error serving PDF: {str(e)}", status=500)
 
 
-def serve_admission_pdf(request, pk):
-    """
-    Serve admission result PDF with proper headers for iframe embedding.
-    """
-    result = get_object_or_404(AdmissionResult, pk=pk)
+@login_required
+def create_gallery_item(request):
+    """Create a new gallery item - power users only"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can create gallery items.')
+        return redirect('people:user_profile')
     
-    if not result.official_pdf:
-        return HttpResponse("PDF not found", status=404)
-    
+    if request.method == 'POST':
+        try:
+            item = Gallery()
+
+            # Handle sl
+            sl_str = request.POST.get('sl', '').strip()
+            if sl_str:
+                item.sl = int(sl_str)
+            else:
+                max_sl = Gallery.objects.aggregate(max_sl=Max('sl'))['max_sl']
+                item.sl = (max_sl + 1) if max_sl else 1
+
+            item.short_title = request.POST.get('short_title', '').strip()
+            item.description = (request.POST.get('description') or '').strip() or None
+            item.featured = bool(request.POST.get('featured'))
+            item.image = request.FILES.get('image')
+            item.created_by = request.user
+
+            # Validate required fields
+            if not item.short_title or not item.image:
+                messages.error(request, 'Short title and image are required.')
+                return render(request, 'office/create_gallery_item.html', {
+                    'item_data': request.POST,
+                    'next_sl': item.sl,
+                })
+
+            item.full_clean()
+            item.save()
+
+            messages.success(request, 'Gallery item created successfully!')
+            return redirect('office:manage_gallery')
+        except Exception as e:
+            messages.error(request, f'Error creating gallery item: {str(e)}')
+            max_sl = Gallery.objects.aggregate(max_sl=Max('sl'))['max_sl']
+            next_sl = (max_sl + 1) if max_sl else 1
+            return render(request, 'office/create_gallery_item.html', {
+                'item_data': request.POST,
+                'next_sl': next_sl,
+            })
+
+    # GET: show empty form with next SL
+    max_sl = Gallery.objects.aggregate(max_sl=Max('sl'))['max_sl']
+    next_sl = (max_sl + 1) if max_sl else 1
+
+    context = {
+        'next_sl': next_sl,
+    }
+    return render(request, 'office/create_gallery_item.html', context)
+
+
+@login_required
+def edit_gallery_item(request, pk):
+    """Edit an existing gallery item - power users only"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can edit gallery items.')
+        return redirect('people:user_profile')
+
+    item = get_object_or_404(Gallery, pk=pk)
+
+    if request.method == 'POST':
+        try:
+            sl_str = request.POST.get('sl', '').strip()
+            if sl_str:
+                item.sl = int(sl_str)
+
+            item.short_title = request.POST.get('short_title', '').strip()
+            item.description = (request.POST.get('description') or '').strip() or None
+            item.featured = bool(request.POST.get('featured'))
+
+            new_image = request.FILES.get('image')
+            if new_image:
+                item.image = new_image
+
+            if not item.short_title:
+                messages.error(request, 'Short title is required.')
+                return render(request, 'office/edit_gallery_item.html', {
+                    'item': item,
+                })
+
+            item.full_clean()
+            item.save()
+
+            messages.success(request, 'Gallery item updated successfully!')
+            return redirect('office:manage_gallery')
+        except Exception as e:
+            messages.error(request, f'Error updating gallery item: {str(e)}')
+
+    context = {
+        'item': item,
+    }
+    return render(request, 'office/edit_gallery_item.html', context)
+
+
+@login_required
+def delete_gallery_item(request, pk):
+    """Delete a gallery item - power users only"""
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can delete gallery items.')
+        return redirect('people:user_profile')
+
+    item = get_object_or_404(Gallery, pk=pk)
+
+    if request.method == 'POST':
+        item_title = item.short_title
+        item.delete()
+        messages.success(request, f'Gallery item \"{item_title}\" deleted successfully!')
+        return redirect('office:manage_gallery')
+
+    context = {
+        'item': item,
+    }
+    return render(request, 'office/delete_gallery_item.html', context)
+
+
+def gallery(request):
+    """Public gallery page showing all images in a modern grid."""
+    items = Gallery.objects.all().order_by('sl', '-created_at')
+    return render(request, 'office/gallery.html', {'items': items})
+
+
+@login_required
+def manage_gallery(request):
+    """
+    Manage gallery items - power users only.
+    Simple list with drag-and-drop ordering by serial (sl).
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'Only power users can manage the gallery.')
+        return redirect('people:user_profile')
+
+    items = Gallery.objects.all().order_by('sl', '-created_at')
+
+    context = {
+        'items': items,
+    }
+    return render(request, 'office/manage_gallery.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_gallery_order(request):
+    """
+    Update the order (serial numbers) of gallery items via drag and drop.
+    Power users only.
+    """
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'Only power users can update gallery order.'
+        }, status=403)
+
     try:
-        # Get the file path
-        file_path = result.official_pdf.path
+        import json
+        data = json.loads(request.body)
+        item_ids = data.get('item_ids', [])
+
+        if not item_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'No items provided for reordering.'
+            }, status=400)
+
+        # Verify all items exist
+        items = Gallery.objects.filter(pk__in=item_ids)
+        if items.count() != len(item_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some items do not exist.'
+            }, status=400)
+
+        # First, set all serial numbers to negative values to avoid unique constraint conflicts
+        offset = -10000
+        for index, item_id in enumerate(item_ids):
+            Gallery.objects.filter(pk=item_id).update(sl=offset - index)
         
-        # Serve the file with proper headers
-        response = FileResponse(
-            open(file_path, 'rb'),
-            content_type='application/pdf'
-        )
-        response['Content-Disposition'] = f'inline; filename="{result.official_pdf.name}"'
-        response['X-Content-Type-Options'] = 'nosniff'
-        
-        # Allow iframe embedding
-        response['X-Frame-Options'] = 'SAMEORIGIN'
-        
-        return response
+        # Now assign the correct serial numbers
+        for index, item_id in enumerate(item_ids, start=1):
+            Gallery.objects.filter(pk=item_id).update(sl=index)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Gallery order updated successfully!'
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
     except Exception as e:
-        return HttpResponse(f"Error serving PDF: {str(e)}", status=500)
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating order: {str(e)}'
+        }, status=500)

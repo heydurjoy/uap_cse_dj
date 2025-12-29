@@ -27,6 +27,16 @@ urlpatterns = [
     path('exam-routines/create/', views.create_exam_routine, name='create_exam_routine'),
     path('exam-routines/<int:pk>/edit/', views.edit_exam_routine, name='edit_exam_routine'),
     path('exam-routines/<int:pk>/delete/', views.delete_exam_routine, name='delete_exam_routine'),
+
+    # Public Gallery URL
+    path('gallery/', views.gallery, name='gallery'),
+
+    # Gallery Management URLs
+    path('gallery/manage/', views.manage_gallery, name='manage_gallery'),
+    path('gallery/create/', views.create_gallery_item, name='create_gallery_item'),
+    path('gallery/<int:pk>/edit/', views.edit_gallery_item, name='edit_gallery_item'),
+    path('gallery/<int:pk>/delete/', views.delete_gallery_item, name='delete_gallery_item'),
+    path('gallery/update-order/', views.update_gallery_order, name='update_gallery_order'),
     
     # Admission Results Public Search URLs
     path('admissions/results/', views.search_admission_results, name='search_admission_results'),

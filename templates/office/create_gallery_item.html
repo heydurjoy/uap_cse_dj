@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Gallery Item - CSE UAP{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="create-gallery-item-page">
+        <div class="page-header">
+            <a href="{% url 'office:manage_gallery' %}" class="back-link">← Back to Gallery</a>
+            <h1>Create Gallery Item</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="form-container">
+            <form method="post" enctype="multipart/form-data" class="gallery-item-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="sl">Serial Number</label>
+                    <input type="number" id="sl" name="sl" value="{{ next_sl }}" min="1" required class="form-input">
+                    <small class="form-help">Order in which this item appears (lower numbers appear first)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="short_title">Short Title <span style="color: #dc3545;">*</span></label>
+                    <input type="text" id="short_title" name="short_title" maxlength="100" required class="form-input" placeholder="e.g., Orientation 2025" value="{% if item_data.short_title %}{{ item_data.short_title }}{% endif %}">
+                    <small class="form-help">Concise title for the image (max 100 characters)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" maxlength="255" rows="3" class="form-input" placeholder="Optional short caption/description">{% if item_data.description %}{{ item_data.description }}{% endif %}</textarea>
+                    <small class="form-help">Optional short description (max 255 characters, not too big)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Image <span style="color: #dc3545;">*</span></label>
+                    <input type="file" id="image" name="image" accept="image/*" required class="form-input-file">
+                    <small class="form-help">Upload the gallery image (JPG, PNG, etc.). It will be cropped to 16:9 and compressed if larger than 600KB.</small>
+                    <div id="image-preview" class="image-preview" style="display: none; margin-top: 1rem;">
+                        <img id="preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px var(--shadow);">
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="checkbox" id="featured" name="featured" {% if item_data.featured %}checked{% endif %}>
+                    <label for="featured" style="margin: 0; font-weight: 500; color: var(--text-primary);">
+                        Show this image on the home page highlight gallery
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Create Gallery Item</button>
+                    <a href="{% url 'office:manage_gallery' %}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.create-gallery-item-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0 0;
+}
+
+.form-container {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-input-file {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-input-file:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.image-preview {
+    margin-top: 1rem;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('image');
+    const preview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+
+    // Simple inline cropper modal
+    let cropper = null;
+    const cropperWrapper = document.createElement('div');
+    cropperWrapper.style.position = 'fixed';
+    cropperWrapper.style.inset = '0';
+    cropperWrapper.style.background = 'rgba(0,0,0,0.8)';
+    cropperWrapper.style.display = 'none';
+    cropperWrapper.style.alignItems = 'center';
+    cropperWrapper.style.justifyContent = 'center';
+    cropperWrapper.style.zIndex = '10000';
+    cropperWrapper.innerHTML = `
+        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 16px; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; gap: 1rem;">
+            <h3 style="margin: 0; color: var(--text-primary);">Crop Image (16:9)</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 260px; max-height: 60vh; overflow: auto;">
+                    <img id="galleryCropperImage" style="max-width: 100%; display: block;">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Preview</div>
+                    <div id="galleryCropperPreview" style="width: 240px; height: 135px; border-radius: 12px; overflow: hidden; border: 2px solid var(--color-primary); box-shadow: 0 4px 12px var(--shadow);"></div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                <button type="button" id="galleryCropCancelBtn" class="btn-secondary">Cancel</button>
+                <button type="button" id="galleryCropConfirmBtn" class="btn-primary">Confirm Crop</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(cropperWrapper);
+
+    const cropperImage = cropperWrapper.querySelector('#galleryCropperImage');
+    const cropperPreview = cropperWrapper.querySelector('#galleryCropperPreview');
+    const cropConfirmBtn = cropperWrapper.querySelector('#galleryCropConfirmBtn');
+    const cropCancelBtn = cropperWrapper.querySelector('#galleryCropCancelBtn');
+
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            preview.style.display = 'none';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            cropperImage.src = ev.target.result;
+            cropperWrapper.style.display = 'flex';
+
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            cropper = new Cropper(cropperImage, {
+                aspectRatio: 16 / 9,
+                viewMode: 1,
+                autoCropArea: 0.9,
+                dragMode: 'move',
+                background: false,
+                responsive: true,
+                preview: cropperPreview
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    cropConfirmBtn.addEventListener('click', function() {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 1600,
+            height: 900,
+        });
+
+        canvas.toBlob(function(blob) {
+            if (!blob) return;
+
+            const file = new File([blob], 'gallery-image.jpg', { type: 'image/jpeg' });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            imageInput.files = dataTransfer.files;
+
+            // Update inline preview
+            const url = URL.createObjectURL(blob);
+            previewImg.src = url;
+            preview.style.display = 'block';
+
+            cropperWrapper.style.display = 'none';
+            cropper.destroy();
+            cropper = null;
+        }, 'image/jpeg', 0.9);
+    });
+
+    cropCancelBtn.addEventListener('click', function() {
+        cropperWrapper.style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        imageInput.value = '';
+        preview.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}
+

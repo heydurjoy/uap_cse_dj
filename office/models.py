@@ -5,6 +5,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from ckeditor.fields import RichTextField
 from people.models import BaseUser
 from datetime import datetime
+from io import BytesIO
+from PIL import Image
+from django.core.files.base import ContentFile
 
 
 # Semester Choices for Admission Results
@@ -413,6 +416,149 @@ class ClassRoutine(models.Model):
         """Validate the model"""
         super().clean()
         # Additional validation can be added here if needed
+
+
+class Gallery(models.Model):
+    """
+    Simple gallery item managed by power users.
+    Each item has a serial number, short title, short description, and an image.
+    """
+    sl = models.PositiveIntegerField(
+        verbose_name="Serial Number (SL)",
+        help_text="Controls the display order (lower numbers appear first)."
+    )
+    short_title = models.CharField(
+        max_length=100,
+        verbose_name="Short Title",
+        help_text="Concise title for the image (e.g., 'Orientation 2025')."
+    )
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Short Description",
+        help_text="Optional short caption/description (not too big)."
+    )
+    featured = models.BooleanField(
+        default=False,
+        verbose_name="Show on Home Page",
+        help_text="If checked, this image will appear in the homepage highlight gallery."
+    )
+    image = models.ImageField(
+        upload_to='gallery/',
+        verbose_name="Image",
+        help_text="Gallery image (will be stored under media/gallery/)."
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Created At",
+        help_text="Timestamp when this gallery item was created."
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Updated At",
+        help_text="Timestamp when this gallery item was last updated."
+    )
+    created_by = models.ForeignKey(
+        BaseUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_gallery_items',
+        verbose_name="Created By",
+        help_text="Power user who created this gallery item."
+    )
+    created_by_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Created By Name",
+        help_text="Name of the user who created this item (preserved even if user is deleted)."
+    )
+    created_by_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Created By Email",
+        help_text="Email of the user who created this item (preserved even if user is deleted)."
+    )
+
+    class Meta:
+        verbose_name = 'Gallery Item'
+        verbose_name_plural = 'Gallery Items'
+        ordering = ['sl', '-created_at']
+        unique_together = ('sl', 'short_title')
+
+    def __str__(self):
+        return f"{self.sl} - {self.short_title}"
+
+    def save(self, *args, **kwargs):
+        """Auto-populate created_by_name and created_by_email when created_by is set."""
+        if self.created_by and not self.created_by_name:
+            name = None
+            email = self.created_by.email or ''
+
+            if self.created_by.user_type == 'faculty' and hasattr(self.created_by, 'faculty_profile'):
+                name = self.created_by.faculty_profile.name if self.created_by.faculty_profile else None
+            elif self.created_by.user_type == 'officer' and hasattr(self.created_by, 'officer_profile'):
+                name = self.created_by.officer_profile.name if self.created_by.officer_profile else None
+            elif self.created_by.user_type == 'staff' and hasattr(self.created_by, 'staff_profile'):
+                name = self.created_by.staff_profile.name if self.created_by.staff_profile else None
+            else:
+                # Fallback to full name or email
+                name = self.created_by.get_full_name() or self.created_by.email or ''
+
+            self.created_by_name = name or email
+            self.created_by_email = email
+
+        # Compress and enforce 16:9 ratio if image exists
+        if self.image and hasattr(self.image, 'file'):
+            try:
+                self.image.file.seek(0)
+                img = Image.open(self.image)
+                img = img.convert('RGB')
+
+                # Enforce 16:9 aspect ratio by center-cropping if needed
+                width, height = img.size
+                target_ratio = 16 / 9
+                current_ratio = width / height if height else target_ratio
+
+                if current_ratio > target_ratio:
+                    # Too wide: crop width
+                    new_width = int(height * target_ratio)
+                    left = int((width - new_width) / 2)
+                    img = img.crop((left, 0, left + new_width, height))
+                elif current_ratio < target_ratio:
+                    # Too tall: crop height
+                    new_height = int(width / target_ratio)
+                    top = int((height - new_height) / 2)
+                    img = img.crop((0, top, width, top + new_height))
+
+                # Resize to a reasonable max size while keeping 16:9 (optional)
+                max_width = 1600
+                if img.width > max_width:
+                    new_height = int(max_width * 9 / 16)
+                    img = img.resize((max_width, new_height), Image.LANCZOS)
+
+                # Compress to <= 600KB
+                buffer = BytesIO()
+                quality = 85
+                img.save(buffer, format='JPEG', optimize=True, quality=quality)
+
+                max_size_bytes = 600 * 1024
+                while buffer.tell() > max_size_bytes and quality > 40:
+                    quality -= 5
+                    buffer.seek(0)
+                    buffer.truncate()
+                    img.save(buffer, format='JPEG', optimize=True, quality=quality)
+
+                buffer.seek(0)
+                file_name = self.image.name.rsplit('.', 1)[0] + '.jpg'
+                self.image.save(file_name, ContentFile(buffer.read()), save=False)
+            except Exception:
+                # If compression fails, just save original
+                pass
+
+        super().save(*args, **kwargs)
 
 
 class ExamRoutine(models.Model):

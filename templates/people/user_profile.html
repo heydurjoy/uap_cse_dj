@@ -400,7 +400,24 @@
                 </a>
                 {% endif %}
                 
-                <!-- 13. Academic Calendars -->
+                <!-- 13. Manage Gallery -->
+                {% if user.is_power_user %}
+                <a href="{% url 'office:manage_gallery' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <path d="M21 15l-5-5L5 21"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Gallery</h3>
+                        <p class="action-desc">Homepage photo gallery</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 14. Academic Calendars -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_academic_calendars' %}
                 <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card">
                     <div class="action-icon">
@@ -424,7 +441,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 14. Admission Results -->
+                <!-- 15. Admission Results -->
                 {% if user.is_power_user or user|has_granted_permission:'post_admission_results' %}
                     {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card">
@@ -445,7 +462,7 @@
                     {% endif %}
                 {% endif %}
                 
-                <!-- 15. Manage Clubs -->
+                <!-- 16. Manage Clubs -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_club_settings' %}
                     {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
@@ -465,7 +482,7 @@
                     {% endif %}
                 {% endif %}
                 
-                <!-- 16. Manage Users -->
+                <!-- 17. Manage Users -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_users' %}" class="action-card">
                     <div class="action-icon">
@@ -483,7 +500,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 17. Manage Faculty -->
+                <!-- 18. Manage Faculty -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_faculty' %}" class="action-card">
                     <div class="action-icon">
@@ -499,7 +516,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 18. Feature Cards -->
+                <!-- 19. Feature Cards -->
                 {% if user.is_power_user or user|has_granted_permission:'edit_feature_cards' %}
                 <a href="{% url 'designs:manage_feature_cards' %}" class="action-card">
                     <div class="action-icon">

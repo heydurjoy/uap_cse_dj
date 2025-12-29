@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Exam Routine - {{ routine.academic_year }} {{ routine.semester }} - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="routine-detail-page">
+        <div class="routine-detail-header">
+            <a href="{% url 'office:routine_list' %}?tab=exam" class="back-link">← Back to Routines</a>
+            <h1>Exam Routine</h1>
+        </div>
+        
+        <div class="routine-detail-content">
+            <div class="routine-info-card">
+                <div class="routine-info-header">
+                    <div class="routine-badge-large">
+                        {{ routine.academic_year }} {{ routine.get_semester_display }}
+                    </div>
+                    <div class="routine-details">
+                        <h2>{{ routine.get_type_of_exam_display }} - {{ routine.get_year_semester_display }}</h2>
+                        <p class="routine-section-large">Section {{ routine.section }}</p>
+                    </div>
+                </div>
+                
+                <div class="routine-image-container">
+                    <img src="{{ routine.routine_image.url }}" alt="Exam Routine {{ routine.academic_year }} {{ routine.semester }}" class="routine-image-full">
+                </div>
+                
+                {% if can_manage %}
+                <div class="routine-actions">
+                    <a href="{% url 'office:edit_exam_routine' routine.pk %}" class="action-btn">Edit Routine</a>
+                    <a href="{% url 'office:delete_exam_routine' routine.pk %}" class="action-btn danger">Delete Routine</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.routine-detail-page {
+    padding: 2rem 0;
+}
+
+.routine-detail-header {
+    margin-bottom: 2rem;
+}
+
+.routine-detail-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 1rem 0;
+}
+
+.routine-info-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.routine-info-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.routine-badge-large {
+    background: var(--color-primary);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.routine-details h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.routine-section-large {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.routine-image-container {
+    width: 100%;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.routine-image-full {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.routine-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.action-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    background: var(--color-primary);
+    color: white;
+}
+
+.action-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+.action-btn.danger {
+    background: #ef4444;
+}
+
+.action-btn.danger:hover {
+    background: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .routine-info-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .routine-actions {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Remove underlines from anchor tags and make them follow theme */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.back-link {
+    color: var(--color-primary);
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+}
+
+.action-btn {
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+

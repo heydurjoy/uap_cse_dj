@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Gallery - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-gallery-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Gallery</h1>
+            <p class="page-subtitle">Reorder images by dragging rows. Lower serials appear first.</p>
+        </div>
+
+        <div class="toolbar" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'office:create_gallery_item' %}" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem;">
+                + Create Gallery Item
+            </a>
+        </div>
+
+        <div class="info-box">
+            <strong>Tip:</strong> Drag the handle on the left to change the order. Changes are saved automatically.
+        </div>
+
+        <div class="gallery-table-container">
+            <table class="gallery-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">SL</th>
+                        <th>Preview</th>
+                        <th>Title & Description</th>
+                        <th style="width: 120px; text-align: center;">Featured</th>
+                        <th style="width: 140px;">Created</th>
+                        <th style="width: 120px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="gallery-tbody">
+                    {% if items %}
+                        {% for item in items %}
+                        <tr class="gallery-row" data-item-id="{{ item.pk }}">
+                            <td class="sl-cell">
+                                <span class="drag-handle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                                    </svg>
+                                    <span class="sl-number">{{ item.sl }}</span>
+                                </span>
+                            </td>
+                            <td class="preview-cell">
+                                {% if item.image %}
+                                <div class="image-thumb">
+                                    <img src="{{ item.image.url }}" alt="{{ item.short_title }}">
+                                </div>
+                                {% else %}
+                                <span class="no-image">No image</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-cell">
+                                <div class="title">{{ item.short_title }}</div>
+                                {% if item.description %}
+                                <div class="description">{{ item.description }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="featured-cell" style="text-align: center;">
+                                {% if item.featured %}
+                                <span class="badge badge-success">Home</span>
+                                {% else %}
+                                <span class="badge badge-muted">Gallery</span>
+                                {% endif %}
+                            </td>
+                            <td class="meta-cell">
+                                <div class="created-at">
+                                    {{ item.created_at|date:"M d, Y" }}
+                                </div>
+                                {% if item.created_by_name %}
+                                <div class="created-by">
+                                    {{ item.created_by_name }}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="actions-cell" style="text-align: center;">
+                                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                    <a href="{% url 'office:edit_gallery_item' item.pk %}" class="action-btn edit-btn" title="Edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="{% url 'office:delete_gallery_item' item.pk %}" class="action-btn delete-btn" title="Delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="empty-row">
+                                No gallery items found. <a href="{% url 'office:create_gallery_item' %}" style="color: var(--color-primary);">Create one</a> to get started.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<style>
+.manage-gallery-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.back-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+}
+
+.page-header h1 {
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.page-subtitle {
+    margin-top: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.info-box {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    border: 1px solid var(--color-primary);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.gallery-table-container {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.gallery-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.gallery-table thead {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+}
+
+.gallery-table th,
+.gallery-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.gallery-table th {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.gallery-row {
+    cursor: move;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.gallery-row:hover {
+    background: color-mix(in srgb, var(--color-primary) 4%, var(--bg-secondary));
+}
+
+.gallery-row.dragging {
+    opacity: 0.5;
+    background: color-mix(in srgb, var(--color-primary) 15%, var(--bg-secondary));
+}
+
+.sl-cell {
+    width: 70px;
+    font-weight: 600;
+}
+
+.drag-handle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: move;
+    opacity: 0.8;
+}
+
+.drag-handle svg {
+    opacity: 0.6;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}
+
+.image-thumb {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+.image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.no-image {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.text-cell .title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.text-cell .description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.actions-cell {
+    padding: 1rem;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.edit-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.delete-btn {
+    background: color-mix(in srgb, #dc3545 10%, var(--bg-secondary));
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.meta-cell {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.meta-cell .created-by {
+    margin-top: 0.15rem;
+}
+
+.empty-row {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .gallery-table th:nth-child(4),
+    .gallery-table td:nth-child(4) {
+        display: none;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('gallery-tbody');
+    if (!tbody) return;
+
+    let draggedRow = null;
+
+    function attachRowEvents(row) {
+        row.draggable = true;
+
+        row.addEventListener('dragstart', function(e) {
+            draggedRow = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        });
+
+        row.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+
+        row.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            const afterElement = getDragAfterElement(tbody, e.clientY);
+            if (afterElement == null) {
+                tbody.appendChild(draggedRow);
+            } else {
+                tbody.insertBefore(draggedRow, afterElement);
+            }
+        });
+
+        row.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedRow && draggedRow !== this) {
+                const afterElement = getDragAfterElement(tbody, e.clientY);
+                if (afterElement == null) {
+                    tbody.appendChild(draggedRow);
+                } else {
+                    tbody.insertBefore(draggedRow, afterElement);
+                }
+                updateOrder();
+            }
+        });
+    }
+
+    const rows = tbody.querySelectorAll('.gallery-row');
+    rows.forEach(attachRowEvents);
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.gallery-row:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function updateOrder() {
+        const rows = tbody.querySelectorAll('.gallery-row');
+        const itemIds = Array.from(rows).map(row => row.dataset.itemId);
+        const csrftoken = getCookie('csrftoken');
+
+        fetch('{% url "office:update_gallery_order" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ item_ids: itemIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update SL numbers in the UI
+                rows.forEach((row, index) => {
+                    const slSpan = row.querySelector('.sl-number');
+                    if (slSpan) {
+                        slSpan.textContent = index + 1;
+                    }
+                });
+            } else {
+                alert('Error updating order: ' + (data.message || 'Unknown error'));
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating order. Please refresh the page.');
+            location.reload();
+        });
+    }
+});
+</script>
+{% endblock %}
+
+

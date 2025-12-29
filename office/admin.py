@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdmissionResult, Post, PostAttachment, ClassRoutine, ExamRoutine
+from .models import AdmissionResult, Post, PostAttachment, ClassRoutine, ExamRoutine, Gallery
 
 
 @admin.register(AdmissionResult)
@@ -124,6 +124,24 @@ class ExamRoutineAdmin(admin.ModelAdmin):
         }),
         ('Routine Image', {
             'fields': ('routine_image',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at')
+        }),
+    )
+
+
+@admin.register(Gallery)
+class GalleryAdmin(admin.ModelAdmin):
+    list_display = ['sl', 'short_title', 'created_at', 'created_by']
+    list_filter = ['created_at']
+    search_fields = ['short_title', 'description', 'created_by_name', 'created_by_email']
+    ordering = ['sl', '-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Gallery Item', {
+            'fields': ('sl', 'short_title', 'description', 'image')
         }),
         ('Metadata', {
             'fields': ('created_by', 'created_at', 'updated_at')

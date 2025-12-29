@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Exam Routine - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="delete-routine-page">
+        <div class="page-header">
+            <a href="{% url 'office:exam_routine_detail' routine.pk %}" class="back-link">← Back to Routine</a>
+            <h1>Delete Exam Routine</h1>
+        </div>
+        
+        <div class="delete-confirmation">
+            <div class="warning-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <h2>Are you sure you want to delete this routine?</h2>
+                <p>This action cannot be undone. The routine will be permanently deleted.</p>
+            </div>
+            
+            <div class="routine-info-card">
+                <div class="routine-info-header">
+                    <div class="routine-badge-large">
+                        {{ routine.academic_year }} {{ routine.get_semester_display }}
+                    </div>
+                    <div class="routine-details">
+                        <h3>{{ routine.get_type_of_exam_display }} - {{ routine.get_year_semester_display }}</h3>
+                        <p class="routine-section-large">Section {{ routine.section }}</p>
+                    </div>
+                </div>
+                
+                <div class="routine-image-preview-small">
+                    <img src="{{ routine.routine_image.url }}" alt="Routine {{ routine.academic_year }} {{ routine.semester }}">
+                </div>
+            </div>
+            
+            <form method="post" class="delete-form">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="btn-danger">Yes, Delete Routine</button>
+                    <a href="{% url 'office:exam_routine_detail' routine.pk %}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.delete-routine-page {
+    padding: 2rem 0;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 1rem 0 2rem;
+}
+
+.delete-confirmation {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.warning-box {
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.warning-box svg {
+    color: #dc2626;
+    margin-bottom: 1rem;
+}
+
+.warning-box h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #dc2626;
+    margin: 0.5rem 0;
+}
+
+.warning-box p {
+    color: #991b1b;
+    margin: 0.5rem 0 0 0;
+}
+
+.routine-info-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.routine-info-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.routine-badge-large {
+    background: var(--color-primary);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.routine-details h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.routine-section-large {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.routine-image-preview-small {
+    width: 100%;
+    max-height: 300px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--bg-primary);
+}
+
+.routine-image-preview-small img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.delete-form {
+    margin-top: 2rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-danger, .btn-secondary {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    flex: 1;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .routine-info-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-danger, .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* Remove underlines from anchor tags and make them follow theme */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.back-link {
+    color: var(--color-primary);
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+
