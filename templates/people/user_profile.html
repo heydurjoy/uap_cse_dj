@@ -363,7 +363,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 11. Manage Routines -->
+                <!-- 11. Manage Class Routines -->
                 {% if user.is_power_user or user|has_granted_permission:'post_routines' %}
                 <a href="{% url 'office:manage_routines' %}" class="action-card">
                     <div class="action-icon">
@@ -375,13 +375,32 @@
                         </svg>
                     </div>
                     <div class="action-content">
-                        <h3 class="action-title">Manage Routines</h3>
+                        <h3 class="action-title">Manage Class Routines</h3>
                         <p class="action-desc">Class timetables</p>
                     </div>
                 </a>
                 {% endif %}
                 
-                <!-- 12. Academic Calendars -->
+                <!-- 12. Manage Exam Routines -->
+                {% if user.is_power_user or user|has_granted_permission:'post_routines' %}
+                <a href="{% url 'office:manage_exam_routines' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Exam Routines</h3>
+                        <p class="action-desc">Exam timetables</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 13. Academic Calendars -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_academic_calendars' %}
                 <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card">
                     <div class="action-icon">
@@ -405,7 +424,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 13. Admission Results -->
+                <!-- 14. Admission Results -->
                 {% if user.is_power_user or user|has_granted_permission:'post_admission_results' %}
                     {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card">
@@ -426,7 +445,7 @@
                     {% endif %}
                 {% endif %}
                 
-                <!-- 14. Manage Clubs -->
+                <!-- 15. Manage Clubs -->
                 {% if user.is_power_user or user|has_granted_permission:'manage_club_settings' %}
                     {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
@@ -446,7 +465,7 @@
                     {% endif %}
                 {% endif %}
                 
-                <!-- 15. Manage Users -->
+                <!-- 16. Manage Users -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_users' %}" class="action-card">
                     <div class="action-icon">
@@ -464,7 +483,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 16. Manage Faculty -->
+                <!-- 17. Manage Faculty -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_faculty' %}" class="action-card">
                     <div class="action-icon">
@@ -480,7 +499,7 @@
                 </a>
                 {% endif %}
                 
-                <!-- 17. Feature Cards -->
+                <!-- 18. Feature Cards -->
                 {% if user.is_power_user or user|has_granted_permission:'edit_feature_cards' %}
                 <a href="{% url 'designs:manage_feature_cards' %}" class="action-card">
                     <div class="action-icon">

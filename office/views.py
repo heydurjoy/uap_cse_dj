@@ -11,7 +11,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from datetime import datetime
 import os
-from .models import Post, PostAttachment, AdmissionResult, POST_TYPE_CHOICES, ClassRoutine, SEMESTER_CHOICES
+from .models import Post, PostAttachment, AdmissionResult, POST_TYPE_CHOICES, ClassRoutine, ExamRoutine, SEMESTER_CHOICES, EXAM_TYPE_CHOICES, EXAM_SECTION_CHOICES
 from django.utils import timezone
 
 
@@ -496,17 +496,30 @@ def check_routine_access(user):
 
 def routine_list(request):
     """
-    Display list of all class routines with search and filter functionality.
+    Display list of all class routines and exam routines with search and filter functionality.
     Public view - anyone can view routines.
+    Shows tabs for Class Routine and Exam Routine.
     """
-    routines = ClassRoutine.objects.all()
+    # Get tab type (default to 'class')
+    tab_type = request.GET.get('tab', 'class')
+    
+    # Initialize both querysets
+    class_routines = ClassRoutine.objects.all()
+    exam_routines = ExamRoutine.objects.all()
     
     # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
-        routines = routines.filter(
+        class_routines = class_routines.filter(
             Q(academic_year__icontains=search_query) |
             Q(semester__icontains=search_query) |
+            Q(year_semester__icontains=search_query) |
+            Q(section__icontains=search_query)
+        )
+        exam_routines = exam_routines.filter(
+            Q(academic_year__icontains=search_query) |
+            Q(semester__icontains=search_query) |
+            Q(type_of_exam__icontains=search_query) |
             Q(year_semester__icontains=search_query) |
             Q(section__icontains=search_query)
         )
@@ -515,29 +528,44 @@ def routine_list(request):
     year_filter = request.GET.get('year', '')
     if year_filter:
         try:
-            routines = routines.filter(academic_year=int(year_filter))
+            class_routines = class_routines.filter(academic_year=int(year_filter))
+            exam_routines = exam_routines.filter(academic_year=int(year_filter))
         except ValueError:
             pass
     
     # Filter by semester
     semester_filter = request.GET.get('semester', '')
     if semester_filter:
-        routines = routines.filter(semester=semester_filter)
+        class_routines = class_routines.filter(semester=semester_filter)
+        exam_routines = exam_routines.filter(semester=semester_filter)
     
     # Filter by year-semester
     year_semester_filter = request.GET.get('year_semester', '')
     if year_semester_filter:
-        routines = routines.filter(year_semester=year_semester_filter)
+        class_routines = class_routines.filter(year_semester=year_semester_filter)
+        exam_routines = exam_routines.filter(year_semester=year_semester_filter)
     
     # Filter by section
     section_filter = request.GET.get('section', '')
     if section_filter:
-        routines = routines.filter(section=section_filter)
+        class_routines = class_routines.filter(section=section_filter)
+        exam_routines = exam_routines.filter(section=section_filter)
     
-    # Sort by academic year (descending), then semester, then year_semester, then section
-    routines = routines.order_by('-academic_year', 'semester', 'year_semester', 'section')
+    # Filter by exam type (only for exam routines)
+    exam_type_filter = request.GET.get('exam_type', '')
+    if exam_type_filter and tab_type == 'exam':
+        exam_routines = exam_routines.filter(type_of_exam=exam_type_filter)
     
-    # Pagination
+    # Sort routines
+    class_routines = class_routines.order_by('-academic_year', 'semester', 'year_semester', 'section')
+    exam_routines = exam_routines.order_by('-academic_year', 'semester', 'type_of_exam', 'year_semester', 'section')
+    
+    # Pagination based on active tab
+    if tab_type == 'exam':
+        routines = exam_routines
+    else:
+        routines = class_routines
+    
     paginator = Paginator(routines, 12)  # 12 routines per page
     page = request.GET.get('page', 1)
     try:
@@ -547,20 +575,26 @@ def routine_list(request):
     except EmptyPage:
         routines = paginator.page(paginator.num_pages)
     
-    # Get unique years for filter dropdown
-    years = ClassRoutine.objects.values_list('academic_year', flat=True).distinct().order_by('-academic_year')
+    # Get unique years for filter dropdown (from both types)
+    class_years = ClassRoutine.objects.values_list('academic_year', flat=True).distinct()
+    exam_years = ExamRoutine.objects.values_list('academic_year', flat=True).distinct()
+    all_years = sorted(set(list(class_years) + list(exam_years)), reverse=True)
     
     context = {
         'routines': routines,
+        'tab_type': tab_type,
         'search_query': search_query,
         'year_filter': year_filter,
         'semester_filter': semester_filter,
         'year_semester_filter': year_semester_filter,
         'section_filter': section_filter,
-        'years': years,
-        'SEMESTER_CHOICES': ClassRoutine._meta.get_field('semester').choices,
+        'exam_type_filter': exam_type_filter,
+        'years': all_years,
+        'SEMESTER_CHOICES': SEMESTER_CHOICES,
         'YEAR_SEMESTER_CHOICES': ClassRoutine._meta.get_field('year_semester').choices,
         'SECTION_CHOICES': ClassRoutine._meta.get_field('section').choices,
+        'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+        'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
     }
     
     return render(request, 'office/routine_list.html', context)
@@ -809,6 +843,275 @@ def delete_routine(request, pk):
     }
     
     return render(request, 'office/delete_routine.html', context)
+
+
+# ==============================================================================
+# EXAM ROUTINE MANAGEMENT VIEWS
+# ==============================================================================
+
+def exam_routine_detail(request, pk):
+    """
+    Display detailed view of an exam routine.
+    Public view - anyone can view exam routine details.
+    """
+    routine = get_object_or_404(ExamRoutine, pk=pk)
+    
+    # Check if user can manage routines
+    can_manage = check_routine_access(request.user) if request.user.is_authenticated else False
+    
+    context = {
+        'routine': routine,
+        'can_manage': can_manage,
+    }
+    
+    return render(request, 'office/exam_routine_detail.html', context)
+
+
+@login_required
+def manage_exam_routines(request):
+    """
+    Manage exam routines view with filtering.
+    Only Level 3+ users can access this view.
+    """
+    if not check_routine_access(request.user):
+        messages.error(request, 'You do not have permission to manage exam routines.')
+        return redirect('office:routine_list')
+    
+    routines = ExamRoutine.objects.all()
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        routines = routines.filter(
+            Q(academic_year__icontains=search_query) |
+            Q(semester__icontains=search_query) |
+            Q(type_of_exam__icontains=search_query) |
+            Q(year_semester__icontains=search_query) |
+            Q(section__icontains=search_query)
+        )
+    
+    # Filter by academic year
+    year_filter = request.GET.get('year', '')
+    if year_filter:
+        try:
+            routines = routines.filter(academic_year=int(year_filter))
+        except ValueError:
+            pass
+    
+    # Filter by semester
+    semester_filter = request.GET.get('semester', '')
+    if semester_filter:
+        routines = routines.filter(semester=semester_filter)
+    
+    # Filter by exam type
+    exam_type_filter = request.GET.get('exam_type', '')
+    if exam_type_filter:
+        routines = routines.filter(type_of_exam=exam_type_filter)
+    
+    # Sort by academic year (descending), then semester, then exam type, then year_semester, then section
+    routines = routines.order_by('-academic_year', 'semester', 'type_of_exam', 'year_semester', 'section')
+    
+    # Get unique years for filter dropdown
+    years = ExamRoutine.objects.values_list('academic_year', flat=True).distinct().order_by('-academic_year')
+    
+    context = {
+        'routines': routines,
+        'search_query': search_query,
+        'year_filter': year_filter,
+        'semester_filter': semester_filter,
+        'exam_type_filter': exam_type_filter,
+        'SEMESTER_CHOICES': SEMESTER_CHOICES,
+        'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+        'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+        'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+        'years': years,
+    }
+    
+    return render(request, 'office/manage_exam_routines.html', context)
+
+
+@login_required
+def create_exam_routine(request):
+    """
+    Create a new exam routine.
+    Only Level 3+ users can create exam routines.
+    """
+    if not check_routine_access(request.user):
+        messages.error(request, 'You do not have permission to create exam routines.')
+        return redirect('office:routine_list')
+    
+    if request.method == 'POST':
+        try:
+            academic_year = int(request.POST.get('academic_year'))
+            semester = request.POST.get('semester')
+            type_of_exam = request.POST.get('type_of_exam')
+            year_semester = request.POST.get('year_semester')
+            section = request.POST.get('section')
+            routine_image = request.FILES.get('routine_image')
+            
+            # Validate required fields
+            if not all([academic_year, semester, type_of_exam, year_semester, section, routine_image]):
+                messages.error(request, 'All fields are required.')
+                return render(request, 'office/create_exam_routine.html', {
+                    'SEMESTER_CHOICES': SEMESTER_CHOICES,
+                    'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+                    'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+                    'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+                    'form_data': request.POST,
+                })
+            
+            # Check for duplicate
+            if ExamRoutine.objects.filter(
+                academic_year=academic_year,
+                semester=semester,
+                type_of_exam=type_of_exam,
+                year_semester=year_semester,
+                section=section
+            ).exists():
+                messages.error(request, 'An exam routine with these parameters already exists.')
+                return render(request, 'office/create_exam_routine.html', {
+                    'SEMESTER_CHOICES': SEMESTER_CHOICES,
+                    'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+                    'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+                    'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+                    'form_data': request.POST,
+                })
+            
+            # Create routine
+            routine = ExamRoutine.objects.create(
+                academic_year=academic_year,
+                semester=semester,
+                type_of_exam=type_of_exam,
+                year_semester=year_semester,
+                section=section,
+                routine_image=routine_image,
+                created_by=request.user
+            )
+            
+            messages.success(request, f'Exam routine created successfully!')
+            return redirect('office:exam_routine_detail', pk=routine.pk)
+            
+        except ValueError:
+            messages.error(request, 'Invalid academic year.')
+        except Exception as e:
+            messages.error(request, f'Error creating exam routine: {str(e)}')
+    
+    # Get current year for default value
+    current_year = datetime.now().year
+    
+    context = {
+        'SEMESTER_CHOICES': SEMESTER_CHOICES,
+        'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+        'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+        'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+        'current_year': current_year,
+    }
+    
+    return render(request, 'office/create_exam_routine.html', context)
+
+
+@login_required
+def edit_exam_routine(request, pk):
+    """
+    Edit an existing exam routine.
+    Only Level 3+ users can edit exam routines.
+    """
+    if not check_routine_access(request.user):
+        messages.error(request, 'You do not have permission to edit exam routines.')
+        return redirect('office:routine_list')
+    
+    routine = get_object_or_404(ExamRoutine, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            academic_year = int(request.POST.get('academic_year'))
+            semester = request.POST.get('semester')
+            type_of_exam = request.POST.get('type_of_exam')
+            year_semester = request.POST.get('year_semester')
+            section = request.POST.get('section')
+            routine_image = request.FILES.get('routine_image')
+            
+            # Validate required fields (except image, which is optional on update)
+            if not all([academic_year, semester, type_of_exam, year_semester, section]):
+                messages.error(request, 'All fields except image are required.')
+                return render(request, 'office/edit_exam_routine.html', {
+                    'routine': routine,
+                    'SEMESTER_CHOICES': SEMESTER_CHOICES,
+                    'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+                    'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+                    'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+                })
+            
+            # Check for duplicate (excluding current routine)
+            duplicate = ExamRoutine.objects.filter(
+                academic_year=academic_year,
+                semester=semester,
+                type_of_exam=type_of_exam,
+                year_semester=year_semester,
+                section=section
+            ).exclude(pk=routine.pk)
+            
+            if duplicate.exists():
+                messages.error(request, 'An exam routine with these parameters already exists.')
+                return render(request, 'office/edit_exam_routine.html', {
+                    'routine': routine,
+                    'SEMESTER_CHOICES': SEMESTER_CHOICES,
+                    'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+                    'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+                    'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+                })
+            
+            # Update routine
+            routine.academic_year = academic_year
+            routine.semester = semester
+            routine.type_of_exam = type_of_exam
+            routine.year_semester = year_semester
+            routine.section = section
+            if routine_image:
+                routine.routine_image = routine_image
+            routine.save()
+            
+            messages.success(request, 'Exam routine updated successfully!')
+            return redirect('office:exam_routine_detail', pk=routine.pk)
+            
+        except ValueError:
+            messages.error(request, 'Invalid academic year.')
+        except Exception as e:
+            messages.error(request, f'Error updating exam routine: {str(e)}')
+    
+    context = {
+        'routine': routine,
+        'SEMESTER_CHOICES': SEMESTER_CHOICES,
+        'EXAM_TYPE_CHOICES': EXAM_TYPE_CHOICES,
+        'YEAR_SEMESTER_CHOICES': ExamRoutine._meta.get_field('year_semester').choices,
+        'EXAM_SECTION_CHOICES': EXAM_SECTION_CHOICES,
+    }
+    
+    return render(request, 'office/edit_exam_routine.html', context)
+
+
+@login_required
+def delete_exam_routine(request, pk):
+    """
+    Delete an exam routine.
+    Only Level 3+ users can delete exam routines.
+    """
+    if not check_routine_access(request.user):
+        messages.error(request, 'You do not have permission to delete exam routines.')
+        return redirect('office:routine_list')
+    
+    routine = get_object_or_404(ExamRoutine, pk=pk)
+    
+    if request.method == 'POST':
+        routine.delete()
+        messages.success(request, 'Exam routine deleted successfully!')
+        return redirect('office:manage_exam_routines')
+    
+    context = {
+        'routine': routine,
+    }
+    
+    return render(request, 'office/delete_exam_routine.html', context)
 
 
 # ==============================================================================

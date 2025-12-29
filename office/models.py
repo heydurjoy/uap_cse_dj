@@ -39,6 +39,21 @@ SECTION_CHOICES = (
     ('J', 'J'),
 )
 
+# Exam Type Choices
+EXAM_TYPE_CHOICES = (
+    ('mid', 'Mid'),
+    ('final', 'Final'),
+)
+
+# Section Choices for Exam Routines (A-E only)
+EXAM_SECTION_CHOICES = (
+    ('A', 'A'),
+    ('B', 'B'),
+    ('C', 'C'),
+    ('D', 'D'),
+    ('E', 'E'),
+)
+
 # Post Type Choices
 POST_TYPE_CHOICES = (
     ('notice', 'Notice'),
@@ -371,6 +386,118 @@ class ClassRoutine(models.Model):
 
     def __str__(self):
         return f"{self.academic_year} {self.semester} - {self.get_year_semester_display()} Section {self.section}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-populate created_by_name and created_by_email when created_by is set"""
+        if self.created_by and not self.created_by_name:
+            # Get the user's name based on their type
+            name = None
+            email = self.created_by.email or ''
+            
+            if self.created_by.user_type == 'faculty' and hasattr(self.created_by, 'faculty_profile'):
+                name = self.created_by.faculty_profile.name if self.created_by.faculty_profile else None
+            elif self.created_by.user_type == 'officer' and hasattr(self.created_by, 'officer_profile'):
+                name = self.created_by.officer_profile.name if self.created_by.officer_profile else None
+            elif self.created_by.user_type == 'staff' and hasattr(self.created_by, 'staff_profile'):
+                name = self.created_by.staff_profile.name if self.created_by.staff_profile else None
+            else:
+                # Fallback to full name or email
+                name = self.created_by.get_full_name() or self.created_by.email or ''
+            
+            self.created_by_name = name or email
+            self.created_by_email = email
+        
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        """Validate the model"""
+        super().clean()
+        # Additional validation can be added here if needed
+
+
+class ExamRoutine(models.Model):
+    """
+    Model for managing exam routines.
+    Only authorized staff (Officer/Faculty) with User Level >= 3 can manage exam routines.
+    """
+    academic_year = models.IntegerField(
+        verbose_name="Academic Year",
+        help_text="The year (e.g., 2025)",
+        validators=[
+            MinValueValidator(2000),
+            MaxValueValidator(datetime.now().year + 5)
+        ]
+    )
+    semester = models.CharField(
+        max_length=10,
+        choices=SEMESTER_CHOICES,
+        verbose_name="Semester",
+        help_text="The academic period: Fall or Spring"
+    )
+    type_of_exam = models.CharField(
+        max_length=10,
+        choices=EXAM_TYPE_CHOICES,
+        verbose_name="Type of Exam",
+        help_text="Mid or Final exam"
+    )
+    year_semester = models.CharField(
+        max_length=3,
+        choices=YEAR_SEMESTER_CHOICES,
+        verbose_name="Year-Semester",
+        help_text="Student level (e.g., 1-1, 2-2, 4-2)"
+    )
+    section = models.CharField(
+        max_length=1,
+        choices=EXAM_SECTION_CHOICES,
+        verbose_name="Section",
+        help_text="Class division (A to E)"
+    )
+    routine_image = models.ImageField(
+        upload_to='exam_routines/',
+        verbose_name="Routine Image",
+        help_text="The exam timetable image (Max 1MB, will be compressed and resized to max width 2000px if larger)"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Created At",
+        help_text="Timestamp when the routine was created"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Updated At",
+        help_text="Timestamp when the routine was last updated"
+    )
+    created_by = models.ForeignKey(
+        BaseUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_exam_routines',
+        verbose_name="Created By",
+        help_text="Links to the user who created the routine"
+    )
+    created_by_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Created By Name",
+        help_text="Name of the user who created this routine (preserved even if user is deleted)"
+    )
+    created_by_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Created By Email",
+        help_text="Email of the user who created this routine (preserved even if user is deleted)"
+    )
+
+    class Meta:
+        verbose_name = 'Exam Routine'
+        verbose_name_plural = 'Exam Routines'
+        ordering = ['-academic_year', 'semester', 'type_of_exam', 'year_semester', 'section']
+        # Ensure unique combination of academic_year, semester, type_of_exam, year_semester, and section
+        unique_together = ('academic_year', 'semester', 'type_of_exam', 'year_semester', 'section')
+
+    def __str__(self):
+        return f"{self.academic_year} {self.semester} - {self.get_type_of_exam_display()} - {self.get_year_semester_display()} Section {self.section}"
     
     def save(self, *args, **kwargs):
         """Auto-populate created_by_name and created_by_email when created_by is set"""

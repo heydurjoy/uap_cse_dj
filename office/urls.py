@@ -21,6 +21,13 @@ urlpatterns = [
     path('routines/<int:pk>/edit/', views.edit_routine, name='edit_routine'),
     path('routines/<int:pk>/delete/', views.delete_routine, name='delete_routine'),
     
+    # Exam Routine URLs
+    path('exam-routines/<int:pk>/', views.exam_routine_detail, name='exam_routine_detail'),
+    path('exam-routines/manage/', views.manage_exam_routines, name='manage_exam_routines'),
+    path('exam-routines/create/', views.create_exam_routine, name='create_exam_routine'),
+    path('exam-routines/<int:pk>/edit/', views.edit_exam_routine, name='edit_exam_routine'),
+    path('exam-routines/<int:pk>/delete/', views.delete_exam_routine, name='delete_exam_routine'),
+    
     # Admission Results Public Search URLs
     path('admissions/results/', views.search_admission_results, name='search_admission_results'),
     path('admissions/results/<int:pk>/pdf/', views.serve_admission_pdf, name='serve_admission_pdf'),
