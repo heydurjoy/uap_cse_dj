@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="staff-list-section">
+        <div class="staff-header">
+            <h1>Our Staff</h1>
+            <p class="subtitle">Meet the lab assistants and attendants supporting our Computer Science and Engineering department</p>
+        </div>
+        
+        {% if staff_members %}
+            <div class="staff-grid">
+                {% for staff in staff_members %}
+                <a href="{% url 'people:staff_detail' staff.pk %}" class="staff-card-link">
+                    <div class="staff-card">
+                        <div class="staff-card-image">
+                            <img src="{% if staff.profile_pic %}{{ staff.profile_pic.url }}{% else %}{% static 'images/defaults/people.png' %}{% endif %}" alt="{{ staff.name }}">
+                        </div>
+                        <div class="staff-card-body">
+                            <h3 class="staff-name">{{ staff.name }}</h3>
+                            {% if staff.designation %}
+                                <p class="staff-designation">{{ staff.get_designation_display }}</p>
+                            {% endif %}
+                            {% if staff.bio %}
+                                <p class="staff-bio">{{ staff.bio|truncatewords:20 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-staff">No staff members available yet.</p>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.staff-list-section {
+    padding: 3rem 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.staff-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.staff-header h1 {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.staff-header .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 0 1rem;
+}
+
+.staff-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.staff-card-link:hover {
+    transform: translateY(-5px);
+    text-decoration: none;
+}
+
+.staff-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-card-link:hover .staff-card {
+    box-shadow: 0 8px 24px var(--shadow-md);
+    border-color: var(--color-primary);
+}
+
+.staff-card-image {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    position: relative;
+}
+
+.staff-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.staff-card-link:hover .staff-card-image img {
+    transform: scale(1.05);
+}
+
+.staff-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-name {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.staff-designation {
+    font-size: 1rem;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+    font-weight: 500;
+}
+
+.staff-bio {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.no-staff {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .staff-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .staff-header h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .staff-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+

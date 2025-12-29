@@ -307,6 +307,82 @@ def officer_detail(request, pk):
     return render(request, 'people/officer_detail.html', context)
 
 
+def staff_list(request):
+    """
+    Display list of all staff members, sorted by serial number.
+    """
+    staff_members = Staff.objects.all().order_by('sl').select_related('base_user')
+    
+    context = {
+        'staff_members': staff_members,
+    }
+    
+    return render(request, 'people/staff_list.html', context)
+
+
+def staff_detail(request, pk):
+    """
+    Display detailed view of a single staff member.
+    """
+    from datetime import date, datetime
+    from django.utils import timezone
+    
+    staff = get_object_or_404(Staff, pk=pk)
+    
+    # Calculate detailed years of service
+    service_data = None
+    if staff.joining_date:
+        today = timezone.now()
+        joining_datetime = timezone.make_aware(datetime.combine(staff.joining_date, datetime.min.time()))
+        
+        # Calculate total time difference
+        delta = today - joining_datetime
+        
+        total_days = delta.days
+        total_seconds = delta.total_seconds()
+        hours = int((total_seconds % 86400) // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        
+        # Calculate years and months
+        today_date = today.date()
+        joining = staff.joining_date
+        
+        years = today_date.year - joining.year
+        months = today_date.month - joining.month
+        days_in_month = today_date.day - joining.day
+        
+        # Adjust for negative months/days
+        if days_in_month < 0:
+            months -= 1
+            # Get days in previous month
+            if today_date.month == 1:
+                from calendar import monthrange
+                days_in_prev_month = monthrange(today_date.year - 1, 12)[1]
+            else:
+                from calendar import monthrange
+                days_in_prev_month = monthrange(today_date.year, today_date.month - 1)[1]
+            days_in_month += days_in_prev_month
+        
+        if months < 0:
+            years -= 1
+            months += 12
+        
+        service_data = {
+            'total_days': total_days,
+            'hours': hours,
+            'minutes': minutes,
+            'years': years,
+            'months': months,
+        }
+    
+    context = {
+        'staff': staff,
+        'service_data': service_data,
+    }
+    
+    return render(request, 'people/staff_detail.html', context)
+
+
 @login_required
 def user_profile(request):
     """
