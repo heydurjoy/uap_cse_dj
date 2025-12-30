@@ -1290,8 +1290,8 @@ def create_club_allowed_email(request, pk):
             if FRONTEND_DOMAIN_ENV:
                 DOMAIN = FRONTEND_DOMAIN_ENV.rstrip('/')
             else:
-                protocol = 'https' if request.is_secure() else 'http'
-                DOMAIN = f"{protocol}://{request.get_host()}"
+                # Default to testcse.uap-bd.edu
+                DOMAIN = 'https://testcse.uap-bd.edu'
             
             signup_url = f"{DOMAIN}{reverse('signup')}"
             

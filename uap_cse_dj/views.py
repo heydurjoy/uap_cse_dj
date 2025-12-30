@@ -706,15 +706,14 @@ def forgot_password(request):
         # Generate hashed token
         raw_token = PasswordResetToken.generate_token(user)
         
-        # Get domain - prefer FRONTEND_DOMAIN env var, fallback to request
+        # Get domain - prefer FRONTEND_DOMAIN env var, fallback to testcse.uap-bd.edu
         FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
         if FRONTEND_DOMAIN_ENV:
             # Strip trailing slash to avoid double slashes
             DOMAIN = FRONTEND_DOMAIN_ENV.rstrip('/')
         else:
-            # Fallback: use request host with appropriate protocol
-            protocol = 'https' if request.is_secure() else 'http'
-            DOMAIN = f"{protocol}://{request.get_host()}"
+            # Default to testcse.uap-bd.edu
+            DOMAIN = 'https://testcse.uap-bd.edu'
         
         reset_path = reverse('reset_password', kwargs={'token': raw_token})
         reset_url = f"{DOMAIN}{reset_path}"
