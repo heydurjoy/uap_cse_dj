@@ -3851,9 +3851,38 @@ html, body {
 /* Blooms Cards Container */
 .blooms-cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards side by side */
+    gap: 1rem;
 }
+@media (max-width: 768px) {
+    .blooms-cards-container {
+        grid-template-columns: 1fr; /* stack on mobile */
+        gap: 1rem;
+    }
+}
+.stats-table-wrapper.blooms-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-table-wrapper.blooms-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+.stats-table-wrapper h4 {
+    margin: 0 0 0.75rem 0;
+    color: var(--color-primary);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-primary);
+}
+
 
 /* PO Stats Header */
 .po-stats-header h2 {
@@ -3879,23 +3908,49 @@ html, body {
         gap: 1rem !important;
     }
 
-    /* MOBILE: allow horizontal scroll */
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stats-table th {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+}
+
+.stats-table td:first-child {
+    text-align: left;
+    color: var(--text-primary);
+}
+
+.stats-table td:not(:first-child) {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.stats-table td:last-child {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+@media (max-width: 768px) {
     .stats-table-wrapper {
-        overflow-x: auto; /* only mobile scroll */
-        -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
-        padding: 1rem !important;
+        overflow-x: auto;
     }
-
     .stats-table {
-        min-width: 900px; /* triggers scroll on mobile only */
-        font-size: 0.9rem;
+        min-width: 400px; /* scroll horizontally if needed */
     }
-
-    .stats-table th,
-    .stats-table td {
-        padding: 0.5rem !important;
-        white-space: nowrap; /* prevent wrapping */
-    }
+}
 
     .po-stats-header h2 {
         font-size: 1.5rem !important;
