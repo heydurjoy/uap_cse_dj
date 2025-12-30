@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '.railway.app', # This wildcard allows any railway subdomain
     'testcse.uap-bd.edu',
+    'cse.uap-bd.edu',
 ]
 
 # CSRF trusted origins for HTTPS requests
@@ -45,6 +46,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://uapcsedj-production.up.railway.app',
     'https://*.railway.app',  # Allow any railway subdomain
     'https://testcse.uap-bd.edu',
+    'https://cse.uap-bd.edu',
 ]
 
 # Application definition

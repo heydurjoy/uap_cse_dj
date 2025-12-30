@@ -469,6 +469,68 @@ def signup(request):
     return render(request, 'signup.html')
 
 
+def get_frontend_domain(request):
+    """
+    Get the appropriate frontend domain for the current request.
+    Supports multiple domains via comma-separated FRONTEND_DOMAIN or multiple env vars.
+    
+    Priority:
+    1. Match current request's host to a domain in FRONTEND_DOMAIN (comma-separated)
+    2. Match current request's host to FRONTEND_DOMAIN_1, FRONTEND_DOMAIN_2, etc.
+    3. Use first domain from FRONTEND_DOMAIN if no match
+    4. Use FRONTEND_DOMAIN_1 if set
+    5. Build from request
+    """
+    from django.conf import settings
+    
+    # Get current request host
+    current_host = request.get_host()
+    current_scheme = 'https' if not settings.DEBUG or request.is_secure() else 'http'
+    current_domain = f"{current_scheme}://{current_host}"
+    
+    # Try comma-separated FRONTEND_DOMAIN
+    FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
+    if FRONTEND_DOMAIN_ENV:
+        domains = [d.strip().rstrip('/') for d in FRONTEND_DOMAIN_ENV.split(',') if d.strip()]
+        # Try to match current host to one of the domains
+        for domain in domains:
+            # Extract host from domain (remove https:// or http://)
+            domain_host = domain.replace('https://', '').replace('http://', '').split('/')[0]
+            if current_host == domain_host or current_host.startswith(domain_host.split(':')[0]):
+                return domain.rstrip('/')
+        # If no match, use first domain
+        if domains:
+            return domains[0].rstrip('/')
+    
+    # Try numbered environment variables (FRONTEND_DOMAIN_1, FRONTEND_DOMAIN_2, etc.)
+    i = 1
+    while True:
+        domain_var = os.getenv(f'FRONTEND_DOMAIN_{i}', '')
+        if not domain_var:
+            break
+        domain = domain_var.strip().rstrip('/')
+        # Check if current host matches
+        domain_host = domain.replace('https://', '').replace('http://', '').split('/')[0]
+        if current_host == domain_host or current_host.startswith(domain_host.split(':')[0]):
+            return domain.rstrip('/')
+        i += 1
+    
+    # If FRONTEND_DOMAIN_1 exists but no match, use it
+    FRONTEND_DOMAIN_1 = os.getenv('FRONTEND_DOMAIN_1', '')
+    if FRONTEND_DOMAIN_1:
+        return FRONTEND_DOMAIN_1.strip().rstrip('/')
+    
+    # Fallback: build from request
+    redirect_uri = request.build_absolute_uri('/')
+    # Ensure HTTPS if not in DEBUG mode
+    if not settings.DEBUG and not redirect_uri.startswith('https://'):
+        redirect_uri = redirect_uri.replace('http://', 'https://', 1)
+    # Extract domain from full URI
+    from urllib.parse import urlparse
+    parsed = urlparse(redirect_uri)
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
 def google_login(request):
     """
     Initiate Google OAuth login flow.
@@ -484,7 +546,10 @@ def google_login(request):
     
     # Google OAuth configuration
     client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
-    redirect_uri = request.build_absolute_uri(reverse('google_callback'))
+    
+    # Build redirect URI using helper function
+    domain = get_frontend_domain(request)
+    redirect_uri = f"{domain}{reverse('google_callback')}"
     
     if not client_id:
         messages.error(request, 'Google OAuth is not configured. Please contact the administrator.')
@@ -528,7 +593,10 @@ def google_callback(request):
     # Exchange code for tokens
     client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
     client_secret = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', '')
-    redirect_uri = request.build_absolute_uri(reverse('google_callback'))
+    
+    # Build redirect URI using helper function
+    domain = get_frontend_domain(request)
+    redirect_uri = f"{domain}{reverse('google_callback')}"
     
     if not client_id or not client_secret:
         messages.error(request, 'Google OAuth is not configured. Please contact the administrator.')
@@ -706,24 +774,16 @@ def forgot_password(request):
         # Generate hashed token
         raw_token = PasswordResetToken.generate_token(user)
         
-        # Get domain - prefer FRONTEND_DOMAIN env var, fallback to testcse.uap-bd.edu
-        FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
-        if FRONTEND_DOMAIN_ENV:
-            # Strip trailing slash to avoid double slashes
-            DOMAIN = FRONTEND_DOMAIN_ENV.rstrip('/')
-        else:
-            # Default to testcse.uap-bd.edu
-            DOMAIN = 'https://testcse.uap-bd.edu'
+        # Get domain using helper function (supports multiple domains)
+        DOMAIN = get_frontend_domain(request)
         
         reset_path = reverse('reset_password', kwargs={'token': raw_token})
         reset_url = f"{DOMAIN}{reset_path}"
         
         # Log domain configuration for debugging
+        FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
         logger.info(f"FRONTEND_DOMAIN env var: {'SET' if FRONTEND_DOMAIN_ENV else 'NOT SET'}")
-        if FRONTEND_DOMAIN_ENV:
-            logger.info(f"Using FRONTEND_DOMAIN: {FRONTEND_DOMAIN_ENV}")
-        else:
-            logger.warning(f"FRONTEND_DOMAIN not set, using fallback: {DOMAIN}")
+        logger.info(f"Using domain: {DOMAIN}")
 
         BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
         EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@uap-cse.edu')
