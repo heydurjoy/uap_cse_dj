@@ -145,10 +145,6 @@
             color: inherit;
         }
         
-        .nav-link-why-btn svg path {
-            fill: currentColor;
-        }
-        
         .nav-link-why-btn::before,
         .nav-link-why-btn::after {
             display: none !important;
@@ -399,8 +395,8 @@
                     </svg>
                 </a></li>
                 <li><a href="{% url 'designs:feature_cards_list' %}" class="nav-link nav-link-why-btn" title="Why?">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M6,2L2,7L12,22L22,7L18,2H6M12,4.44L15.5,7H8.5L12,4.44Z" fill="currentColor"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6,2L2,7L12,22L22,7L18,2H6M12,4.44L15.5,7H8.5L12,4.44Z"/>
                     </svg>
                 </a></li>
                 <li><a href="{% url 'people:departmental_research' %}" class="nav-link nav-link-research {% if request.resolver_match.url_name == 'departmental_research' %}active{% endif %}">Research</a></li>

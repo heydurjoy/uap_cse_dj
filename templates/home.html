@@ -67,22 +67,18 @@
 <section class="marks-network-banner-wrapper">
     <div class="container marks-network-container">
         <div class="marks-network-banner" id="marks-banner">
-            <div class="marks-network-bg-animation"></div>
+            <!-- Animated Background -->
+            <div class="marks-network-bg-animated">
+                <div class="color-shift-layer"></div>
+            </div>
+            <!-- Content -->
             <div class="marks-network-content">
-                <div class="marks-network-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                </div>
                 <div class="marks-network-text">
                     <p class="marks-network-tagline">First University in Bangladesh: Publicly Available Network Showing Detailed Calculation of Every Mark Across Your 4-Year B.Sc. in CSE Journey</p>
                 </div>
-                <div class="marks-network-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <polyline points="19 12 12 19 5 12"></polyline>
+                <div class="marks-network-hint">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </div>
             </div>
@@ -1697,7 +1693,7 @@ html, body {
     backdrop-filter: blur(20px) saturate(200%);
     -webkit-backdrop-filter: blur(20px) saturate(200%);
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, rgba(255, 255, 255, 0.2));
-    border-radius: 24px;
+    border-radius: 999px;
     width: 100%;
     max-width: 900px;
     max-height: 90vh;
@@ -1912,66 +1908,90 @@ html, body {
 /* Marks Distribution Network Banner */
 
 .marks-network-container {
-    max-width: 750px;
+    max-width: 900px;
     margin: 0 auto;
-
 }
 .marks-network-banner-wrapper {
-    padding: 2.5rem 0 3rem 0;
+    padding: 3rem 0 4rem 0;
     position: relative;
     margin-top: 1rem;
 }
+
 .marks-network-banner {
     position: relative;
-
-    /* Light, high-visibility gradient */
-    background: linear-gradient(
-        120deg,
-        color-mix(in srgb, var(--color-primary) 14%, #ffffff) 0%,
-        color-mix(in srgb, var(--color-primary) 64%, var(--bg-secondary)) 35%,
-        color-mix(in srgb, var(--color-primary) 32%, #ffffff) 70%,
-        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 100%
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)) 50%,
+        color-mix(in srgb, var(--color-primary-hover) 6%, var(--bg-secondary)) 100%
     );
-
-    background-size: 350% 350%;
-    animation: gradient-flow 8s ease-in-out infinite;
-  transition:
-        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
     border-radius: 999px;
-    padding: 1.15rem 1.75rem;
+    padding: 1.75rem 2rem;
     cursor: pointer;
     overflow: hidden;
-    z-index: 2;
-    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-    box-shadow:
-        0 8px 28px rgba(0, 0, 0, 0.12),
-        0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent) inset;
+    animation: subtlePulse 3s ease-in-out infinite;
 }
+
+.marks-network-banner:active {
+    transform: scale(0.98) translateY(2px);
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.15),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset;
+}
+
 .marks-network-banner:hover {
-    transform: translateY(-6px) scale(1.035);
-    box-shadow:
-        0 16px 42px rgba(0, 0, 0, 0.18),
-        0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent) inset;
+    transform: translateY(-4px);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent) inset;
 }
-/* Soft moving highlight */
-.marks-network-bg-animation {
+
+/* Animated Background Layers */
+.marks-network-bg-animated {
     position: absolute;
     inset: 0;
     border-radius: 999px;
-    z-index: 1;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        color-mix(in srgb, #ffffff 60%, transparent) 50%,
-        transparent 100%
-    );
+    overflow: hidden;
+    z-index: 0;
+}
 
-    background-size: 240% 100%;
-    animation: light-sweep 9s linear infinite;
-    opacity: 0.25;
-    pointer-events: none;
+.color-shift-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary-hover) 10%, transparent) 25%,
+        color-mix(in srgb, var(--color-primary) 6%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary-hover) 9%, transparent) 75%,
+        color-mix(in srgb, var(--color-primary) 8%, transparent) 100%
+    );
+    background-size: 300% 300%;
+    animation: subtleColorFlow 12s ease-in-out infinite;
+    opacity: 0.7;
+}
+
+@keyframes subtleColorFlow {
+    0%, 100% {
+        background-position: 0% 50%;
+        opacity: 0.6;
+    }
+    25% {
+        background-position: 50% 0%;
+        opacity: 0.75;
+    }
+    50% {
+        background-position: 100% 50%;
+        opacity: 0.7;
+    }
+    75% {
+        background-position: 50% 100%;
+        opacity: 0.75;
+    }
 }
 
 @keyframes gradient-flow {
@@ -2000,86 +2020,83 @@ html, body {
     gap: 1rem;
     position: relative;
     z-index: 2;
+    text-align: center;
+    flex-wrap: wrap;
 }
 
-.marks-network-icon {
-    color: var(--color-primary);
-    flex-shrink: 0;
-    animation: pulse-glow 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent));
-}
-
-@keyframes pulse-glow {
-    0%, 100% {
-        transform: scale(1) rotate(0deg);
-        filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent));
-    }
-    25% {
-        transform: scale(1.1) rotate(-5deg);
-        filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
-    }
-    50% {
-        transform: scale(1.15) rotate(0deg);
-        filter: drop-shadow(0 0 20px color-mix(in srgb, var(--color-primary) 80%, transparent));
-    }
-    75% {
-        transform: scale(1.1) rotate(5deg);
-        filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
-    }
-}
-
-.marks-network-banner:hover .marks-network-icon {
-    animation: pulse-glow 0.8s ease-in-out infinite;
-    transform: scale(1.2) rotate(10deg);
-    filter: drop-shadow(0 0 25px color-mix(in srgb, var(--color-primary) 90%, transparent));
-}
 
 .marks-network-text {
-    flex: 1;
-    text-align: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 40px);
 }
 
 .marks-network-tagline {
-    font-size: .9rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
-    line-height: 1.35;
+    line-height: 1.4;
     letter-spacing: -0.01em;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
-                 0 0 10px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        0 0 20px color-mix(in srgb, var(--color-primary) 20%, transparent);
     position: relative;
     transition: all 0.3s ease;
+    max-width: 100%;
+    word-wrap: break-word;
+    hyphens: auto;
 }
 
 .marks-network-banner:hover .marks-network-tagline {
     color: var(--text-primary);
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
-                 0 0 20px color-mix(in srgb, var(--color-primary) 25%, transparent);
-    transform: scale(1.02);
+    text-shadow: 
+        0 3px 8px rgba(0, 0, 0, 0.15),
+        0 0 30px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    transform: scale(1.01);
 }
 
-.marks-network-arrow {
+.marks-network-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-primary);
+    opacity: 0.7;
+    animation: subtleBounce 2s ease-in-out infinite;
     flex-shrink: 0;
-    animation: bounce-arrow 1.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent));
 }
 
-@keyframes bounce-arrow {
+.marks-network-hint svg {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.marks-network-banner:hover .marks-network-hint {
+    opacity: 1;
+    animation: subtleBounce 1s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
     0%, 100% {
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
     50% {
-        transform: translateY(-10px) scale(1.1);
+        transform: translateY(-2px);
     }
 }
 
-.marks-network-banner:hover .marks-network-arrow {
-    animation: bounce-arrow 0.7s ease-in-out infinite;
-    transform: translateY(-12px) scale(1.2);
-    filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
+@keyframes subtleBounce {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(4px);
+        opacity: 0.9;
+    }
 }
+
 
 @media (max-width: 1024px) {
     .marks-network-container {
@@ -2093,25 +2110,11 @@ html, body {
     }
     
     .marks-network-banner {
-        padding: 1.1rem 1.5rem;
-    }
-    
-    .marks-network-content {
-        gap: 1rem;
+        padding: 1.5rem 1.75rem;
     }
     
     .marks-network-tagline {
-        font-size: 0.98rem;
-    }
-    
-    .marks-network-icon svg {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .marks-network-arrow svg {
-        width: 20px;
-        height: 20px;
+        font-size: 1rem;
     }
 }
 
@@ -2126,27 +2129,8 @@ html, body {
     }
     
     .marks-network-banner {
-        padding: 1.1rem 1.5rem;
-        border-radius: 50px;
-    }
-    
-    .marks-network-content {
-        flex-direction: row;
-        gap: 0.875rem;
-        flex-wrap: wrap;
-    }
-    
-    .marks-network-text {
-        flex: 1 1 100%;
-        order: 2;
-    }
-    
-    .marks-network-icon {
-        order: 1;
-    }
-    
-    .marks-network-arrow {
-        order: 3;
+        padding: 1.4rem 1.5rem;
+        border-radius: 999px;
     }
     
     .marks-network-tagline {
@@ -2154,14 +2138,8 @@ html, body {
         line-height: 1.5;
     }
     
-    .marks-network-icon svg {
-        width: 22px;
-        height: 22px;
-    }
-    
-    .marks-network-arrow svg {
-        width: 18px;
-        height: 18px;
+    .marks-network-hint {
+        display: none;
     }
 }
 
@@ -2176,26 +2154,13 @@ html, body {
     }
     
     .marks-network-banner {
-        padding: 1rem 1.5rem;
-        border-radius: 40px;
-    }
-    
-    .marks-network-content {
-        gap: 0.875rem;
+        padding: 1.2rem 1.25rem;
+        border-radius: 999px;
     }
     
     .marks-network-tagline {
-        font-size: 0.95rem;
-    }
-    
-    .marks-network-icon svg {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .marks-network-arrow svg {
-        width: 16px;
-        height: 16px;
+        font-size: 0.9rem;
+        line-height: 1.4;
     }
 }
 
