@@ -519,6 +519,27 @@
         </div>
     </nav>
 
+    <!-- Under Construction Toast -->
+    <div id="construction-toast" class="construction-toast">
+        <div class="construction-toast-content">
+            <div class="construction-toast-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+            </div>
+            <div class="construction-toast-message">
+                <strong>Under Construction</strong>
+                <span>This website is currently under construction. Some features may be unavailable.</span>
+            </div>
+            <button class="construction-toast-close" onclick="closeConstructionToast()" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-content">
         {% block content %}{% endblock %}
@@ -588,7 +609,166 @@
     </div>
 </footer>
 
+<style>
+/* Construction Toast */
+.construction-toast {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 95%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary-hover) 95%, var(--bg-secondary)) 100%
+    );
+    border-bottom: 2px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
 
+.construction-toast-content {
+    max-width: 1200px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-primary);
+}
+
+.construction-toast-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    border-radius: 8px;
+    color: var(--color-primary);
+}
+
+.construction-toast-message {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.construction-toast-message strong {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.construction-toast-message span {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.construction-toast-close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    border: none;
+    border-radius: 6px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.construction-toast-close:hover {
+    background: color-mix(in srgb, var(--color-primary) 25%, transparent);
+    transform: scale(1.1);
+}
+
+.construction-toast-close:active {
+    transform: scale(0.95);
+}
+
+.construction-toast-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Adjust main content padding when toast is visible */
+body:has(.construction-toast:not([style*="display: none"])) .main-content {
+    padding-top: 80px;
+}
+
+@media (max-width: 768px) {
+    .construction-toast {
+        padding: 0.875rem 1rem;
+    }
+    
+    .construction-toast-content {
+        gap: 0.75rem;
+    }
+    
+    .construction-toast-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .construction-toast-message strong {
+        font-size: 0.95rem;
+    }
+    
+    .construction-toast-message span {
+        font-size: 0.8rem;
+    }
+    
+    .construction-toast-close {
+        width: 28px;
+        height: 28px;
+    }
+    
+    body:has(.construction-toast:not([style*="display: none"])) .main-content {
+        padding-top: 70px;
+    }
+}
+</style>
+
+<script>
+    // Construction Toast
+    function closeConstructionToast() {
+        const toast = document.getElementById('construction-toast');
+        if (toast) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-100%)';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 300);
+            // Store dismissal in localStorage
+            localStorage.setItem('construction-toast-dismissed', 'true');
+        }
+    }
+
+    // Check if toast was previously dismissed
+    document.addEventListener('DOMContentLoaded', function() {
+        const toast = document.getElementById('construction-toast');
+        if (toast && localStorage.getItem('construction-toast-dismissed') === 'true') {
+            toast.style.display = 'none';
+        } else if (toast) {
+            // Show toast with animation after a brief delay
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 500);
+        }
+    });
+</script>
 
 
     <script src="{% static 'js/theme.js' %}"></script>
@@ -650,6 +830,36 @@
             });
         }
     });
+    </script>
+    
+    <script>
+        // Construction Toast
+        function closeConstructionToast() {
+            const toast = document.getElementById('construction-toast');
+            if (toast) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-100%)';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 300);
+                // Store dismissal in localStorage
+                localStorage.setItem('construction-toast-dismissed', 'true');
+            }
+        }
+
+        // Check if toast was previously dismissed
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.getElementById('construction-toast');
+            if (toast && localStorage.getItem('construction-toast-dismissed') === 'true') {
+                toast.style.display = 'none';
+            } else if (toast) {
+                // Show toast with animation after a brief delay
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateY(0)';
+                }, 500);
+            }
+        });
     </script>
     
  {% block extra_js %}
