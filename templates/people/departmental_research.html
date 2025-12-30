@@ -4,6 +4,10 @@
 
 {% block title %}Departmental Research - CSE UAP{% endblock %}
 
+{% block extra_css %}
+<!-- Chart.js will be loaded before script section -->
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <section class="research-page-section">
@@ -20,20 +24,57 @@
             </div>
         </div>
 
-        <!-- Time Period Filter Bar -->
-        <div class="period-filter-bar">
-            <div class="filter-label">Time Period:</div>
-            <div class="filter-buttons">
-                <a href="?period=all_time&tab={{ request.GET.tab|default:'stats' }}" class="filter-btn {% if period == 'all_time' %}active{% endif %}" data-period="all_time">
-                    All Time
-                </a>
-                <a href="?period=last_2_years&tab={{ request.GET.tab|default:'stats' }}" class="filter-btn {% if period == 'last_2_years' %}active{% endif %}" data-period="last_2_years">
-                    Last 2 Years
-                </a>
-                <a href="?period=current_year&tab={{ request.GET.tab|default:'stats' }}" class="filter-btn {% if period == 'current_year' %}active{% endif %}" data-period="current_year">
-                    {{ current_year }}
-                </a>
-            </div>
+        <!-- Comprehensive Filter Bar -->
+        <div class="comprehensive-filter-bar">
+            <form method="get" action="{% url 'people:departmental_research' %}" id="filter-form" class="filter-form">
+                <input type="hidden" name="tab" id="current-tab-input" value="{{ request.GET.tab|default:'stats' }}">
+                
+                <div class="filter-group">
+                    <label class="filter-label">Time Period:</label>
+                    <div class="filter-buttons">
+                        <button type="submit" name="period" value="all_time" class="filter-btn {% if period == 'all_time' %}active{% endif %}">All Time</button>
+                        <button type="submit" name="period" value="last_2_years" class="filter-btn {% if period == 'last_2_years' %}active{% endif %}">Last 2 Years</button>
+                        <button type="submit" name="period" value="current_year" class="filter-btn {% if period == 'current_year' %}active{% endif %}">{{ current_year }}</button>
+                        <button type="submit" name="period" value="custom" class="filter-btn {% if period == 'custom' %}active{% endif %}" id="custom-period-btn">Custom Range</button>
+                    </div>
+                    <div class="custom-year-range {% if period != 'custom' %}hidden{% endif %}" id="custom-year-range">
+                        <input type="number" name="year_from" placeholder="From Year" value="{{ year_from }}" min="{{ min_year }}" max="{{ max_year }}" class="year-input">
+                        <span>to</span>
+                        <input type="number" name="year_to" placeholder="To Year" value="{{ year_to }}" min="{{ min_year }}" max="{{ max_year }}" class="year-input">
+                        <button type="submit" class="apply-btn" id="apply-year-range-btn">Apply</button>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Publication Type:</label>
+                    <select name="type" class="filter-select">
+                        <option value="all" {% if pub_type == 'all' %}selected{% endif %}>All Types</option>
+                        {% for code, label in type_choices.items %}
+                        <option value="{{ code }}" {% if pub_type == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Ranking:</label>
+                    <select name="ranking" class="filter-select">
+                        <option value="all" {% if ranking_filter == 'all' %}selected{% endif %}>All Rankings</option>
+                        {% for code, label in ranking_choices.items %}
+                        <option value="{{ code }}" {% if ranking_filter == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Sort By:</label>
+                    <select name="sort" class="filter-select">
+                        <option value="year_desc" {% if sort_by == 'year_desc' %}selected{% endif %}>Year (Newest First)</option>
+                        <option value="year_asc" {% if sort_by == 'year_asc' %}selected{% endif %}>Year (Oldest First)</option>
+                        <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
+                        <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title (Z-A)</option>
+                    </select>
+                </div>
+            </form>
         </div>
 
         <!-- Tabs Navigation -->
@@ -69,39 +110,100 @@
             <!-- Statistics Tab -->
             <div class="tab-content {% if request.GET.tab != 'faculty' and request.GET.tab != 'publications' %}active{% endif %}" id="stats-tab">
                 <div class="stats-section">
-            <h2 class="section-title">Statistics</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">{{ total_pubs }}</div>
-                    <div class="stat-label">Total Publications</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ total_citations|floatformat:0 }}</div>
-                    <div class="stat-label">Total Citations</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ avg_pubs_per_faculty }}</div>
-                    <div class="stat-label">Avg. Publications per Faculty</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ num_faculty }}</div>
-                    <div class="stat-label">Current Faculty Members</div>
-                </div>
-            </div>
-
-            <!-- Ranking Breakdown -->
-            <div class="ranking-stats">
-                <h3 class="subsection-title">Publications by Ranking</h3>
-                <div class="ranking-grid">
-                    {% for ranking_code, data in stats_by_ranking.items %}
-                    <div class="ranking-card">
-                        <div class="ranking-label">{{ data.label }}</div>
-                        <div class="ranking-value">{{ data.count }}</div>
-                        <div class="ranking-score">Score: {{ data.score }}</div>
+                    <h2 class="section-title">Statistics Dashboard</h2>
+                    
+                    <!-- Key Metrics Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card gradient-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">{{ total_pubs }}</div>
+                            <div class="stat-label">Total Publications</div>
+                            <div class="stat-trend">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                    <polyline points="17 6 23 6 23 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-card gradient-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-value">{{ total_citations|floatformat:0 }}</div>
+                            <div class="stat-label">Total Citations</div>
+                            <div class="stat-trend">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                    <polyline points="17 6 23 6 23 12"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-card gradient-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value">{{ avg_pubs_per_faculty }}</div>
+                            <div class="stat-label">Avg. Publications per Faculty</div>
+                            <div class="stat-sub-label">Per faculty member</div>
+                        </div>
+                        <div class="stat-card gradient-card">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-value">{{ avg_citations_per_faculty|floatformat:1 }}</div>
+                            <div class="stat-label">Avg. Citations per Faculty</div>
+                            <div class="stat-sub-label">Per faculty member</div>
+                        </div>
+                        <div class="stat-card gradient-card">
+                            <div class="stat-icon">🎓</div>
+                            <div class="stat-value">{{ num_faculty }}</div>
+                            <div class="stat-label">Current Faculty Members</div>
+                        </div>
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
+
+                    <!-- Charts Section -->
+                    <div class="charts-container">
+                        <div class="chart-grid">
+                            <!-- Publications by Ranking Chart -->
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title">Publications by Ranking</h3>
+                                    <div class="chart-legend" id="ranking-legend"></div>
+                                </div>
+                                <div class="chart-wrapper">
+                                    <canvas id="rankingChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Publications by Type Chart -->
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title">Publications by Type</h3>
+                                </div>
+                                <div class="chart-wrapper">
+                                    <canvas id="typeChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Publications Over Time Chart -->
+                            <div class="chart-card chart-card-full">
+                                <div class="chart-header">
+                                    <h3 class="chart-title">Publications Over Time</h3>
+                                </div>
+                                <div class="chart-wrapper">
+                                    <canvas id="timeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ranking Breakdown Table -->
+                    <div class="ranking-stats">
+                        <h3 class="subsection-title">Detailed Ranking Breakdown</h3>
+                        <div class="ranking-grid">
+                            {% for ranking_code, data in stats_by_ranking.items %}
+                            <div class="ranking-card">
+                                <div class="ranking-label">{{ data.label }}</div>
+                                <div class="ranking-value">{{ data.count }}</div>
+                                <div class="ranking-score">Score: {{ data.score }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -414,7 +516,96 @@
     background: color-mix(in srgb, var(--color-primary) 5%, transparent);
 }
 
-/* Period Filter Bar */
+/* Comprehensive Filter Bar */
+.comprehensive-filter-bar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.filter-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.filter-select {
+    padding: 0.625rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-select:hover {
+    border-color: var(--color-primary);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.custom-year-range {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.custom-year-range.hidden {
+    display: none;
+}
+
+.year-input {
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    width: 100px;
+    font-size: 0.9rem;
+}
+
+.apply-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.apply-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+/* Period Filter Bar (legacy, keeping for compatibility) */
 .period-filter-bar {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -441,12 +632,14 @@
 .filter-btn {
     padding: 0.5rem 1.25rem;
     border-radius: 8px;
-    text-decoration: none;
     font-weight: 500;
     color: var(--text-secondary);
     background: var(--bg-tertiary);
     border: 2px solid var(--border-color);
     transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
 }
 
 .filter-btn:hover {
@@ -758,6 +951,96 @@
 /* Faculty View Tabs */
 .faculty-view-tabs {
     margin-top: 2rem;
+}
+
+/* Charts Container */
+.charts-container {
+    margin: 2rem 0;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.chart-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.chart-card-full {
+    grid-column: 1 / -1;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.chart-card-full .chart-wrapper {
+    height: 400px;
+}
+
+.stat-card.gradient-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.stat-card.gradient-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+.stat-trend {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--color-primary);
+    opacity: 0.6;
+}
+
+.stat-sub-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
 }
 
 .faculty-tab-buttons {
@@ -1675,8 +1958,75 @@
 }
 </style>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Charts if on stats tab
+    {% if request.GET.tab != 'faculty' and request.GET.tab != 'publications' or not request.GET.tab %}
+    initializeCharts();
+    {% endif %}
+    
+    // Get current tab from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTab = urlParams.get('tab') || 'stats';
+    
+    // Get filter form and tab input
+    const filterForm = document.getElementById('filter-form');
+    const tabInput = document.getElementById('current-tab-input');
+    
+    // Ensure tab input is set to current tab
+    if (tabInput) {
+        tabInput.value = currentTab;
+    }
+    
+    // Function to get current active tab
+    function getCurrentActiveTab() {
+        const activeTabButton = document.querySelector('.tab-btn.active');
+        if (activeTabButton) {
+            return activeTabButton.dataset.tab || 'stats';
+        }
+        return currentTab;
+    }
+    
+    // Ensure form submission preserves current tab
+    if (filterForm) {
+        filterForm.addEventListener('submit', function() {
+            if (tabInput) {
+                tabInput.value = getCurrentActiveTab();
+            }
+        });
+    }
+    
+    // Update tab input when select elements change and submit form
+    const filterSelects = document.querySelectorAll('.filter-select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            if (tabInput) {
+                tabInput.value = getCurrentActiveTab();
+            }
+            if (filterForm) {
+                filterForm.submit();
+            }
+        });
+    });
+    
+    // Custom year range toggle
+    const customPeriodBtn = document.getElementById('custom-period-btn');
+    const customYearRange = document.getElementById('custom-year-range');
+    if (customPeriodBtn && customYearRange) {
+        customPeriodBtn.addEventListener('click', function(e) {
+            if (!customYearRange.classList.contains('hidden')) {
+                e.preventDefault();
+                customYearRange.classList.toggle('hidden');
+            } else {
+                // When clicking custom, show the year range inputs
+                customYearRange.classList.remove('hidden');
+            }
+        });
+    }
+    
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
@@ -1689,16 +2039,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.pushState({}, '', `?period=${period}&tab=${tab}`);
     }
     
-    // Function to update filter button hrefs with current tab
-    function updateFilterButtonHrefs(currentTab) {
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        filterButtons.forEach(button => {
-            const period = button.dataset.period;
-            if (period) {
-                button.href = `?period=${period}&tab=${currentTab}`;
-            }
-        });
-    }
     
     // Function to switch tabs
     function switchTab(targetTab) {
@@ -1717,21 +2057,44 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTabInURL(targetTab);
         localStorage.setItem('research_page_tab', targetTab);
         
-        // Update filter button hrefs to preserve current tab
-        updateFilterButtonHrefs(targetTab);
+        // Update hidden input in filter form
+        if (tabInput) {
+            tabInput.value = targetTab;
+        }
     }
     
     // Initialize tab from URL or localStorage
-    const urlParams = new URLSearchParams(window.location.search);
     const urlTab = urlParams.get('tab');
     const storedTab = localStorage.getItem('research_page_tab');
     const initialTab = urlTab || storedTab || 'stats';
     
-    // Initialize filter button hrefs with current tab
-    updateFilterButtonHrefs(initialTab);
-    
     if (initialTab !== 'stats') {
         switchTab(initialTab);
+    } else {
+        // Ensure tab input is set for stats tab
+        if (tabInput) {
+            tabInput.value = 'stats';
+        }
+    }
+    
+    // Ensure period filter buttons preserve current tab
+    const periodFilterButtons = document.querySelectorAll('.filter-btn[type="submit"]');
+    periodFilterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (tabInput) {
+                tabInput.value = getCurrentActiveTab();
+            }
+        });
+    });
+    
+    // Ensure Apply button for custom year range preserves current tab
+    const applyYearRangeBtn = document.getElementById('apply-year-range-btn');
+    if (applyYearRangeBtn) {
+        applyYearRangeBtn.addEventListener('click', function() {
+            if (tabInput) {
+                tabInput.value = getCurrentActiveTab();
+            }
+        });
     }
     
     // Handle tab button clicks
@@ -1840,6 +2203,198 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Chart Initialization
+function initializeCharts() {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        return;
+    }
+    
+    // Ranking Chart (Bar Chart)
+    const rankingCtx = document.getElementById('rankingChart');
+    if (rankingCtx) {
+        const rankingData = {
+            labels: [
+                {% for ranking_code, data in stats_by_ranking.items %}
+                '{{ data.label }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Publications',
+                data: [
+                    {% for ranking_code, data in stats_by_ranking.items %}
+                    {{ data.count }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',  // Q1 - green
+                    'rgba(59, 130, 246, 0.8)',  // Q2 - blue
+                    'rgba(245, 158, 11, 0.8)',  // Q3 - amber
+                    'rgba(239, 68, 68, 0.8)',   // Q4 - red
+                    'rgba(139, 92, 246, 0.8)',  // A* - purple
+                    'rgba(139, 92, 246, 0.6)',  // A - purple lighter
+                    'rgba(139, 92, 246, 0.4)',  // B - purple even lighter
+                    'rgba(139, 92, 246, 0.2)',  // C - purple lightest
+                    'rgba(107, 114, 128, 0.8)', // Not Indexed - gray
+                ],
+                borderColor: [
+                    'rgb(16, 185, 129)',
+                    'rgb(59, 130, 246)',
+                    'rgb(245, 158, 11)',
+                    'rgb(239, 68, 68)',
+                    'rgb(139, 92, 246)',
+                    'rgb(139, 92, 246)',
+                    'rgb(139, 92, 246)',
+                    'rgb(139, 92, 246)',
+                    'rgb(107, 114, 128)',
+                ],
+                borderWidth: 2
+            }]
+        };
+        
+        new Chart(rankingCtx, {
+            type: 'bar',
+            data: rankingData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Type Chart (Pie Chart)
+    const typeCtx = document.getElementById('typeChart');
+    if (typeCtx) {
+        const typeData = {
+            labels: [
+                {% for type_code, data in stats_by_type.items %}
+                '{{ data.label }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for type_code, data in stats_by_type.items %}
+                    {{ data.count }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)',   // Journal - blue
+                    'rgba(16, 185, 129, 0.8)',   // Conference - green
+                    'rgba(139, 92, 246, 0.8)',   // Book Chapter - purple
+                    'rgba(107, 114, 128, 0.8)',  // Other - gray
+                ],
+                borderColor: [
+                    'rgb(59, 130, 246)',
+                    'rgb(16, 185, 129)',
+                    'rgb(139, 92, 246)',
+                    'rgb(107, 114, 128)',
+                ],
+                borderWidth: 2
+            }]
+        };
+        
+        new Chart(typeCtx, {
+            type: 'pie',
+            data: typeData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    }
+    
+    // Time Chart (Line Chart)
+    const timeCtx = document.getElementById('timeChart');
+    if (timeCtx) {
+        const timeData = {
+            labels: [
+                {% for item in publications_by_year %}
+                '{{ item.year }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Publications',
+                data: [
+                    {% for item in publications_by_year %}
+                    {{ item.count }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: 'rgb(99, 102, 241)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        };
+        
+        new Chart(timeCtx, {
+            type: 'line',
+            data: timeData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
 </script>
 
 <!-- Info Modal -->
