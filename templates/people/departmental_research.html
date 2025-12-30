@@ -155,6 +155,22 @@
                         </div>
                     </div>
 
+                    <!-- Ranking Breakdown Table -->
+                    <div class="ranking-stats">
+                        <h3 class="subsection-title">Detailed Ranking Breakdown</h3>
+                        <div class="ranking-grid">
+                            {% for ranking_code, data in stats_by_ranking.items %}
+                            {% if data.count > 0 %}
+                            <div class="ranking-card">
+                                <div class="ranking-label">{{ data.label }}</div>
+                                <div class="ranking-value">{{ data.count }}</div>
+                                <div class="ranking-score">Score: {{ data.score }}</div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <!-- Charts Section -->
                     <div class="charts-container">
                         <div class="chart-grid">
@@ -180,7 +196,7 @@
                             </div>
 
                             <!-- Publications Over Time Chart -->
-                            <div class="chart-card chart-card-full">
+                            <div class="chart-card">
                                 <div class="chart-header">
                                     <h3 class="chart-title">Publications Over Time</h3>
                                 </div>
@@ -188,20 +204,6 @@
                                     <canvas id="timeChart"></canvas>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Ranking Breakdown Table -->
-                    <div class="ranking-stats">
-                        <h3 class="subsection-title">Detailed Ranking Breakdown</h3>
-                        <div class="ranking-grid">
-                            {% for ranking_code, data in stats_by_ranking.items %}
-                            <div class="ranking-card">
-                                <div class="ranking-label">{{ data.label }}</div>
-                                <div class="ranking-value">{{ data.count }}</div>
-                                <div class="ranking-score">Score: {{ data.score }}</div>
-                            </div>
-                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -960,7 +962,7 @@
 
 .chart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -979,9 +981,6 @@
     transform: translateY(-2px);
 }
 
-.chart-card-full {
-    grid-column: 1 / -1;
-}
 
 .chart-header {
     display: flex;
@@ -1005,9 +1004,6 @@
     width: 100%;
 }
 
-.chart-card-full .chart-wrapper {
-    height: 400px;
-}
 
 .stat-card.gradient-card {
     position: relative;
@@ -1878,6 +1874,10 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+
     .publications-table-container {
         overflow-x: auto;
     }
@@ -1954,6 +1954,22 @@
     .researcher-card {
         width: 100%;
         max-width: 300px;
+    }
+
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1024px) {
+    .chart-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
