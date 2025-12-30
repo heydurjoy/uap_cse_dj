@@ -522,6 +522,32 @@ class Faculty(models.Model):
         help_text="Faculty CV/resume document (PDF only, Max 5MB)"
     )
     
+    is_phd = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether the faculty member has a PhD degree"
+    )
+    
+    is_masters = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether the faculty member has a Masters degree"
+    )
+    
+    educational_qualification = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Educational qualifications with rich text formatting"
+    )
+    
+    course_conducted = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Courses conducted by the faculty member with rich text formatting"
+    )
+    
     class Meta:
         verbose_name = 'Faculty'
         verbose_name_plural = 'Faculties'

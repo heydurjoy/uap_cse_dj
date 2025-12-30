@@ -6,6 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Design System{% endblock %}</title>
+    
+    <!-- Apply theme immediately to prevent flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'lightblue';
+            const themes = ['lightblue', 'cyan', 'light', 'dark'];
+            const currentTheme = themes.includes(savedTheme) ? savedTheme : 'lightblue';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        })();
+    </script>
 
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -529,7 +539,7 @@
             </div>
             <div class="construction-toast-message">
                 <strong>Under Construction</strong>
-                <span>This website is currently under construction. Some features may be unavailable.</span>
+                <span>This website is currently under construction. Some features may be unavailable. If you face any bugs, please let the department know.</span>
             </div>
             <button class="construction-toast-close" onclick="closeConstructionToast()" aria-label="Close">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

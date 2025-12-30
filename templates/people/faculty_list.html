@@ -119,9 +119,14 @@
                                                                 {% if faculty.designation %}
                                                                     <span class="faculty-designation">{{ faculty.designation }}</span>
                                                                 {% endif %}
-                                                                {% if faculty.citation %}
-                                                                    <span class="faculty-citation">📊 {{ faculty.citation }}</span>
-                                                                {% endif %}
+                                                                <div class="citation-phd-group">
+                                                                    {% if faculty.is_phd %}
+                                                                        <span class="faculty-qualification-badge">PhD</span>
+                                                                    {% endif %}
+                                                                    {% if faculty.citation %}
+                                                                        <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                                    {% endif %}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -159,9 +164,14 @@
                                                     {% if faculty.designation %}
                                                         <span class="faculty-designation">{{ faculty.designation }}</span>
                                                     {% endif %}
-                                                    {% if faculty.citation %}
-                                                        <span class="faculty-citation">📊 {{ faculty.citation }}</span>
-                                                    {% endif %}
+                                                    <div class="citation-phd-group">
+                                                        {% if faculty.is_phd %}
+                                                            <span class="faculty-qualification-badge">PhD</span>
+                                                        {% endif %}
+                                                        {% if faculty.citation %}
+                                                            <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -213,9 +223,14 @@
                                                             {% if faculty.designation %}
                                                                 <span class="faculty-designation">{{ faculty.designation }}</span>
                                                             {% endif %}
-                                                            {% if faculty.citation %}
-                                                                <span class="faculty-citation">📊 {{ faculty.citation }}</span>
-                                                            {% endif %}
+                                                            <div class="citation-phd-group">
+                                                                {% if faculty.is_phd %}
+                                                                    <span class="faculty-qualification-badge">PhD</span>
+                                                                {% endif %}
+                                                                {% if faculty.citation %}
+                                                                    <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                                {% endif %}
+                                                            </div>
                                                         </div>
                                                         {% if faculty.last_office_date %}
                                                             <p class="former-date">Until {{ faculty.last_office_date|date:"F Y" }}</p>
@@ -676,16 +691,22 @@
     margin: 0;
     color: white;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    line-height: 1.2;
+    line-height: 1.3;
     display: -webkit-box;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-height: 2.6em; /* 2 lines * 1.3 line-height */
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .faculty-card-link:hover .faculty-name {
     font-size: 1.2rem;
+    max-height: 2.8em; /* Slightly more space on hover */
 }
 
 /* Meta info row - designation and citations side by side */
@@ -695,6 +716,14 @@
     gap: 0.75rem;
     flex-wrap: wrap;
     margin: 0;
+}
+
+/* Group PhD badge with citation count */
+.citation-phd-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .faculty-designation {
@@ -723,6 +752,26 @@
 
 .faculty-card-link:hover .faculty-citation {
     font-size: 0.8rem;
+}
+
+/* Qualification badges styling */
+.faculty-qualification-badge {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin: 0;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(4px);
+}
+
+.faculty-card-link:hover .faculty-qualification-badge {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
 }
 
 /* Glass-style chat bubble for bio - starts hidden behind/under the card */
@@ -1240,10 +1289,12 @@
     
     .faculty-name {
         font-size: 1rem;
+        max-height: 2.4em; /* Slightly smaller on mobile */
     }
     
     .faculty-card-link:hover .faculty-name {
         font-size: 1.1rem;
+        max-height: 2.6em;
     }
     
     /* Less dramatic scaling on mobile for better performance */

@@ -622,6 +622,20 @@ def edit_profile(request):
                     if 'routine' in request.POST:
                         routine_content = request.POST.get('routine', '').strip()
                         profile.routine = routine_content if routine_content else None
+                    if 'is_phd' in request.POST:
+                        profile.is_phd = request.POST.get('is_phd') == 'on'
+                    else:
+                        profile.is_phd = False
+                    if 'is_masters' in request.POST:
+                        profile.is_masters = request.POST.get('is_masters') == 'on'
+                    else:
+                        profile.is_masters = False
+                    if 'educational_qualification' in request.POST:
+                        educational_qualification_content = request.POST.get('educational_qualification', '').strip()
+                        profile.educational_qualification = educational_qualification_content if educational_qualification_content else None
+                    if 'course_conducted' in request.POST:
+                        course_conducted_content = request.POST.get('course_conducted', '').strip()
+                        profile.course_conducted = course_conducted_content if course_conducted_content else None
                     
                     # Handle image uploads (only if new file is provided) - same as Club model
                     if 'profile_pic' in request.FILES:
@@ -1552,6 +1566,12 @@ def edit_faculty(request, pk):
             faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
             faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
             
+            # Update qualification fields
+            faculty.is_phd = request.POST.get('is_phd') == 'on'
+            faculty.is_masters = request.POST.get('is_masters') == 'on'
+            faculty.educational_qualification = request.POST.get('educational_qualification', '')
+            faculty.course_conducted = request.POST.get('course_conducted', '')
+            
             # Update CV if provided
             if 'cv' in request.FILES:
                 faculty.cv = request.FILES['cv']
@@ -1732,6 +1752,12 @@ def create_faculty(request):
             faculty.is_bsc_admission_coordinator = request.POST.get('is_bsc_admission_coordinator') == 'on'
             faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
             faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
+            
+            # Update qualification fields
+            faculty.is_phd = request.POST.get('is_phd') == 'on'
+            faculty.is_masters = request.POST.get('is_masters') == 'on'
+            faculty.educational_qualification = request.POST.get('educational_qualification', '')
+            faculty.course_conducted = request.POST.get('course_conducted', '')
             
             # Update CV if provided
             if 'cv' in request.FILES:
