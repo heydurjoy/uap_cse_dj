@@ -552,10 +552,10 @@ class Publication(models.Model):
         ('q2', 'Q2'),
         ('q3', 'Q3'),
         ('q4', 'Q4'),
-        ('a1', 'A1'),
-        ('a2', 'A2'),
-        ('a3', 'A3'),
-        ('a4', 'A4'),
+        ('a_star', 'A*'),
+        ('a', 'A'),
+        ('b', 'B'),
+        ('c', 'C'),
         ('not_indexed', 'Not Indexed'),
     ]
     
