@@ -91,7 +91,7 @@
         <div id="facultyGridView" class="faculty-grid-view">
             <!-- Head of Department - Full Width Card -->
             {% if head_faculty %}
-            <a href="{% url 'people:faculty_detail' head_faculty.pk %}" class="head-faculty-card-link">
+            <div class="head-faculty-card-link" data-profile-url="{% url 'people:faculty_detail' head_faculty.pk %}" style="cursor: pointer;">
             <div class="head-faculty-card">
                 <div class="head-faculty-content">
                     <div class="head-faculty-image">
@@ -110,83 +110,84 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="head-faculty-info">
-                            {% if head_faculty.base_user.email %}
-                            <div class="head-info-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                    <polyline points="22,6 12,13 2,6"></polyline>
-                                </svg>
-                                <a href="mailto:{{ head_faculty.base_user.email }}" onclick="event.stopPropagation();">{{ head_faculty.base_user.email }}</a>
+                        <div class="head-faculty-contact-section">
+                            <div class="head-faculty-info">
+                                <div class="head-info-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    <a href="mailto:headcse@uap-bd.edu" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='mailto:headcse@uap-bd.edu';">headcse@uap-bd.edu</a>
+                                </div>
+                                {% if head_faculty.base_user.email %}
+                                <div class="head-info-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    <a href="mailto:{{ head_faculty.base_user.email }}" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='mailto:{{ head_faculty.base_user.email }}';">{{ head_faculty.base_user.email }}</a>
+                                </div>
+                                {% endif %}
+                                {% if head_faculty.citation %}
+                                <div class="head-info-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                    <span>📊 {{ head_faculty.citation }} Citations</span>
+                                </div>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                            {% if head_faculty.phone %}
-                            <div class="head-info-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                </svg>
-                                <span>{{ head_faculty.phone }}</span>
+                            <div class="head-faculty-links">
+                                {% if head_faculty.google_scholar_url %}
+                                <a href="{{ head_faculty.google_scholar_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="Google Scholar" onclick="event.stopPropagation();">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                    </svg>
+                                    <span>Google Scholar</span>
+                                </a>
+                                {% endif %}
+                                {% if head_faculty.researchgate_url %}
+                                <a href="{{ head_faculty.researchgate_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="ResearchGate" onclick="event.stopPropagation();">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                    <span>ResearchGate</span>
+                                </a>
+                                {% endif %}
+                                {% if head_faculty.orcid_url %}
+                                <a href="{{ head_faculty.orcid_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="ORCID" onclick="event.stopPropagation();">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                                    </svg>
+                                    <span>ORCID</span>
+                                </a>
+                                {% endif %}
+                                {% if head_faculty.linkedin_url %}
+                                <a href="{{ head_faculty.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="LinkedIn" onclick="event.stopPropagation();">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                                        <rect x="2" y="9" width="4" height="12"></rect>
+                                        <circle cx="4" cy="4" r="2"></circle>
+                                    </svg>
+                                    <span>LinkedIn</span>
+                                </a>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                            {% if head_faculty.citation %}
-                            <div class="head-info-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
-                                <span>📊 {{ head_faculty.citation }} Citations</span>
-                            </div>
-                            {% endif %}
                         </div>
-                        <div class="head-faculty-links">
-                            {% if head_faculty.google_scholar_url %}
-                            <a href="{{ head_faculty.google_scholar_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="Google Scholar" onclick="event.stopPropagation();">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                </svg>
-                                <span>Google Scholar</span>
-                            </a>
-                            {% endif %}
-                            {% if head_faculty.researchgate_url %}
-                            <a href="{{ head_faculty.researchgate_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="ResearchGate" onclick="event.stopPropagation();">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                                </svg>
-                                <span>ResearchGate</span>
-                            </a>
-                            {% endif %}
-                            {% if head_faculty.orcid_url %}
-                            <a href="{{ head_faculty.orcid_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="ORCID" onclick="event.stopPropagation();">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <line x1="9" y1="3" x2="9" y2="21"></line>
-                                </svg>
-                                <span>ORCID</span>
-                            </a>
-                            {% endif %}
-                            {% if head_faculty.linkedin_url %}
-                            <a href="{{ head_faculty.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="LinkedIn" onclick="event.stopPropagation();">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                                    <rect x="2" y="9" width="4" height="12"></rect>
-                                    <circle cx="4" cy="4" r="2"></circle>
-                                </svg>
-                                <span>LinkedIn</span>
-                            </a>
-                            {% endif %}
-                        </div>
-                        {% if head_faculty.bio %}
-                        <p class="head-faculty-bio">{{ head_faculty.bio }}</p>
-                        {% endif %}
                     </div>
                 </div>
+                {% if head_faculty.bio %}
+                <p class="head-faculty-bio">{{ head_faculty.bio }}</p>
+                {% endif %}
             </div>
-            </a>
+            </div>
             {% endif %}
             
             {% if faculties_by_designation %}
@@ -1491,6 +1492,7 @@
     color: inherit;
     margin-bottom: 4rem;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .head-faculty-card-link:hover {
@@ -1519,16 +1521,16 @@
     display: flex;
     gap: 2.5rem;
     align-items: flex-start;
+    position: relative;
 }
 
 .head-faculty-image {
     flex-shrink: 0;
-    width: 200px;
-    height: 200px;
-    min-width: 200px;
+    width: 240px;
+    height: 240px;
+    min-width: 240px;
     border-radius: 16px;
     overflow: hidden;
-    border: 3px solid var(--color-primary);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -1542,17 +1544,17 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.75rem;
 }
 
 .head-faculty-header {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .head-faculty-name {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     margin: 0;
     color: var(--color-primary);
@@ -1562,26 +1564,27 @@
 .head-faculty-badges {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
 .head-badge {
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
     color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .designation-badge {
     background: var(--bg-tertiary);
     color: var(--text-primary);
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
     font-weight: 500;
     border: 1px solid var(--border-color);
 }
@@ -1589,41 +1592,56 @@
 .phd-badge {
     background: rgba(139, 69, 19, 0.1);
     color: #8b4513;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
     font-weight: 600;
     border: 1px solid rgba(139, 69, 19, 0.3);
 }
 
 .head-faculty-bio {
-    font-size: 1.05rem;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.5;
     color: var(--text-secondary);
     margin: 0;
-    margin-top: 0.5rem;
-    padding-top: 1.25rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
     border-top: 1px solid var(--border-color);
+    width: 100%;
+    clear: both;
+    text-align: center;
+}
+
+.head-faculty-contact-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }
 
 .head-faculty-info {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: center;
 }
 
 .head-info-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .head-info-item svg {
     color: var(--color-primary);
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
 }
 
 .head-info-item a {
@@ -1640,21 +1658,20 @@
 .head-faculty-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    gap: 0.5rem;
 }
 
 .head-link-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
     background: var(--bg-tertiary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 8px;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative;
@@ -1666,11 +1683,14 @@
     color: white;
     border-color: var(--color-primary);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .head-link-btn svg {
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
 }
 
 @media (max-width: 768px) {
@@ -1686,9 +1706,9 @@
     }
     
     .head-faculty-image {
-        width: 180px;
-        height: 180px;
-        min-width: 180px;
+        width: 200px;
+        height: 200px;
+        min-width: 200px;
     }
     
     .head-faculty-details {
@@ -1722,10 +1742,24 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const gridViewBtn = document.getElementById('gridViewBtn');
-    const listViewBtn = document.getElementById('listViewBtn');
-    const copyAllBtn = document.getElementById('copyAllBtn');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle head faculty card click
+        const headCardLink = document.querySelector('.head-faculty-card-link');
+        if (headCardLink) {
+            headCardLink.addEventListener('click', function(e) {
+                // Only navigate if clicking on the card itself, not on inner links
+                if (e.target.closest('a') === null) {
+                    const url = headCardLink.getAttribute('data-profile-url');
+                    if (url) {
+                        window.location.href = url;
+                    }
+                }
+            });
+        }
+        
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const copyAllBtn = document.getElementById('copyAllBtn');
     const facultyGrids = document.querySelectorAll('.faculty-grid');
     const facultyTableView = document.getElementById('facultyTableView');
     const facultyGridView = document.getElementById('facultyGridView');
