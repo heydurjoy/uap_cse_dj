@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gallery - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="public-gallery-page">
+        <div class="page-header">
+            <h1>Gallery</h1>
+            <p class="page-subtitle">A visual story of life at CSE, UAP.</p>
+        </div>
+
+        {% if items %}
+        <div class="gallery-grid">
+            {% for item in items %}
+            <article class="gallery-grid-item" onclick="openGalleryGridModal({{ forloop.counter0 }})">
+                <div class="gallery-grid-image-wrapper">
+                    <img src="{{ item.image.url }}" alt="{{ item.short_title }}" loading="lazy">
+                    <div class="gallery-grid-overlay">
+                        <h3>{{ item.short_title }}</h3>
+                        {% if item.description %}
+                        <p>{{ item.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        
+        <!-- Gallery Modal -->
+        <div id="galleryGridModal" class="gallery-grid-modal">
+            <div class="gallery-grid-modal-content">
+                <button class="gallery-grid-modal-close" onclick="closeGalleryGridModal()" title="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="gallery-grid-modal-body" id="galleryGridModalBody">
+                    <!-- Content will be dynamically inserted -->
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            window.PUBLIC_GALLERY_ITEMS = [
+                {% for item in items %}
+                {
+                    title: '{{ item.short_title|escapejs }}',
+                    description: '{{ item.description|default:''|escapejs }}',
+                    image: '{{ item.image.url|escapejs }}'
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        </script>
+        {% else %}
+        <p class="empty-text">No gallery items yet. Please check back later.</p>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.public-gallery-page {
+    padding: 3rem 0 4rem;
+}
+
+.public-gallery-page .page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.public-gallery-page h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.public-gallery-page .page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.gallery-grid-item {
+    cursor: pointer;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--bg-secondary);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.gallery-grid-item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(135deg, rgba(87, 103, 255, 0.08), var(--bg-secondary));
+}
+
+.gallery-grid-image-wrapper {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.gallery-grid-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.gallery-grid-item:hover img {
+    transform: scale(1.06);
+}
+
+.gallery-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-grid-item:hover .gallery-grid-overlay {
+    opacity: 1;
+}
+
+.gallery-grid-overlay h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.gallery-grid-overlay p {
+    margin: 0.4rem 0 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    color: #fff;
+}
+
+.empty-text {
+    text-align: center;
+    margin-top: 2rem;
+    color: var(--text-secondary);
+}
+
+/* Gallery Grid Modal */
+.gallery-grid-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-grid-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.gallery-grid-modal-content {
+    position: relative;
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-grid-modal.active .gallery-grid-modal-content {
+    transform: scale(1);
+}
+
+.gallery-grid-modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.gallery-grid-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.gallery-grid-modal-body {
+    padding: 3rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 6rem);
+}
+
+.gallery-grid-modal-image {
+    width: 100%;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-grid-modal-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.gallery-grid-modal-description {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+    .public-gallery-page {
+        padding-top: 2rem;
+    }
+
+    .public-gallery-page h1 {
+        font-size: 2rem;
+    }
+    
+    .gallery-grid-modal-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .gallery-grid-modal-title {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+function openGalleryGridModal(index) {
+    if (typeof window.PUBLIC_GALLERY_ITEMS === 'undefined' || !window.PUBLIC_GALLERY_ITEMS[index]) return;
+    
+    const item = window.PUBLIC_GALLERY_ITEMS[index];
+    const modal = document.getElementById('galleryGridModal');
+    const modalBody = document.getElementById('galleryGridModalBody');
+    
+    if (!modal || !modalBody) return;
+    
+    modalBody.innerHTML = `
+        <img src="${item.image}" alt="${item.title}" class="gallery-grid-modal-image">
+        <h2 class="gallery-grid-modal-title">${item.title}</h2>
+        ${item.description ? `<p class="gallery-grid-modal-description">${item.description}</p>` : ''}
+    `;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeGalleryGridModal() {
+    const modal = document.getElementById('galleryGridModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeGalleryGridModal();
+    }
+});
+
+// Close modal on background click
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('galleryGridModal');
+    if (modal && event.target === modal) {
+        closeGalleryGridModal();
+    }
+});
+</script>
+{% endblock %}

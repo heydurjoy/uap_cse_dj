@@ -1284,15 +1284,9 @@ def create_club_allowed_email(request, pk):
             elif request.user.user_type == 'club_member' and hasattr(request.user, 'club_member_profile'):
                 inviter_name = request.user.club_member_profile.name or inviter_name
             
-            # Build signup URL
-            import os
-            FRONTEND_DOMAIN_ENV = os.getenv('FRONTEND_DOMAIN', '')
-            if FRONTEND_DOMAIN_ENV:
-                DOMAIN = FRONTEND_DOMAIN_ENV.rstrip('/')
-            else:
-                protocol = 'https' if request.is_secure() else 'http'
-                DOMAIN = f"{protocol}://{request.get_host()}"
-            
+            # Build signup URL using helper function from uap_cse_dj.views
+            from uap_cse_dj.views import get_frontend_domain
+            DOMAIN = get_frontend_domain(request)
             signup_url = f"{DOMAIN}{reverse('signup')}"
             
             # Email content

@@ -67,22 +67,18 @@
 <section class="marks-network-banner-wrapper">
     <div class="container marks-network-container">
         <div class="marks-network-banner" id="marks-banner">
-            <div class="marks-network-bg-animation"></div>
+            <!-- Animated Background -->
+            <div class="marks-network-bg-animated">
+                <div class="color-shift-layer"></div>
+            </div>
+            <!-- Content -->
             <div class="marks-network-content">
-                <div class="marks-network-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                </div>
                 <div class="marks-network-text">
                     <p class="marks-network-tagline">First University in Bangladesh: Publicly Available Network Showing Detailed Calculation of Every Mark Across Your 4-Year B.Sc. in CSE Journey</p>
                 </div>
-                <div class="marks-network-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <polyline points="19 12 12 19 5 12"></polyline>
+                <div class="marks-network-hint">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </div>
             </div>
@@ -469,10 +465,10 @@
                     <li><strong>Q2 publications:</strong> 7 points each</li>
                     <li><strong>Q3 publications:</strong> 5 points each</li>
                     <li><strong>Q4 publications:</strong> 3 points each</li>
-                    <li><strong>A1 publications:</strong> 8 points each</li>
-                    <li><strong>A2 publications:</strong> 6 points each</li>
-                    <li><strong>A3 publications:</strong> 4 points each</li>
-                    <li><strong>A4 publications:</strong> 2 points each</li>
+                    <li><strong>A* publications:</strong> 8 points each</li>
+                    <li><strong>A publications:</strong> 6 points each</li>
+                    <li><strong>B publications:</strong> 4 points each</li>
+                    <li><strong>C publications:</strong> 2 points each</li>
                     <li><strong>Not Indexed:</strong> 1 point each</li>
                 </ul>
                 <p>For each designation (Professor, Associate Professor, Assistant Professor, Lecturer), the faculty member with the highest research score is featured. In case of a tie, the researcher with publications spanning fewer years (more concentrated research) is selected.</p>
@@ -616,6 +612,81 @@
         </div>
     </div>
 </div>
+
+<!-- Gallery Showcase Section -->
+{% if gallery_items %}
+<section class="gallery-showcase-section">
+    <div class="container gallery-showcase-container">
+        <div class="gallery-showcase-header">
+            <div>
+                <p class="eyebrow">Gallery</p>
+                <h2>Moments & Memories</h2>
+                <p class="subtitle">Capturing the spirit of CSE, UAP</p>
+            </div>
+        </div>
+        
+        <div class="gallery-stack-wrapper">
+            <button class="gallery-nav-btn gallery-nav-left" type="button" onclick="prevGallerySlide()" aria-label="Previous image">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <div class="gallery-stack" id="galleryStack">
+                {% for item in gallery_items %}
+                <div class="gallery-stack-card" data-index="{{ forloop.counter0 }}" onclick="openGalleryModal({{ forloop.counter0 }})">
+                    <div class="gallery-stack-card-inner">
+                        <img src="{{ item.image.url }}" alt="{{ item.short_title }}" loading="lazy">
+                        <div class="gallery-stack-card-overlay">
+                            <h3>{{ item.short_title }}</h3>
+                            {% if item.description %}
+                            <p>{{ item.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="gallery-nav-btn gallery-nav-right" type="button" onclick="nextGallerySlide()" aria-label="Next image">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            <!-- Dots Navigation -->
+            <div class="gallery-dots" id="galleryDots">
+                {% for item in gallery_items %}
+                <button class="gallery-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" onclick="goToGallerySlide({{ forloop.counter0 }})" aria-label="Go to slide {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="gallery-showcase-footer">
+            <a href="{% url 'office:gallery' %}" class="gallery-browse-all-btn">
+                Browse All
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Modal -->
+<div id="galleryModal" class="gallery-modal">
+    <div class="gallery-modal-content">
+        <button class="gallery-modal-close" onclick="closeGalleryModal()" title="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="gallery-modal-body" id="galleryModalBody">
+            <!-- Content will be dynamically inserted -->
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Mission Vision PEO Section -->
 <section class="mvpeo-section">
     <div class="container mvpeo-container">
@@ -1622,7 +1693,7 @@ html, body {
     backdrop-filter: blur(20px) saturate(200%);
     -webkit-backdrop-filter: blur(20px) saturate(200%);
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, rgba(255, 255, 255, 0.2));
-    border-radius: 24px;
+    border-radius: 999px;
     width: 100%;
     max-width: 900px;
     max-height: 90vh;
@@ -1837,66 +1908,90 @@ html, body {
 /* Marks Distribution Network Banner */
 
 .marks-network-container {
-    max-width: 750px;
+    max-width: 900px;
     margin: 0 auto;
-
 }
 .marks-network-banner-wrapper {
-    padding: 2.5rem 0 3rem 0;
+    padding: 3rem 0 4rem 0;
     position: relative;
     margin-top: 1rem;
 }
+
 .marks-network-banner {
     position: relative;
-
-    /* Light, high-visibility gradient */
-    background: linear-gradient(
-        120deg,
-        color-mix(in srgb, var(--color-primary) 14%, #ffffff) 0%,
-        color-mix(in srgb, var(--color-primary) 64%, var(--bg-secondary)) 35%,
-        color-mix(in srgb, var(--color-primary) 32%, #ffffff) 70%,
-        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 100%
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)) 50%,
+        color-mix(in srgb, var(--color-primary-hover) 6%, var(--bg-secondary)) 100%
     );
-
-    background-size: 350% 350%;
-    animation: gradient-flow 8s ease-in-out infinite;
-  transition:
-        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
     border-radius: 999px;
-    padding: 1.15rem 1.75rem;
+    padding: 1.75rem 2rem;
     cursor: pointer;
     overflow: hidden;
-    z-index: 2;
-    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-    box-shadow:
-        0 8px 28px rgba(0, 0, 0, 0.12),
-        0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent) inset;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent) inset;
+    animation: subtlePulse 3s ease-in-out infinite;
 }
+
+.marks-network-banner:active {
+    transform: scale(0.98) translateY(2px);
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.15),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset;
+}
+
 .marks-network-banner:hover {
-    transform: translateY(-6px) scale(1.035);
-    box-shadow:
-        0 16px 42px rgba(0, 0, 0, 0.18),
-        0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent) inset;
+    transform: translateY(-4px);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent) inset;
 }
-/* Soft moving highlight */
-.marks-network-bg-animation {
+
+/* Animated Background Layers */
+.marks-network-bg-animated {
     position: absolute;
     inset: 0;
     border-radius: 999px;
-    z-index: 1;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        color-mix(in srgb, #ffffff 60%, transparent) 50%,
-        transparent 100%
-    );
+    overflow: hidden;
+    z-index: 0;
+}
 
-    background-size: 240% 100%;
-    animation: light-sweep 9s linear infinite;
-    opacity: 0.25;
-    pointer-events: none;
+.color-shift-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary-hover) 10%, transparent) 25%,
+        color-mix(in srgb, var(--color-primary) 6%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary-hover) 9%, transparent) 75%,
+        color-mix(in srgb, var(--color-primary) 8%, transparent) 100%
+    );
+    background-size: 300% 300%;
+    animation: subtleColorFlow 12s ease-in-out infinite;
+    opacity: 0.7;
+}
+
+@keyframes subtleColorFlow {
+    0%, 100% {
+        background-position: 0% 50%;
+        opacity: 0.6;
+    }
+    25% {
+        background-position: 50% 0%;
+        opacity: 0.75;
+    }
+    50% {
+        background-position: 100% 50%;
+        opacity: 0.7;
+    }
+    75% {
+        background-position: 50% 100%;
+        opacity: 0.75;
+    }
 }
 
 @keyframes gradient-flow {
@@ -1925,86 +2020,83 @@ html, body {
     gap: 1rem;
     position: relative;
     z-index: 2;
+    text-align: center;
+    flex-wrap: wrap;
 }
 
-.marks-network-icon {
-    color: var(--color-primary);
-    flex-shrink: 0;
-    animation: pulse-glow 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent));
-}
-
-@keyframes pulse-glow {
-    0%, 100% {
-        transform: scale(1) rotate(0deg);
-        filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent));
-    }
-    25% {
-        transform: scale(1.1) rotate(-5deg);
-        filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
-    }
-    50% {
-        transform: scale(1.15) rotate(0deg);
-        filter: drop-shadow(0 0 20px color-mix(in srgb, var(--color-primary) 80%, transparent));
-    }
-    75% {
-        transform: scale(1.1) rotate(5deg);
-        filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
-    }
-}
-
-.marks-network-banner:hover .marks-network-icon {
-    animation: pulse-glow 0.8s ease-in-out infinite;
-    transform: scale(1.2) rotate(10deg);
-    filter: drop-shadow(0 0 25px color-mix(in srgb, var(--color-primary) 90%, transparent));
-}
 
 .marks-network-text {
-    flex: 1;
-    text-align: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 40px);
 }
 
 .marks-network-tagline {
-    font-size: .9rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
-    line-height: 1.35;
+    line-height: 1.4;
     letter-spacing: -0.01em;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
-                 0 0 10px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        0 0 20px color-mix(in srgb, var(--color-primary) 20%, transparent);
     position: relative;
     transition: all 0.3s ease;
+    max-width: 100%;
+    word-wrap: break-word;
+    hyphens: auto;
 }
 
 .marks-network-banner:hover .marks-network-tagline {
     color: var(--text-primary);
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
-                 0 0 20px color-mix(in srgb, var(--color-primary) 25%, transparent);
-    transform: scale(1.02);
+    text-shadow: 
+        0 3px 8px rgba(0, 0, 0, 0.15),
+        0 0 30px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    transform: scale(1.01);
 }
 
-.marks-network-arrow {
+.marks-network-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-primary);
+    opacity: 0.7;
+    animation: subtleBounce 2s ease-in-out infinite;
     flex-shrink: 0;
-    animation: bounce-arrow 1.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent));
 }
 
-@keyframes bounce-arrow {
+.marks-network-hint svg {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.marks-network-banner:hover .marks-network-hint {
+    opacity: 1;
+    animation: subtleBounce 1s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
     0%, 100% {
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
     50% {
-        transform: translateY(-10px) scale(1.1);
+        transform: translateY(-2px);
     }
 }
 
-.marks-network-banner:hover .marks-network-arrow {
-    animation: bounce-arrow 0.7s ease-in-out infinite;
-    transform: translateY(-12px) scale(1.2);
-    filter: drop-shadow(0 0 15px color-mix(in srgb, var(--color-primary) 70%, transparent));
+@keyframes subtleBounce {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(4px);
+        opacity: 0.9;
+    }
 }
+
 
 @media (max-width: 1024px) {
     .marks-network-container {
@@ -2018,25 +2110,11 @@ html, body {
     }
     
     .marks-network-banner {
-        padding: 1.1rem 1.5rem;
-    }
-    
-    .marks-network-content {
-        gap: 1rem;
+        padding: 1.5rem 1.75rem;
     }
     
     .marks-network-tagline {
-        font-size: 0.98rem;
-    }
-    
-    .marks-network-icon svg {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .marks-network-arrow svg {
-        width: 20px;
-        height: 20px;
+        font-size: 1rem;
     }
 }
 
@@ -2051,27 +2129,8 @@ html, body {
     }
     
     .marks-network-banner {
-        padding: 1.1rem 1.5rem;
-        border-radius: 50px;
-    }
-    
-    .marks-network-content {
-        flex-direction: row;
-        gap: 0.875rem;
-        flex-wrap: wrap;
-    }
-    
-    .marks-network-text {
-        flex: 1 1 100%;
-        order: 2;
-    }
-    
-    .marks-network-icon {
-        order: 1;
-    }
-    
-    .marks-network-arrow {
-        order: 3;
+        padding: 1.4rem 1.5rem;
+        border-radius: 999px;
     }
     
     .marks-network-tagline {
@@ -2079,14 +2138,8 @@ html, body {
         line-height: 1.5;
     }
     
-    .marks-network-icon svg {
-        width: 22px;
-        height: 22px;
-    }
-    
-    .marks-network-arrow svg {
-        width: 18px;
-        height: 18px;
+    .marks-network-hint {
+        display: none;
     }
 }
 
@@ -2101,26 +2154,13 @@ html, body {
     }
     
     .marks-network-banner {
-        padding: 1rem 1.5rem;
-        border-radius: 40px;
-    }
-    
-    .marks-network-content {
-        gap: 0.875rem;
+        padding: 1.2rem 1.25rem;
+        border-radius: 999px;
     }
     
     .marks-network-tagline {
-        font-size: 0.95rem;
-    }
-    
-    .marks-network-icon svg {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .marks-network-arrow svg {
-        width: 16px;
-        height: 16px;
+        font-size: 0.9rem;
+        line-height: 1.4;
     }
 }
 
@@ -3811,9 +3851,38 @@ html, body {
 /* Blooms Cards Container */
 .blooms-cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards side by side */
+    gap: 1rem;
 }
+@media (max-width: 768px) {
+    .blooms-cards-container {
+        grid-template-columns: 1fr; /* stack on mobile */
+        gap: 1rem;
+    }
+}
+.stats-table-wrapper.blooms-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-table-wrapper.blooms-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+.stats-table-wrapper h4 {
+    margin: 0 0 0.75rem 0;
+    color: var(--color-primary);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-primary);
+}
+
 
 /* PO Stats Header */
 .po-stats-header h2 {
@@ -3839,23 +3908,49 @@ html, body {
         gap: 1rem !important;
     }
 
-    /* MOBILE: allow horizontal scroll */
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stats-table th {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary));
+}
+
+.stats-table td:first-child {
+    text-align: left;
+    color: var(--text-primary);
+}
+
+.stats-table td:not(:first-child) {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.stats-table td:last-child {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+@media (max-width: 768px) {
     .stats-table-wrapper {
-        overflow-x: auto; /* only mobile scroll */
-        -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
-        padding: 1rem !important;
+        overflow-x: auto;
     }
-
     .stats-table {
-        min-width: 900px; /* triggers scroll on mobile only */
-        font-size: 0.9rem;
+        min-width: 400px; /* scroll horizontally if needed */
     }
-
-    .stats-table th,
-    .stats-table td {
-        padding: 0.5rem !important;
-        white-space: nowrap; /* prevent wrapping */
-    }
+}
 
     .po-stats-header h2 {
         font-size: 1.5rem !important;
@@ -3877,6 +3972,461 @@ html, body {
 
     .po-stats-header .subtitle {
         font-size: 0.85rem !important;
+    }
+}
+
+/* Gallery Showcase Styles */
+.gallery-showcase-section {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.gallery-showcase-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 50%, color-mix(in srgb, var(--color-primary) 5%, transparent) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.gallery-showcase-container {
+    position: relative;
+    z-index: 1;
+}
+
+.gallery-showcase-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.gallery-showcase-header .eyebrow {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}
+
+.gallery-showcase-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.25rem 0;
+}
+
+.gallery-showcase-header .subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.gallery-showcase-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.gallery-browse-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.gallery-browse-all-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.gallery-browse-all-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.gallery-browse-all-btn:hover svg {
+    transform: translateX(4px);
+}
+
+.gallery-stack-wrapper {
+    position: relative;
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 500px;
+}
+
+.gallery-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+}
+
+.gallery-nav-btn svg {
+    pointer-events: none;
+}
+
+.gallery-nav-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.gallery-nav-left {
+    left: 4%;
+}
+
+.gallery-nav-right {
+    right: 4%;
+}
+
+.gallery-stack {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    height: 500px;
+    margin: 0 auto;
+    perspective: 2000px;
+}
+
+.gallery-stack-card {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1000px;
+    height: 100%;
+    cursor: pointer;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center center;
+}
+
+.gallery-stack-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: var(--bg-secondary);
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+.gallery-stack-card:hover .gallery-stack-card-inner {
+    transform: translateY(-10px) scale(1.02);
+}
+
+.gallery-stack-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gallery-stack-card-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+    padding: 0.6rem 1.4rem;
+    color: white;
+    opacity: 1;
+    transition: all 0.25s ease;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.gallery-stack-card-overlay h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.gallery-stack-card-overlay p {
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    color: white;
+    transition: opacity 0.25s ease, max-height 0.25s ease, margin 0.25s ease;
+}
+
+.gallery-stack-card:hover .gallery-stack-card-overlay {
+    padding-bottom: 1.2rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.7) 60%, transparent 100%);
+}
+
+.gallery-stack-card:hover .gallery-stack-card-overlay p {
+    opacity: 1;
+    max-height: 160px;
+    margin-top: 0.6rem;
+}
+
+/* Card stacking positions - showing cards behind */
+.gallery-stack-card[data-index="0"] {
+    z-index: 10;
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+}
+
+.gallery-stack-card[data-index="1"] {
+    z-index: 9;
+    transform: translateX(-50%) translateX(30px) translateY(20px) scale(0.95);
+    opacity: 0.85;
+    filter: blur(1px);
+}
+
+.gallery-stack-card[data-index="2"] {
+    z-index: 8;
+    transform: translateX(-50%) translateX(60px) translateY(40px) scale(0.9);
+    opacity: 0.7;
+    filter: blur(2px);
+}
+
+.gallery-stack-card[data-index="3"] {
+    z-index: 7;
+    transform: translateX(-50%) translateX(90px) translateY(60px) scale(0.85);
+    opacity: 0.55;
+    filter: blur(3px);
+}
+
+.gallery-stack-card[data-index="4"] {
+    z-index: 6;
+    transform: translateX(-50%) translateX(120px) translateY(80px) scale(0.8);
+    opacity: 0.4;
+    filter: blur(4px);
+}
+
+/* Hide cards beyond index 4 */
+.gallery-stack-card[data-index]:not([data-index="0"]):not([data-index="1"]):not([data-index="2"]):not([data-index="3"]):not([data-index="4"]) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.gallery-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.gallery-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.gallery-dot:hover {
+    background: color-mix(in srgb, var(--color-primary) 60%, transparent);
+    transform: scale(1.2);
+}
+
+.gallery-dot.active {
+    background: var(--color-primary);
+    width: 32px;
+    border-radius: 6px;
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary) 50%, transparent);
+}
+
+/* Gallery Modal */
+.gallery-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.gallery-modal-content {
+    position: relative;
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-modal.active .gallery-modal-content {
+    transform: scale(1);
+}
+
+.gallery-modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.gallery-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.gallery-modal-body {
+    padding: 3rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 6rem);
+}
+
+.gallery-modal-image {
+    width: 100%;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-modal-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.gallery-modal-description {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+    .gallery-stack {
+        height: 400px;
+    }
+    
+    .gallery-stack-wrapper {
+        min-height: 450px;
+        padding: 2rem 0;
+    }
+    
+    .gallery-stack-card {
+        width: 95%;
+    }
+    
+    .gallery-stack-card-overlay {
+        padding: 1.5rem 1rem;
+    }
+    
+    .gallery-stack-card:hover .gallery-stack-card-overlay {
+        padding: 2rem 1rem;
+    }
+    
+    .gallery-stack-card-overlay h3 {
+        font-size: 1.25rem;
+    }
+    
+    .gallery-stack-card-overlay p {
+        font-size: 0.9rem;
+    }
+    
+    .gallery-showcase-header h2 {
+        font-size: 2rem;
+    }
+    
+    .gallery-browse-all-btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .gallery-modal-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .gallery-modal-title {
+        font-size: 1.5rem;
+    }
+    
+    /* Adjust card positions for mobile */
+    .gallery-stack-card[data-index="1"] {
+        transform: translateX(-50%) translateX(20px) translateY(15px) scale(0.95);
+    }
+    
+    .gallery-stack-card[data-index="2"] {
+        transform: translateX(-50%) translateX(40px) translateY(30px) scale(0.9);
+    }
+    
+    .gallery-stack-card[data-index="3"] {
+        transform: translateX(-50%) translateX(60px) translateY(45px) scale(0.85);
+    }
+    
+    .gallery-stack-card[data-index="4"] {
+        transform: translateX(-50%) translateX(80px) translateY(60px) scale(0.8);
     }
 }
 
@@ -4370,4 +4920,245 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 })();
 </script>
+<script>
+// Gallery Showcase Stack (PowerPoint-like slideshow)
+{% if gallery_items %}
+(function() {
+    const stack = document.getElementById('galleryStack');
+    const dots = document.querySelectorAll('.gallery-dot');
+    const cards = document.querySelectorAll('.gallery-stack-card');
+    const modal = document.getElementById('galleryModal');
+    const modalBody = document.getElementById('galleryModalBody');
+    
+    if (!stack || !dots.length || !cards.length) return;
+    
+    let currentIndex = 0;
+    let isAnimating = false;
+    let autoRotateInterval = null;
+    const totalCards = cards.length;
+    
+    // Gallery items data (from Django template)
+    const galleryItems = [
+        {% for item in gallery_items %}
+        {
+            'title': '{{ item.short_title|escapejs }}',
+            'description': '{{ item.description|escapejs|default:"" }}',
+            'image': '{{ item.image.url|escapejs }}'
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    // Update card positions based on current index
+    function updateCardPositions() {
+        cards.forEach((card, index) => {
+            const cardIndex = parseInt(card.dataset.index);
+            // Calculate relative position from current index
+            let relativePos = cardIndex - currentIndex;
+            
+            // Handle wrapping for infinite loop
+            if (relativePos < 0) {
+                relativePos = totalCards + relativePos;
+            }
+            if (relativePos >= totalCards) {
+                relativePos = relativePos - totalCards;
+            }
+            
+            // Apply styles based on position
+            if (relativePos === 0) {
+                // Front card
+                card.style.zIndex = 10;
+                card.style.transform = 'translateX(-50%) scale(1)';
+                card.style.opacity = '1';
+                card.style.filter = 'blur(0px)';
+            } else if (relativePos === 1) {
+                // First card behind
+                card.style.zIndex = 9;
+                card.style.transform = 'translateX(-50%) translateX(30px) translateY(20px) scale(0.95)';
+                card.style.opacity = '0.85';
+                card.style.filter = 'blur(1px)';
+            } else if (relativePos === 2) {
+                // Second card behind
+                card.style.zIndex = 8;
+                card.style.transform = 'translateX(-50%) translateX(60px) translateY(40px) scale(0.9)';
+                card.style.opacity = '0.7';
+                card.style.filter = 'blur(2px)';
+            } else if (relativePos === 3) {
+                // Third card behind
+                card.style.zIndex = 7;
+                card.style.transform = 'translateX(-50%) translateX(90px) translateY(60px) scale(0.85)';
+                card.style.opacity = '0.55';
+                card.style.filter = 'blur(3px)';
+            } else if (relativePos === 4) {
+                // Fourth card behind
+                card.style.zIndex = 6;
+                card.style.transform = 'translateX(-50%) translateX(120px) translateY(80px) scale(0.8)';
+                card.style.opacity = '0.4';
+                card.style.filter = 'blur(4px)';
+            } else {
+                // Hidden cards
+                card.style.opacity = '0';
+                card.style.pointerEvents = 'none';
+                card.style.zIndex = 5 - relativePos;
+            }
+        });
+    }
+    
+    // Update active dot
+    function updateDots(index) {
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+    }
+    
+    // Go to specific slide
+    function goToGallerySlide(index) {
+        if (isAnimating || index < 0 || index >= totalCards) return;
+        if (index === currentIndex) return;
+        
+        isAnimating = true;
+        currentIndex = index;
+        
+        updateCardPositions();
+        updateDots(currentIndex);
+        
+        setTimeout(() => {
+            isAnimating = false;
+        }, 800);
+    }
+    
+    // Next slide
+    function nextSlide() {
+        if (isAnimating) return;
+        goToGallerySlide((currentIndex + 1) % totalCards);
+    }
+    
+    // Previous slide
+    function prevSlide() {
+        if (isAnimating) return;
+        goToGallerySlide((currentIndex - 1 + totalCards) % totalCards);
+    }
+    
+    // Auto-rotate functionality
+    function startAutoRotate() {
+        if (autoRotateInterval) clearInterval(autoRotateInterval);
+        
+        autoRotateInterval = setInterval(() => {
+            if (!isAnimating) {
+                nextSlide();
+            }
+        }, 5000); // Change slide every 5 seconds
+    }
+    
+    // Pause auto-rotate on hover (entire gallery section)
+    const gallerySection = stack.closest('.gallery-showcase-section');
+    const galleryWrapper = stack.closest('.gallery-stack-wrapper');
+    
+    if (gallerySection) {
+        gallerySection.addEventListener('mouseenter', () => {
+            if (autoRotateInterval) {
+                clearInterval(autoRotateInterval);
+                autoRotateInterval = null;
+            }
+        });
+        
+        gallerySection.addEventListener('mouseleave', () => {
+            startAutoRotate();
+        });
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (stack.closest('.gallery-showcase-section').offsetParent === null) return; // Section not visible
+        
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            prevSlide();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            nextSlide();
+        }
+    });
+    
+    // Touch/swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    stack.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    stack.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                // Swipe left - next
+                nextSlide();
+            } else {
+                // Swipe right - previous
+                prevSlide();
+            }
+        }
+    }
+    
+    // Make functions available globally
+    window.goToGallerySlide = goToGallerySlide;
+    window.nextGallerySlide = nextSlide;
+    window.prevGallerySlide = prevSlide;
+    
+    // Open gallery modal
+    window.openGalleryModal = function(index) {
+        if (index < 0 || index >= galleryItems.length) return;
+        
+        const item = galleryItems[index];
+        modalBody.innerHTML = `
+            <img src="${item.image}" alt="${item.title}" class="gallery-modal-image">
+            <h2 class="gallery-modal-title">${item.title}</h2>
+            ${item.description ? `<p class="gallery-modal-description">${item.description}</p>` : ''}
+        `;
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Update current index
+        currentIndex = index;
+        updateCardPositions();
+        updateDots(index);
+    };
+    
+    // Close gallery modal
+    window.closeGalleryModal = function() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && modal.classList.contains('active')) {
+            closeGalleryModal();
+        }
+    });
+    
+    // Close modal on background click
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeGalleryModal();
+        }
+    });
+    
+    // Initialize
+    updateCardPositions();
+    updateDots(currentIndex);
+    startAutoRotate();
+})();
+{% endif %}
+</script>
 {% endblock %}
+
+

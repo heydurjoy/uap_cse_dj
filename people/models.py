@@ -522,6 +522,32 @@ class Faculty(models.Model):
         help_text="Faculty CV/resume document (PDF only, Max 5MB)"
     )
     
+    is_phd = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether the faculty member has a PhD degree"
+    )
+    
+    is_masters = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether the faculty member has a Masters degree"
+    )
+    
+    educational_qualification = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Educational qualifications with rich text formatting"
+    )
+    
+    course_conducted = RichTextField(
+        blank=True,
+        null=True,
+        help_text="Courses conducted by the faculty member with rich text formatting"
+    )
+    
     class Meta:
         verbose_name = 'Faculty'
         verbose_name_plural = 'Faculties'
@@ -552,10 +578,10 @@ class Publication(models.Model):
         ('q2', 'Q2'),
         ('q3', 'Q3'),
         ('q4', 'Q4'),
-        ('a1', 'A1'),
-        ('a2', 'A2'),
-        ('a3', 'A3'),
-        ('a4', 'A4'),
+        ('a_star', 'A*'),
+        ('a', 'A'),
+        ('b', 'B'),
+        ('c', 'C'),
         ('not_indexed', 'Not Indexed'),
     ]
     

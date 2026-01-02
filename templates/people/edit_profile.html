@@ -236,6 +236,19 @@
                     </div>
                     {% endif %}
                 </div>
+                
+                {% if profile_type == 'faculty' %}
+                <div class="form-grid" style="margin-top: 1.5rem;">
+                    <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <input type="checkbox" id="is_phd" name="is_phd" {% if profile.is_phd %}checked{% endif %} style="width: auto; margin: 0;">
+                        <label for="is_phd" style="margin: 0; font-weight: 500;">Has PhD Degree</label>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <input type="checkbox" id="is_masters" name="is_masters" {% if profile.is_masters %}checked{% endif %} style="width: auto; margin: 0;">
+                        <label for="is_masters" style="margin: 0; font-weight: 500;">Has Masters Degree</label>
+                    </div>
+                </div>
+                {% endif %}
             </div>
             
             <!-- Profile Picture Section -->
@@ -354,6 +367,16 @@
                 <div class="form-group">
                     <label for="routine">Routine</label>
                     <textarea id="routine" name="routine" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.routine %}{{ profile.routine }}{% endif %}</textarea>
+                    <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                </div>
+                <div class="form-group">
+                    <label for="educational_qualification">Educational Qualification</label>
+                    <textarea id="educational_qualification" name="educational_qualification" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.educational_qualification %}{{ profile.educational_qualification }}{% endif %}</textarea>
+                    <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                </div>
+                <div class="form-group">
+                    <label for="course_conducted">Course Conducted</label>
+                    <textarea id="course_conducted" name="course_conducted" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor...">{% if profile.course_conducted %}{{ profile.course_conducted }}{% endif %}</textarea>
                     <small class="form-help">Click on the textarea above to use the rich text editor</small>
                 </div>
             </div>
@@ -1055,7 +1078,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const richTextFields = {
         'about': 'About',
         'researches': 'Research Information',
-        'routine': 'Routine'
+        'routine': 'Routine',
+        'educational_qualification': 'Educational Qualification',
+        'course_conducted': 'Course Conducted'
     };
     
     let ckeditorLoaded = false;

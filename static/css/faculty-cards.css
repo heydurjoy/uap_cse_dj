@@ -1,0 +1,906 @@
+
+.faculty-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+    transition: all 0.3s ease;
+    overflow: visible;
+    justify-items: center;
+    justify-content: center;
+}
+
+.faculty-grid .faculty-card-link,
+.faculty-grid .faculty-card-flip-container {
+    max-width: 250px;
+    width: 100%;
+}
+
+/* Apple-like interaction: scale down other cards when one is hovered */
+.faculty-grid[data-view="grid"]:hover .faculty-card-link:not(:hover) {
+    transform: scale(0.92);
+    opacity: 0.6;
+    filter: blur(2px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset for list view - no scaling effect */
+.faculty-grid[data-view="list"]:hover .faculty-card-link:not(:hover) {
+    transform: none;
+    opacity: 1;
+    filter: none;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-link:hover {
+    transform: translateY(-2px);
+    z-index: 10;
+}
+
+
+.faculty-grid[data-view="list"] {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-link {
+    width: 100%;
+}
+
+.faculty-grid[data-view="list"] .faculty-card {
+    flex-direction: row;
+    height: auto;
+    max-height: 80px;
+    min-height: 80px;
+    align-items: center;
+    overflow: hidden; /* Prevent content from overflowing */
+}
+
+.faculty-grid[data-view="list"] .faculty-card-image {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    height: 70px;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+    max-height: 70px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-body {
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    flex: 1;
+    overflow: hidden;
+    min-width: 0; /* Allows text truncation to work */
+}
+
+.faculty-grid[data-view="list"] .faculty-name {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.faculty-grid[data-view="list"] .faculty-designation {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-image {
+    min-height: 80px;
+}
+
+.faculty-grid[data-view="list"] .faculty-card-overlay {
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.faculty-grid[data-view="list"] .faculty-name {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 1;
+}
+
+.faculty-grid[data-view="list"] .faculty-meta {
+    gap: 0.5rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-designation {
+    font-size: 0.7rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-citation {
+    font-size: 0.65rem;
+}
+
+.faculty-grid[data-view="list"] .faculty-bio-bubble {
+    display: none;
+}
+
+.faculty-grid[data-view="list"] .former-date {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+    margin: 0.2rem 0 0 0;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.faculty-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center bottom;
+    transform-style: preserve-3d;
+    will-change: transform;
+    position: relative;
+    overflow: visible;
+    perspective: 1200px;
+    perspective-origin: 50% 100%;
+}
+
+/* Default card state - image takes most of the space */
+.faculty-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
+    min-height: 280px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+}
+
+/* Apple-like hover: scale up and tilt the card backward (leaning back) - straight, no side rotation */
+.faculty-card-link:hover {
+    transform: scale(1.08) translateY(-8px) rotateX(12deg) rotateY(0deg) rotateZ(0deg);
+    z-index: 100;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.faculty-card-link:hover .faculty-card {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    border-color: var(--color-primary);
+    border-width: 2px;
+}
+
+/* Image container - takes up most of the card */
+.faculty-card-image {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faculty-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faculty-card-link:hover .faculty-card-image img {
+    transform: scale(1.05);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Overlay with gradient for text readability */
+.faculty-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.25rem 1rem 1rem 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faculty-card-link:hover .faculty-card-overlay {
+    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* Card info container */
+.faculty-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    position: relative;
+}
+
+/* Name styling - white text on dark overlay */
+.faculty-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.faculty-card-link:hover .faculty-name {
+    font-size: 1.2rem;
+}
+
+/* Meta info row - designation and citations side by side */
+.faculty-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.faculty-designation {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.faculty-card-link:hover .faculty-designation {
+    font-size: 0.85rem;
+}
+
+/* Citations styling */
+.faculty-citation {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    font-weight: 500;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.faculty-card-link:hover .faculty-citation {
+    font-size: 0.8rem;
+}
+
+/* Glass-style chat bubble for bio - starts hidden behind/under the card */
+.faculty-bio-bubble {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-top: 0;
+    transform: translateX(-50%) translateY(-20px) translateZ(-30px) rotateX(15deg) scale(0.85);
+    transform-origin: center top;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 99;
+    min-width: 220px;
+    max-width: 300px;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+    transform-style: preserve-3d;
+}
+
+/* Reveal bubble falling from behind the card as it tilts back */
+.faculty-card-link:hover .faculty-bio-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(12px) translateZ(0) rotateX(0deg) scale(1);
+    pointer-events: auto;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1001;
+}
+
+/* Enhanced frosted glass morphism bubble content */
+.bubble-content {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(30px) saturate(200%) brightness(1.1);
+    -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 0.9rem 1.1rem;
+    position: relative;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    /* Additional frosted effect layers */
+    background-image:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+}
+
+/* Chat bubble tail pointing up to the card */
+.bubble-tail {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid rgba(255, 255, 255, 0.85);
+    filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+}
+
+.bubble-tail::before {
+    content: '';
+    position: absolute;
+    bottom: -11px;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Bio text inside bubble - smaller and darker for visibility */
+.faculty-bio-text {
+    font-size: 0.75rem;
+    color: rgba(30, 30, 30, 0.9);
+    margin: 0;
+    line-height: 1.5;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-weight: 400;
+}
+
+.no-faculty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.former-faculty-section {
+    margin-top: 5rem;
+    padding-top: 3rem;
+    border-top: 3px solid var(--border-color);
+}
+
+.former-section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.former-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+}
+
+.former-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.former-group {
+    opacity: 0.85;
+}
+
+.former-card {
+    position: relative;
+}
+
+.former-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--color-primary);
+    opacity: 0.5;
+}
+
+.former-date {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    margin: 0.3rem 0 0 0;
+    font-style: italic;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Special Flip Card for Durjoy Mistry */
+.faculty-card-flip-container {
+    perspective: 1000px;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
+    overflow: visible;
+}
+
+.faculty-card-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    transform-style: preserve-3d;
+    animation: autoFlip 10s infinite;
+}
+
+@keyframes autoFlip {
+    0% {
+        transform: rotateY(0deg);
+    }
+    30% {
+        transform: rotateY(0deg);
+    }
+    35% {
+        transform: rotateY(180deg);
+    }
+    65% {
+        transform: rotateY(180deg);
+    }
+    70% {
+        transform: rotateY(360deg);
+    }
+    100% {
+        transform: rotateY(360deg);
+    }
+}
+
+.faculty-card-front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 16px;
+    overflow: visible;
+}
+
+.faculty-card-back-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: rotateY(180deg);
+    border-radius: 16px;
+}
+
+.faculty-card-front {
+    transform: rotateY(0deg);
+    overflow: visible;
+}
+
+.faculty-card-front .faculty-card-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.faculty-card-front .faculty-card {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    margin: 0;
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.faculty-card-front .faculty-card-image {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.faculty-card-front .faculty-card-image img {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+}
+
+.faculty-card-front .faculty-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.25rem 1rem 1rem 1rem;
+}
+
+.faculty-card-flip-container .faculty-bio-bubble {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    margin-top: 0;
+    transform: translateX(-50%) translateY(-20px);
+    transform-origin: center top;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10000;
+    min-width: 220px;
+    max-width: 300px;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.faculty-card-flip-container .faculty-card-link:hover .faculty-bio-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(12px);
+    pointer-events: auto;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10000;
+}
+
+.faculty-card-back-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.faculty-card-back {
+    transform: rotateY(0deg);
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+    transition: all 0.3s ease;
+}
+
+.faculty-card-back-link:hover .faculty-card-back {
+    transform: scale(1.02);
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.special-message {
+    text-align: center;
+    color: var(--text-primary);
+    z-index: 10;
+}
+
+.special-message p {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.special-card {
+    position: relative;
+    z-index: 100;
+}
+
+.special-card::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(45deg, var(--color-primary), #764ba2, var(--color-primary));
+    border-radius: 20px;
+    z-index: -1;
+    opacity: 0.6;
+    animation: glow 3s ease-in-out infinite;
+    filter: blur(10px);
+}
+
+@keyframes glow {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+/* Excel-like Table View */
+.faculty-table-view {
+    margin-top: 2rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.faculty-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    background: var(--bg-secondary);
+}
+
+.faculty-excel-table thead {
+    background: var(--bg-tertiary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.faculty-excel-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.faculty-excel-table th:last-child {
+    border-right: none;
+}
+
+.faculty-excel-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+    background: var(--bg-secondary);
+}
+
+.faculty-excel-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 5%, var(--bg-secondary));
+}
+
+.faculty-excel-table tbody tr:nth-child(even) {
+    background-color: var(--bg-tertiary);
+}
+
+.faculty-excel-table tbody tr:nth-child(even):hover {
+    background-color: color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary));
+}
+
+.faculty-excel-table td {
+    padding: 0.75rem 1rem;
+    border-right: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.faculty-excel-table td:last-child {
+    border-right: none;
+}
+
+.faculty-table-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.faculty-table-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.phone-column.hidden {
+    display: none;
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .faculty-list-section {
+        padding: 2rem 0;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-text {
+        text-align: center;
+    }
+
+    .view-toggle {
+        align-self: center;
+    }
+
+    .faculty-header h1 {
+        font-size: 2rem;
+    }
+
+    /* Grid view: One card per row on mobile */
+    .faculty-grid[data-view="grid"] {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Adjust card sizing for mobile */
+    .faculty-grid[data-view="grid"] .faculty-card {
+        min-height: 240px;
+    }
+
+    .faculty-grid[data-view="grid"] .faculty-card-image {
+        min-height: 240px;
+    }
+
+    .faculty-card-overlay {
+        padding: 1rem 0.75rem 0.75rem 0.75rem;
+    }
+
+    .faculty-name {
+        font-size: 1rem;
+    }
+
+    .faculty-card-link:hover .faculty-name {
+        font-size: 1.1rem;
+    }
+
+    /* Less dramatic scaling on mobile for better performance */
+    .faculty-grid[data-view="grid"]:hover .faculty-card-link:not(:hover) {
+        transform: scale(0.95);
+        opacity: 0.7;
+        filter: blur(1px);
+    }
+
+    .faculty-card-link:hover {
+        transform: scale(1.05) translateY(-4px);
+    }
+
+    /* Adjust bubble size on mobile */
+    .faculty-bio-bubble {
+        min-width: 180px;
+        max-width: 240px;
+        margin-top: 8px;
+    }
+
+    .bubble-content {
+        padding: 0.75rem 1rem;
+    }
+
+    .faculty-bio-text {
+        font-size: 0.7rem;
+        -webkit-line-clamp: 3;
+    }
+
+    .faculty-grid[data-view="list"] {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .faculty-grid[data-view="list"] .faculty-card {
+        flex-direction: row;
+        max-height: 70px;
+        min-height: 70px;
+    }
+
+    .faculty-grid[data-view="list"] .faculty-card-image {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+        height: 60px;
+        max-height: 60px;
+        border-radius: 10px;
+        margin-left: 0.4rem;
+    }
+
+    .faculty-grid[data-view="list"] .faculty-card-image img {
+        border-radius: 10px;
+    }
+
+    .faculty-grid[data-view="list"] .faculty-card-body {
+        padding: 0.4rem 0.6rem;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.2rem;
+    }
+
+    .faculty-grid[data-view="list"] .faculty-name {
+        font-size: 0.85rem;
+    }
+
+    .faculty-grid[data-view="list"] .faculty-designation {
+        font-size: 0.7rem;
+    }
+
+    .faculty-grid[data-view="list"] .former-date {
+        font-size: 0.65rem;
+        margin: 0.1rem 0;
+    }
+
+    .designation-group {
+        margin-bottom: 3rem;
+    }
+
+    .former-faculty-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+    }
+
+    .former-title {
+        font-size: 1.8rem;
+    }
+}

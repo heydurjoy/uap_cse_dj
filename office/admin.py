@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdmissionResult, Post, PostAttachment, ClassRoutine
+from .models import AdmissionResult, Post, PostAttachment, ClassRoutine, ExamRoutine, Gallery
 
 
 @admin.register(AdmissionResult)
@@ -103,6 +103,45 @@ class ClassRoutineAdmin(admin.ModelAdmin):
         }),
         ('Routine Image', {
             'fields': ('routine_image',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at')
+        }),
+    )
+
+
+@admin.register(ExamRoutine)
+class ExamRoutineAdmin(admin.ModelAdmin):
+    list_display = ['academic_year', 'semester', 'type_of_exam', 'year_semester', 'section', 'created_at', 'created_by']
+    list_filter = ['academic_year', 'semester', 'type_of_exam', 'year_semester', 'section', 'created_at']
+    search_fields = ['academic_year', 'semester', 'type_of_exam', 'year_semester', 'section']
+    ordering = ['-academic_year', 'semester', 'type_of_exam', 'year_semester', 'section']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Routine Information', {
+            'fields': ('academic_year', 'semester', 'type_of_exam', 'year_semester', 'section')
+        }),
+        ('Routine Image', {
+            'fields': ('routine_image',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at')
+        }),
+    )
+
+
+@admin.register(Gallery)
+class GalleryAdmin(admin.ModelAdmin):
+    list_display = ['sl', 'short_title', 'created_at', 'created_by']
+    list_filter = ['created_at']
+    search_fields = ['short_title', 'description', 'created_by_name', 'created_by_email']
+    ordering = ['sl', '-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Gallery Item', {
+            'fields': ('sl', 'short_title', 'description', 'image')
         }),
         ('Metadata', {
             'fields': ('created_by', 'created_at', 'updated_at')

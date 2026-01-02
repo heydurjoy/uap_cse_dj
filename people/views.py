@@ -307,6 +307,82 @@ def officer_detail(request, pk):
     return render(request, 'people/officer_detail.html', context)
 
 
+def staff_list(request):
+    """
+    Display list of all staff members, sorted by serial number.
+    """
+    staff_members = Staff.objects.all().order_by('sl').select_related('base_user')
+    
+    context = {
+        'staff_members': staff_members,
+    }
+    
+    return render(request, 'people/staff_list.html', context)
+
+
+def staff_detail(request, pk):
+    """
+    Display detailed view of a single staff member.
+    """
+    from datetime import date, datetime
+    from django.utils import timezone
+    
+    staff = get_object_or_404(Staff, pk=pk)
+    
+    # Calculate detailed years of service
+    service_data = None
+    if staff.joining_date:
+        today = timezone.now()
+        joining_datetime = timezone.make_aware(datetime.combine(staff.joining_date, datetime.min.time()))
+        
+        # Calculate total time difference
+        delta = today - joining_datetime
+        
+        total_days = delta.days
+        total_seconds = delta.total_seconds()
+        hours = int((total_seconds % 86400) // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        
+        # Calculate years and months
+        today_date = today.date()
+        joining = staff.joining_date
+        
+        years = today_date.year - joining.year
+        months = today_date.month - joining.month
+        days_in_month = today_date.day - joining.day
+        
+        # Adjust for negative months/days
+        if days_in_month < 0:
+            months -= 1
+            # Get days in previous month
+            if today_date.month == 1:
+                from calendar import monthrange
+                days_in_prev_month = monthrange(today_date.year - 1, 12)[1]
+            else:
+                from calendar import monthrange
+                days_in_prev_month = monthrange(today_date.year, today_date.month - 1)[1]
+            days_in_month += days_in_prev_month
+        
+        if months < 0:
+            years -= 1
+            months += 12
+        
+        service_data = {
+            'total_days': total_days,
+            'hours': hours,
+            'minutes': minutes,
+            'years': years,
+            'months': months,
+        }
+    
+    context = {
+        'staff': staff,
+        'service_data': service_data,
+    }
+    
+    return render(request, 'people/staff_detail.html', context)
+
+
 @login_required
 def user_profile(request):
     """
@@ -546,6 +622,20 @@ def edit_profile(request):
                     if 'routine' in request.POST:
                         routine_content = request.POST.get('routine', '').strip()
                         profile.routine = routine_content if routine_content else None
+                    if 'is_phd' in request.POST:
+                        profile.is_phd = request.POST.get('is_phd') == 'on'
+                    else:
+                        profile.is_phd = False
+                    if 'is_masters' in request.POST:
+                        profile.is_masters = request.POST.get('is_masters') == 'on'
+                    else:
+                        profile.is_masters = False
+                    if 'educational_qualification' in request.POST:
+                        educational_qualification_content = request.POST.get('educational_qualification', '').strip()
+                        profile.educational_qualification = educational_qualification_content if educational_qualification_content else None
+                    if 'course_conducted' in request.POST:
+                        course_conducted_content = request.POST.get('course_conducted', '').strip()
+                        profile.course_conducted = course_conducted_content if course_conducted_content else None
                     
                     # Handle image uploads (only if new file is provided) - same as Club model
                     if 'profile_pic' in request.FILES:
@@ -1476,6 +1566,12 @@ def edit_faculty(request, pk):
             faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
             faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
             
+            # Update qualification fields
+            faculty.is_phd = request.POST.get('is_phd') == 'on'
+            faculty.is_masters = request.POST.get('is_masters') == 'on'
+            faculty.educational_qualification = request.POST.get('educational_qualification', '')
+            faculty.course_conducted = request.POST.get('course_conducted', '')
+            
             # Update CV if provided
             if 'cv' in request.FILES:
                 faculty.cv = request.FILES['cv']
@@ -1656,6 +1752,12 @@ def create_faculty(request):
             faculty.is_bsc_admission_coordinator = request.POST.get('is_bsc_admission_coordinator') == 'on'
             faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
             faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
+            
+            # Update qualification fields
+            faculty.is_phd = request.POST.get('is_phd') == 'on'
+            faculty.is_masters = request.POST.get('is_masters') == 'on'
+            faculty.educational_qualification = request.POST.get('educational_qualification', '')
+            faculty.course_conducted = request.POST.get('course_conducted', '')
             
             # Update CV if provided
             if 'cv' in request.FILES:
@@ -2699,8 +2801,9 @@ def departmental_research(request):
     Shows statistics, faculty-wise scores, and publications table.
     Excludes faculty on leave and former faculty.
     """
-    from django.db.models import Count, Sum, Q
+    from django.db.models import Count, Sum, Q, Avg, Min, Max
     from datetime import datetime
+    from collections import defaultdict
     
     # Get current faculty (not on leave, not former)
     current_faculty = Faculty.objects.filter(
@@ -2708,19 +2811,57 @@ def departmental_research(request):
         is_on_study_leave=False
     ).select_related('base_user')
     
-    # Get time period filter
+    # Get filters
     period = request.GET.get('period', 'all_time')
+    pub_type = request.GET.get('type', 'all')
+    ranking_filter = request.GET.get('ranking', 'all')
+    year_from = request.GET.get('year_from', '')
+    year_to = request.GET.get('year_to', '')
+    sort_by = request.GET.get('sort', 'year_desc')
+    
     current_year = datetime.now().year
     
-    # Filter publications by time period
+    # Filter publications
     publications = Publication.objects.filter(faculty__in=current_faculty)
     
+    # Apply time period filter
     if period == 'current_year':
         publications = publications.filter(pub_year=current_year)
     elif period == 'last_2_years':
         publications = publications.filter(pub_year__gte=current_year - 1)
+    elif period == 'custom':
+        if year_from:
+            try:
+                year_from_int = int(year_from)
+                publications = publications.filter(pub_year__gte=year_from_int)
+            except ValueError:
+                pass
+        if year_to:
+            try:
+                year_to_int = int(year_to)
+                publications = publications.filter(pub_year__lte=year_to_int)
+            except ValueError:
+                pass
     
-    publications = publications.select_related('faculty').order_by('-pub_year', 'title')
+    # Apply type filter
+    if pub_type != 'all':
+        publications = publications.filter(type=pub_type)
+    
+    # Apply ranking filter
+    if ranking_filter != 'all':
+        publications = publications.filter(ranking=ranking_filter)
+    
+    # Sort publications
+    if sort_by == 'year_desc':
+        publications = publications.order_by('-pub_year', 'title')
+    elif sort_by == 'year_asc':
+        publications = publications.order_by('pub_year', 'title')
+    elif sort_by == 'title_asc':
+        publications = publications.order_by('title', '-pub_year')
+    elif sort_by == 'title_desc':
+        publications = publications.order_by('-title', '-pub_year')
+    
+    publications = publications.select_related('faculty')
     
     # Scoring system
     SCORING = {
@@ -2728,10 +2869,10 @@ def departmental_research(request):
         'q2': 7,
         'q3': 5,
         'q4': 3,
-        'a1': 8,
-        'a2': 6,
-        'a3': 4,
-        'a4': 2,
+        'a_star': 8,
+        'a': 6,
+        'b': 4,
+        'c': 2,
         'not_indexed': 1,
     }
     
@@ -2757,6 +2898,35 @@ def departmental_research(request):
     num_faculty = current_faculty.count()
     avg_pubs_per_faculty = round(total_pubs / num_faculty, 2) if num_faculty > 0 else 0
     
+    # Average citations per faculty
+    avg_citations_per_faculty = round(total_citations / num_faculty, 2) if num_faculty > 0 else 0
+    
+    # Statistics by publication type
+    stats_by_type = {}
+    for type_code, type_label in Publication.TYPE_CHOICES:
+        count = publications.filter(type=type_code).count()
+        stats_by_type[type_code] = {
+            'label': type_label,
+            'count': count,
+        }
+    
+    # Statistics by year (for line chart)
+    if publications.exists():
+        min_year = publications.aggregate(Min('pub_year'))['pub_year__min']
+        max_year = publications.aggregate(Max('pub_year'))['pub_year__max']
+    else:
+        min_year = current_year - 5
+        max_year = current_year
+    
+    # Create year-by-year data
+    publications_by_year = []
+    for year in range(min_year, max_year + 1):
+        count = publications.filter(pub_year=year).count()
+        publications_by_year.append({
+            'year': year,
+            'count': count,
+        })
+    
     # Calculate faculty-wise scores
     faculty_scores = []
     for faculty in current_faculty:
@@ -2774,9 +2944,9 @@ def departmental_research(request):
         # Smaller span = more concentrated publications = better
         year_span = 0
         if pub_years:
-            min_year = min(pub_years)
-            max_year = max(pub_years)
-            year_span = max_year - min_year if max_year != min_year else 0
+            faculty_min_year = min(pub_years)
+            faculty_max_year = max(pub_years)
+            year_span = faculty_max_year - faculty_min_year if faculty_max_year != faculty_min_year else 0
         
         faculty_scores.append({
             'faculty': faculty,
@@ -2926,8 +3096,11 @@ def departmental_research(request):
         'current_year': current_year,
         'total_pubs': total_pubs,
         'stats_by_ranking': stats_by_ranking,
+        'stats_by_type': stats_by_type,
         'total_citations': total_citations,
         'avg_pubs_per_faculty': avg_pubs_per_faculty,
+        'avg_citations_per_faculty': avg_citations_per_faculty,
+        'publications_by_year': publications_by_year,
         'faculty_scores': faculty_scores,
         'num_faculty': num_faculty,
         'ranking_choices': dict(Publication.RANKING_CHOICES),
@@ -2939,6 +3112,13 @@ def departmental_research(request):
         'all_faculty_leading_active': all_faculty_leading_active,
         'all_faculty_designation_wise': all_faculty_designation_wise,
         'scoring_system': SCORING,
+        'pub_type': pub_type,
+        'ranking_filter': ranking_filter,
+        'year_from': year_from,
+        'year_to': year_to,
+        'sort_by': sort_by,
+        'min_year': min_year if publications.exists() else current_year - 10,
+        'max_year': max_year if publications.exists() else current_year,
     }
     
     return render(request, 'people/departmental_research.html', context)

@@ -1012,34 +1012,75 @@ body {
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 1002; /* Higher z-index to ensure visibility */
-    gap: 4px;
-    position: relative; /* Ensure proper positioning */
-    flex-shrink: 0; /* Prevent shrinking */
-    min-width: 32px; /* Ensure minimum size */
-    min-height: 32px;
+    z-index: 1002;
+    position: relative;
 }
 
+/* Lines unchanged */
 .hamburger span {
     width: 100%;
     height: 3px;
     background-color: var(--text-primary);
     border-radius: 6px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s ease;
     transform-origin: center;
 }
 
+/* Active cross styling */
+.hamburger.active span:nth-child(1),
+.hamburger.active span:nth-child(3) {
+    position: fixed; /* fixed keeps it at top-right even on scroll */
+    top: 180px;       /* distance from top */
+    right: 0;     /* distance from right */
+    width: 36px;
+    height: 36px;
+    border-radius: 50%; /* circle shape */
+    border: 3px solid var(--color-primary); /* border changes with theme */
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* on top of everything */
+}
+
+/* Inner cross lines (white) */
+.hamburger.active span:nth-child(1)::before,
+.hamburger.active span:nth-child(3)::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px;
+}
+/* Rotate lines to make the X */
 .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .hamburger.active span:nth-child(2) {
     opacity: 0;
-    transform: translateX(-20px);
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(8px, -8px);
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Inner line color for contrast */
+.hamburger.active span:nth-child(1),
+.hamburger.active span:nth-child(3) {
+    background: none; /* remove bg for inner line */
+}
+
+.hamburger.active span:nth-child(1)::before,
+.hamburger.active span:nth-child(3)::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 3px;
+    background: var(--color-primary);
+    border-radius: 2px;
 }
 
 .nav-logo {
@@ -1546,10 +1587,10 @@ body {
 /* Nav Menu - Mobile First (Hidden by default, shown in hamburger) */
 .nav-menu {
     position: fixed;
-    top: 55px;
+    top: 150px;
     left: 0;
     width: 100%;
-    height: calc(100vh - 55px);
+    height: 100vh;
     background: var(--nav-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);

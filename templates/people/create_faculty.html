@@ -81,6 +81,40 @@
                             <label for="bio">Bio (Max 92 characters)</label>
                             <input type="text" name="bio" id="bio" maxlength="92" placeholder="Short biography">
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_phd" id="is_phd">
+                                <span>Has PhD</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_masters" id="is_masters">
+                                <span>Has Masters</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Educational Qualification Section -->
+                <div class="form-section">
+                    <h3>Educational Qualification</h3>
+                    <div class="form-group">
+                        <label for="educational_qualification">Educational Qualifications</label>
+                        <textarea name="educational_qualification" id="educational_qualification" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor..."></textarea>
+                        <small class="form-help">Click on the textarea above to use the rich text editor</small>
+                    </div>
+                </div>
+                
+                <!-- Course Conducted Section -->
+                <div class="form-section">
+                    <h3>Course Conducted</h3>
+                    <div class="form-group">
+                        <label for="course_conducted">Courses Conducted</label>
+                        <textarea name="course_conducted" id="course_conducted" rows="8" class="rich-text-field rich-text-textarea" placeholder="Click here to edit with rich text editor..."></textarea>
+                        <small class="form-help">Click on the textarea above to use the rich text editor</small>
                     </div>
                 </div>
                 
@@ -470,7 +504,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize CKEditor for rich text fields
-    const richTextFields = ['about', 'researches', 'routine'];
+    const richTextFields = ['about', 'researches', 'routine', 'educational_qualification', 'course_conducted'];
     
     richTextFields.forEach(function(fieldId) {
         const textarea = document.getElementById(fieldId);
