@@ -853,7 +853,7 @@
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const dragDropArea = document.getElementById('dragDropArea');
@@ -1089,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTextarea = null;
     let originalContent = '';
     
-    // Load CKEditor from CDN (trying multiple sources)
+    // Load CKEditor from CDN (optimized - single source with timeout)
     function loadCKEditor(callback) {
         if (typeof CKEDITOR !== 'undefined') {
             ckeditorLoaded = true;
@@ -1102,40 +1102,42 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Try multiple CDN sources (in order of preference)
-        const cdnSources = [
-            'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js',  // Most stable version
-            'https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.20.2/ckeditor.js',
-            'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js'
-        ];
+        // Use single reliable CDN source with timeout
+        const script = document.createElement('script');
+        script.src = 'https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js';
+        script.async = true;
         
-        let currentIndex = 0;
+        let timeoutId = setTimeout(function() {
+            console.error('CKEditor load timeout');
+            if (callback) callback(); // Continue anyway, might work
+        }, 5000); // 5 second timeout
         
-        function tryLoadScript(index) {
-            if (index >= cdnSources.length) {
-                console.error('All CKEditor CDN sources failed');
-                alert('Failed to load editor. Please check your internet connection and refresh the page.');
-                return;
-            }
-            
-            const script = document.createElement('script');
-            script.src = cdnSources[index];
-            script.onload = function() {
+        script.onload = function() {
+            clearTimeout(timeoutId);
+            ckeditorLoaded = true;
+            console.log('CKEditor loaded successfully');
+            if (callback) callback();
+        };
+        
+        script.onerror = function() {
+            clearTimeout(timeoutId);
+            console.error('Failed to load CKEditor from primary CDN');
+            // Try one fallback only
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.js';
+            fallbackScript.async = true;
+            fallbackScript.onload = function() {
                 ckeditorLoaded = true;
-                console.log('CKEditor loaded successfully from:', cdnSources[index]);
                 if (callback) callback();
             };
-            script.onerror = function() {
-                console.warn('Failed to load from:', cdnSources[index], 'trying next...');
-                currentIndex++;
-                tryLoadScript(currentIndex);
+            fallbackScript.onerror = function() {
+                console.error('All CKEditor CDN sources failed');
+                alert('Failed to load editor. Please check your internet connection and refresh the page.');
             };
-            document.head.appendChild(script);
-        }
+            document.head.appendChild(fallbackScript);
+        };
         
-        tryLoadScript(0);
+        document.head.appendChild(script);
     }
     
     // Create modal HTML
@@ -1353,23 +1355,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Add click handlers to textareas immediately
+    // Add click handlers to textareas (optimized with event delegation)
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Setting up CKEditor click handlers');
-        Object.keys(richTextFields).forEach(function(fieldId) {
-            const textarea = document.getElementById(fieldId);
-            if (textarea) {
-                console.log('Adding click handler to:', fieldId);
-                textarea.addEventListener('click', function(e) {
+        // Use event delegation for better performance
+        const form = document.getElementById('editProfileForm');
+        if (form) {
+            form.addEventListener('click', function(e) {
+                const textarea = e.target;
+                if (textarea && textarea.tagName === 'TEXTAREA' && richTextFields[textarea.id]) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Textarea clicked:', fieldId);
-                    showEditor(fieldId, richTextFields[fieldId]);
-                });
-            } else {
-                console.warn('Textarea not found:', fieldId);
-            }
-        });
+                    showEditor(textarea.id, richTextFields[textarea.id]);
+                }
+            });
+        }
     });
 })();
 </script>
