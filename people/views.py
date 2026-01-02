@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db import transaction, models
 from django.utils import timezone
 from django.db.models import Q, Max
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail, Publication
@@ -235,6 +235,38 @@ def faculty_detail(request, pk):
     }
     
     return render(request, 'people/faculty_detail.html', context)
+
+
+def serve_faculty_cv(request, pk):
+    """
+    Serve faculty CV PDF with proper headers for iframe embedding.
+    Public access - no authentication required.
+    """
+    faculty = get_object_or_404(Faculty, pk=pk)
+    
+    if not faculty.cv:
+        return HttpResponse("CV not found", status=404)
+    
+    try:
+        # Get the file path
+        file_path = faculty.cv.path
+        
+        # Serve the file with proper headers
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type='application/pdf'
+        )
+        response['Content-Disposition'] = f'inline; filename="{faculty.cv.name}"'
+        response['X-Content-Type-Options'] = 'nosniff'
+        
+        # Allow iframe embedding from same origin
+        response['X-Frame-Options'] = 'SAMEORIGIN'
+        
+        return response
+    except FileNotFoundError:
+        return HttpResponse("CV file not found on server", status=404)
+    except Exception as e:
+        return HttpResponse(f"Error serving CV: {str(e)}", status=500)
 
 
 def club_member_detail(request, pk):
