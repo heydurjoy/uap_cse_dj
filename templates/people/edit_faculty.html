@@ -261,6 +261,20 @@
                                 <span>On Study Leave</span>
                             </label>
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_inter_departmental" id="is_inter_departmental" {% if faculty.is_inter_departmental %}checked{% endif %}>
+                                <span>Inter-departmental Faculty</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_visiting" id="is_visiting" {% if faculty.is_visiting %}checked{% endif %}>
+                                <span>Visiting Faculty</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 

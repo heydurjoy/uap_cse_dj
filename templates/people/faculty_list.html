@@ -89,12 +89,113 @@
 
         <!-- Grid View -->
         <div id="facultyGridView" class="faculty-grid-view">
+            <!-- Head of Department - Full Width Card -->
+            {% if head_faculty %}
+            <a href="{% url 'people:faculty_detail' head_faculty.pk %}" class="head-faculty-card-link">
+            <div class="head-faculty-card">
+                <div class="head-faculty-content">
+                    <div class="head-faculty-image">
+                        <img src="{% if head_faculty.profile_pic %}/media/{{ head_faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ head_faculty.name }}">
+                    </div>
+                    <div class="head-faculty-details">
+                        <div class="head-faculty-header">
+                            <h2 class="head-faculty-name">{{ head_faculty.name }}</h2>
+                            <div class="head-faculty-badges">
+                                <span class="head-badge">Head of the Department</span>
+                                {% if head_faculty.designation %}
+                                    <span class="designation-badge">{{ head_faculty.designation }}</span>
+                                {% endif %}
+                                {% if head_faculty.is_phd %}
+                                    <span class="phd-badge">PhD</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="head-faculty-info">
+                            {% if head_faculty.base_user.email %}
+                            <div class="head-info-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                <a href="mailto:{{ head_faculty.base_user.email }}" onclick="event.stopPropagation();">{{ head_faculty.base_user.email }}</a>
+                            </div>
+                            {% endif %}
+                            {% if head_faculty.phone %}
+                            <div class="head-info-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                </svg>
+                                <span>{{ head_faculty.phone }}</span>
+                            </div>
+                            {% endif %}
+                            {% if head_faculty.citation %}
+                            <div class="head-info-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                                <span>📊 {{ head_faculty.citation }} Citations</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="head-faculty-links">
+                            {% if head_faculty.google_scholar_url %}
+                            <a href="{{ head_faculty.google_scholar_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="Google Scholar" onclick="event.stopPropagation();">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                                <span>Google Scholar</span>
+                            </a>
+                            {% endif %}
+                            {% if head_faculty.researchgate_url %}
+                            <a href="{{ head_faculty.researchgate_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="ResearchGate" onclick="event.stopPropagation();">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
+                                <span>ResearchGate</span>
+                            </a>
+                            {% endif %}
+                            {% if head_faculty.orcid_url %}
+                            <a href="{{ head_faculty.orcid_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="ORCID" onclick="event.stopPropagation();">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                                </svg>
+                                <span>ORCID</span>
+                            </a>
+                            {% endif %}
+                            {% if head_faculty.linkedin_url %}
+                            <a href="{{ head_faculty.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="head-link-btn" title="LinkedIn" onclick="event.stopPropagation();">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                                    <rect x="2" y="9" width="4" height="12"></rect>
+                                    <circle cx="4" cy="4" r="2"></circle>
+                                </svg>
+                                <span>LinkedIn</span>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% if head_faculty.bio %}
+                        <p class="head-faculty-bio">{{ head_faculty.bio }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            </a>
+            {% endif %}
+            
             {% if faculties_by_designation %}
                 {% for designation, faculty_list in faculties_by_designation.items %}
                 <div class="designation-group">
                     <h2 class="designation-title">{{ designation }}</h2>
                     <div class="faculty-grid" data-view="grid">
                         {% for faculty in faculty_list %}
+                        {% if not faculty.is_head %}
                         {% if "durjoy" in faculty.name|lower and "mistry" in faculty.name|lower and faculty.base_user.email == "durjoy@uap-bd.edu" %}
                             <!-- Special flip card for Durjoy Mistry -->
                             <div class="faculty-card-flip-container special-card">
@@ -179,6 +280,7 @@
                                 </div>
                             </a>
                         {% endif %}
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
@@ -196,7 +298,6 @@
             </div>
             {% for designation, faculty_list in former_faculties_by_designation.items %}
             <div class="designation-group former-group">
-                <h2 class="designation-title">{{ designation }}</h2>
                 <div class="faculty-grid" data-view="grid">
                     {% for faculty in faculty_list %}
                     {% if "durjoy" in faculty.name|lower and "mistry" in faculty.name|lower and faculty.base_user.email == "durjoy@uap-bd.edu" %}
@@ -1380,6 +1481,242 @@
     
     .former-title {
         font-size: 1.8rem;
+    }
+}
+
+/* Head Faculty Card - Full Width */
+.head-faculty-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 4rem;
+    transition: all 0.3s ease;
+}
+
+.head-faculty-card-link:hover {
+    transform: translateY(-2px);
+}
+
+.head-faculty-card {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    cursor: pointer;
+    max-width: 100%;
+}
+
+.head-faculty-card-link:hover .head-faculty-card {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-primary);
+}
+
+.head-faculty-content {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+.head-faculty-image {
+    flex-shrink: 0;
+    width: 200px;
+    height: 200px;
+    min-width: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 3px solid var(--color-primary);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.head-faculty-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.head-faculty-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.head-faculty-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.head-faculty-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-primary);
+    line-height: 1.2;
+}
+
+.head-faculty-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.head-badge {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.designation-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+}
+
+.phd-badge {
+    background: rgba(139, 69, 19, 0.1);
+    color: #8b4513;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.head-faculty-bio {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+    margin-top: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.head-faculty-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.head-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.head-info-item svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.head-info-item a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.head-info-item a:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.head-faculty-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.head-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.head-link-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.head-link-btn svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .head-faculty-card {
+        padding: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .head-faculty-content {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    
+    .head-faculty-image {
+        width: 180px;
+        height: 180px;
+        min-width: 180px;
+    }
+    
+    .head-faculty-details {
+        text-align: center;
+        align-items: center;
+    }
+    
+    .head-faculty-name {
+        font-size: 1.5rem;
+    }
+    
+    .head-faculty-bio {
+        font-size: 0.95rem;
+        text-align: center;
+    }
+    
+    .head-faculty-info {
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .head-faculty-links {
+        justify-content: center;
+    }
+    
+    .head-link-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
     }
 }
 </style>

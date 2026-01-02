@@ -166,6 +166,15 @@ class FacultyAdmin(ImageCroppingMixin, admin.ModelAdmin):
         ('Routine', {
             'fields': ('routine',)
         }),
+        ('Roles & Status', {
+            'fields': ('is_head', 'is_dept_proctor', 'is_bsc_admission_coordinator', 'is_mcse_admission_coordinator', 'is_on_study_leave', 'is_inter_departmental', 'is_visiting', 'last_office_date')
+        }),
+        ('Qualifications', {
+            'fields': ('is_phd', 'is_masters', 'educational_qualification', 'course_conducted')
+        }),
+        ('Documents', {
+            'fields': ('cv',)
+        }),
     )
 
 

@@ -15,13 +15,17 @@ import re
 
 def faculty_list(request):
     """
-    Display list of all faculties, sorted by designation first, then by sl.
-    Separates former faculty (with last_office_date) from active faculty.
+    Display list of all faculties, grouped by:
+    - Full Time Faculty (active, not on study leave)
+    - Faculty on Study Leave
+    - Former Faculty
     """
+    from datetime import date
+    
     # Get all faculties with base_user for email access
     all_faculties = Faculty.objects.all().select_related('base_user')
     
-    # Define designation order for sorting
+    # Define designation order for sorting within groups
     designation_order = {
         'Professor': 1,
         'Associate Professor': 2,
@@ -38,11 +42,37 @@ def faculty_list(request):
     faculties_on_leave = [f for f in active_faculties if f.is_on_study_leave]
     faculties_active = [f for f in active_faculties if not f.is_on_study_leave]
     
-    # Sort active faculties: first by is_head (heads first), then by designation, then by sl
-    sorted_active = sorted(
-        faculties_active,
+    # Separate head faculty from regular active faculty
+    head_faculty = [f for f in faculties_active if f.is_head]
+    regular_active = [f for f in faculties_active if not f.is_head]
+    
+    # Separate inter-departmental and visiting faculty from regular active
+    inter_departmental_faculties = [f for f in regular_active if f.is_inter_departmental]
+    visiting_faculties = [f for f in regular_active if f.is_visiting]
+    full_time_faculties = [f for f in regular_active if not f.is_inter_departmental and not f.is_visiting]
+    
+    # Sort full time faculties: by designation, then by sl
+    sorted_full_time = sorted(
+        full_time_faculties,
         key=lambda f: (
-            0 if f.is_head else 1,  # Heads first (0 < 1)
+            designation_order.get(f.designation, 999) if f.designation else 999,
+            f.sl if f.sl else 999
+        )
+    )
+    
+    # Sort inter-departmental faculties: by designation, then by sl
+    sorted_inter_departmental = sorted(
+        inter_departmental_faculties,
+        key=lambda f: (
+            designation_order.get(f.designation, 999) if f.designation else 999,
+            f.sl if f.sl else 999
+        )
+    )
+    
+    # Sort visiting faculties: by designation, then by sl
+    sorted_visiting = sorted(
+        visiting_faculties,
+        key=lambda f: (
             designation_order.get(f.designation, 999) if f.designation else 999,
             f.sl if f.sl else 999
         )
@@ -68,42 +98,42 @@ def faculty_list(request):
         reverse=True  # Most recent last_office_date first
     )
     
-    # Combine: active first, then those on leave, then former
-    sorted_faculties = sorted_active + sorted_on_leave
-    
-    # Group active faculties by designation for display
+    # Group faculties into categories (no designation separation)
     faculties_by_designation = {}
-    for faculty in sorted_faculties:
-        # If head, create a special "Head of the Department" group
-        if faculty.is_head:
-            designation = 'Head of the Department'
-        elif faculty.is_on_study_leave:
-            designation = 'Faculty on Study Leave'
-        else:
-            designation = faculty.designation or 'Other'
-        
-        if designation not in faculties_by_designation:
-            faculties_by_designation[designation] = []
-        faculties_by_designation[designation].append(faculty)
     
-    # Group former faculties by designation
+    # Full Time Faculty group
+    if sorted_full_time:
+        faculties_by_designation['Full Time Faculty'] = sorted_full_time
+    
+    # Inter-departmental Faculty group
+    if sorted_inter_departmental:
+        faculties_by_designation['Inter-departmental Faculty'] = sorted_inter_departmental
+    
+    # Visiting Faculty group
+    if sorted_visiting:
+        faculties_by_designation['Visiting Faculty'] = sorted_visiting
+    
+    # Faculty on Study Leave group
+    if sorted_on_leave:
+        faculties_by_designation['Faculty on Study Leave'] = sorted_on_leave
+    
+    # Former Faculty group (will be shown separately in template)
     former_faculties_by_designation = {}
-    for faculty in sorted_former:
-        # Former faculty can also be heads, but we'll show them in their designation group
-        designation = faculty.designation or 'Other'
-        
-        if designation not in former_faculties_by_designation:
-            former_faculties_by_designation[designation] = []
-        former_faculties_by_designation[designation].append(faculty)
+    if sorted_former:
+        former_faculties_by_designation['Former Faculty'] = sorted_former
     
     # For table view, only show active faculties (exclude those on leave and former)
-    all_faculties_for_table = sorted_active
+    all_faculties_for_table = sorted_full_time + sorted_inter_departmental + sorted_visiting
+    
+    # Get head faculty (should be only one, but handle multiple)
+    head_faculty_obj = head_faculty[0] if head_faculty else None
     
     context = {
         'faculties': all_faculties_for_table,
         'faculties_by_designation': faculties_by_designation,
         'former_faculties': sorted_former,
         'former_faculties_by_designation': former_faculties_by_designation,
+        'head_faculty': head_faculty_obj,
     }
     
     return render(request, 'people/faculty_list.html', context)
@@ -1560,11 +1590,20 @@ def edit_faculty(request, pk):
             faculty.routine = request.POST.get('routine', '')
             
             # Update special roles
-            faculty.is_head = request.POST.get('is_head') == 'on'
+            new_is_head = request.POST.get('is_head') == 'on'
+            
+            # If setting this faculty as head, unset any existing head
+            if new_is_head and not faculty.is_head:
+                # Unset any other faculty who is currently head
+                Faculty.objects.filter(is_head=True).exclude(base_user=faculty.base_user).update(is_head=False)
+            
+            faculty.is_head = new_is_head
             faculty.is_dept_proctor = request.POST.get('is_dept_proctor') == 'on'
             faculty.is_bsc_admission_coordinator = request.POST.get('is_bsc_admission_coordinator') == 'on'
             faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
             faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
+            faculty.is_inter_departmental = request.POST.get('is_inter_departmental') == 'on'
+            faculty.is_visiting = request.POST.get('is_visiting') == 'on'
             
             # Update qualification fields
             faculty.is_phd = request.POST.get('is_phd') == 'on'
@@ -1686,6 +1725,12 @@ def create_faculty(request):
                 password='temp_password_123'  # Should be changed by user
             )
             
+            # Check if setting as head, and unset any existing head
+            new_is_head = request.POST.get('is_head') == 'on'
+            if new_is_head:
+                # Unset any other faculty who is currently head
+                Faculty.objects.filter(is_head=True).update(is_head=False)
+            
             # Create Faculty profile
             faculty = Faculty.objects.create(
                 base_user=base_user,
@@ -1696,6 +1741,13 @@ def create_faculty(request):
                 bio=request.POST.get('bio', '').strip() or None,
                 about=request.POST.get('about', ''),
                 sl=next_sl,
+                is_head=new_is_head,
+                is_dept_proctor=request.POST.get('is_dept_proctor') == 'on',
+                is_bsc_admission_coordinator=request.POST.get('is_bsc_admission_coordinator') == 'on',
+                is_mcse_admission_coordinator=request.POST.get('is_mcse_admission_coordinator') == 'on',
+                is_on_study_leave=request.POST.get('is_on_study_leave') == 'on',
+                is_inter_departmental=request.POST.get('is_inter_departmental') == 'on',
+                is_visiting=request.POST.get('is_visiting') == 'on',
             )
             
             # Update profile picture if provided
@@ -1747,11 +1799,20 @@ def create_faculty(request):
             faculty.routine = request.POST.get('routine', '')
             
             # Update special roles
-            faculty.is_head = request.POST.get('is_head') == 'on'
+            new_is_head = request.POST.get('is_head') == 'on'
+            
+            # If setting this faculty as head, unset any existing head
+            if new_is_head and not faculty.is_head:
+                # Unset any other faculty who is currently head
+                Faculty.objects.filter(is_head=True).exclude(base_user=faculty.base_user).update(is_head=False)
+            
+            faculty.is_head = new_is_head
             faculty.is_dept_proctor = request.POST.get('is_dept_proctor') == 'on'
             faculty.is_bsc_admission_coordinator = request.POST.get('is_bsc_admission_coordinator') == 'on'
             faculty.is_mcse_admission_coordinator = request.POST.get('is_mcse_admission_coordinator') == 'on'
             faculty.is_on_study_leave = request.POST.get('is_on_study_leave') == 'on'
+            faculty.is_inter_departmental = request.POST.get('is_inter_departmental') == 'on'
+            faculty.is_visiting = request.POST.get('is_visiting') == 'on'
             
             # Update qualification fields
             faculty.is_phd = request.POST.get('is_phd') == 'on'

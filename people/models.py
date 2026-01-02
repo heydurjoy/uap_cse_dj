@@ -515,6 +515,20 @@ class Faculty(models.Model):
         help_text="Whether this faculty member is currently on study leave"
     )
     
+    is_inter_departmental = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is an inter-departmental faculty"
+    )
+    
+    is_visiting = models.BooleanField(
+        default=False,
+        null=True,
+        blank=True,
+        help_text="Whether this faculty member is a visiting faculty"
+    )
+    
     cv = models.FileField(
         upload_to='faculty_cvs/',
         null=True,
