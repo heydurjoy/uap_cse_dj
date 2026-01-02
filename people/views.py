@@ -685,6 +685,19 @@ def edit_profile(request):
                     if 'cropping' in request.POST:
                         profile.cropping = request.POST.get('cropping', '').strip()
                     
+                    # Handle CV upload (PDF only, max 2MB)
+                    if 'cv' in request.FILES:
+                        cv_file = request.FILES['cv']
+                        # Validate file type
+                        if cv_file.content_type != 'application/pdf':
+                            messages.error(request, 'CV must be a PDF file.')
+                            return redirect('people:edit_profile')
+                        # Validate file size (2MB = 2 * 1024 * 1024 bytes)
+                        if cv_file.size > 2 * 1024 * 1024:
+                            messages.error(request, 'CV file size must not exceed 2 MB.')
+                            return redirect('people:edit_profile')
+                        profile.cv = cv_file
+                    
                 elif profile_type == 'staff':
                     if 'name' in request.POST:
                         profile.name = request.POST.get('name', '').strip()
