@@ -1562,7 +1562,11 @@ body {
     z-index: 1000;
     box-shadow: 0 4px 30px var(--glow-shadow);
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
 }
 
 .nav-menu.active {
