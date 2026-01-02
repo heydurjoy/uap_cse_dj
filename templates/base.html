@@ -781,6 +781,20 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
 </script>
 
 
+    <!-- Global script to show loading overlay on edit profile click - must run early -->
+    <script>
+    (function() {
+        // Intercept clicks on edit profile links
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href*="edit_profile"]');
+            if (link) {
+                // Mark that we're navigating to edit profile
+                sessionStorage.setItem('loadingEditProfile', 'true');
+            }
+        });
+    })();
+    </script>
+    
     <script src="{% static 'js/theme.js' %}"></script>
     <script src="{% static 'js/mobile-menu.js' %}"></script>
     <script src="{% static 'js/dropdown.js' %}"></script>

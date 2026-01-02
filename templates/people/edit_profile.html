@@ -961,6 +961,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js" defer></script>
 <script>
+// Show overlay immediately if navigating from another page (runs before DOMContentLoaded)
+(function() {
+    const pageLoader = document.getElementById('pageLoader');
+    const mainContent = document.getElementById('mainContent');
+    
+    // Check if we should show overlay immediately (set by base.html script)
+    if (sessionStorage.getItem('loadingEditProfile') === 'true') {
+        // Ensure overlay is visible immediately
+        if (pageLoader) {
+            pageLoader.classList.remove('hidden');
+            pageLoader.style.display = 'flex';
+            pageLoader.style.opacity = '1';
+            pageLoader.style.visibility = 'visible';
+        }
+        if (mainContent) {
+            mainContent.style.display = 'none';
+        }
+        // Clear the flag
+        sessionStorage.removeItem('loadingEditProfile');
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Show main content and hide loader when page is ready
     const pageLoader = document.getElementById('pageLoader');
