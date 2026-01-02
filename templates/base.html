@@ -782,7 +782,7 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
 
 
     <!-- Edit Profile Loading Popup -->
-    <div id="editProfilePopup" class="edit-profile-popup" style="display: none;">
+    <div id="editProfilePopup" class="edit-profile-popup" style="display: none; opacity: 0; visibility: hidden;">
         <div class="edit-profile-popup-content">
             <div class="edit-profile-popup-header">
                 <h3>Loading Profile Editor</h3>
@@ -980,6 +980,8 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
         const popup = document.getElementById('editProfilePopup');
         if (popup && window.shouldShowEditProfilePopup()) {
             popup.style.display = 'flex';
+            popup.style.opacity = '1';
+            popup.style.visibility = 'visible';
             // Restore checkbox state
             const checkbox = document.getElementById('dontShowEditProfilePopup');
             if (checkbox) {
@@ -994,50 +996,60 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
         const popup = document.getElementById('editProfilePopup');
         if (popup) {
             popup.style.display = 'none';
+            popup.style.opacity = '0';
+            popup.style.visibility = 'hidden';
         }
     };
 
-    // Immediate click handler (before DOMContentLoaded)
+    // Immediate click handler - runs as soon as script loads
     document.addEventListener('click', function(e) {
-        let link = e.target.closest('a[href*="edit_profile"]');
+        // Method 1: Check for data attribute (most reliable)
+        let link = e.target.closest('a[data-edit-profile-link="true"]');
         
-        if (!link && e.target.tagName === 'A' && e.target.href && e.target.href.includes('edit_profile')) {
-            link = e.target;
-        }
-        
+        // Method 2: Find link by href pattern
         if (!link) {
-            let current = e.target;
-            while (current && current !== document.body) {
-                if (current.tagName === 'A' && current.href && current.href.includes('edit_profile')) {
-                    link = current;
-                    break;
+            link = e.target.closest('a');
+            if (link) {
+                const href = link.href || link.getAttribute('href') || '';
+                const isEditProfile = href.includes('edit_profile') || 
+                                      href.includes('profile/edit') || 
+                                      (href.includes('/edit/') && href.includes('profile'));
+                if (!isEditProfile) {
+                    link = null;
                 }
-                current = current.parentElement;
             }
         }
         
         if (link) {
-            if (window.shouldShowEditProfilePopup()) {
+            const href = link.href || link.getAttribute('href') || '';
+            
+            // Check if popup should be shown
+            if (window.shouldShowEditProfilePopup && window.shouldShowEditProfilePopup()) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
+                e.stopPropagation();
                 
-                const href = link.href || link.getAttribute('href');
-                if (window.showEditProfilePopup()) {
+                // Show popup
+                if (window.showEditProfilePopup && window.showEditProfilePopup()) {
+                    // Navigate after popup is visible
                     setTimeout(function() {
                         if (href) {
                             window.location.href = href;
                         }
-                    }, 200);
+                    }, 300);
                 } else {
+                    // If popup failed to show, navigate anyway
                     if (href) {
                         window.location.href = href;
                     }
                 }
+                return false;
             } else {
+                // Popup disabled, just mark for page loader
                 sessionStorage.setItem('loadingEditProfile', 'true');
             }
         }
-    }, true);
+    }, true); // Use capture phase to catch early
 
     // Set up checkbox handler when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
