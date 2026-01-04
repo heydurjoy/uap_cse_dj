@@ -236,7 +236,6 @@
                         <p class="action-desc">View & manage</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 4. Manage Publications - Faculty only -->
                 {% if profile_type == 'faculty' %}
@@ -255,11 +254,9 @@
                         <p class="action-desc">Add & edit publications</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 5. Manage All Publications -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_all_publications' %}
-                <a href="{% url 'people:faculty_list' %}" class="action-card">
+                <a href="{% url 'people:faculty_list' %}" class="action-card {% if not user|has_permission:'manage_all_publications' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -274,11 +271,9 @@
                         <p class="action-desc">All faculty publications</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 6. Manage Courses -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_courses' %}
-                <a href="{% url 'academics:manage_courses' %}" class="action-card">
+                <a href="{% url 'academics:manage_courses' %}" class="action-card {% if not user|has_permission:'manage_courses' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -292,11 +287,9 @@
                         <p class="action-desc">Course content</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 7. Manage Curricula -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_academic_calendars' %}
-                <a href="{% url 'designs:manage_curricula' %}" class="action-card">
+                <a href="{% url 'designs:manage_curricula' %}" class="action-card {% if not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -314,8 +307,7 @@
                 {% endif %}
                 
                 <!-- 8. Manage Your Posts -->
-                {% if user.is_power_user or user|has_granted_permission:'post_notices' %}
-                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                <a href="{% url 'office:manage_posts' %}" class="action-card {% if not user|has_permission:'post_notices' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -329,11 +321,9 @@
                         <p class="action-desc">Your posts & notices</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 9. Manage All Posts -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_all_posts' %}
-                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                <a href="{% url 'office:manage_posts' %}" class="action-card {% if not user|has_permission:'manage_all_posts' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -346,11 +336,9 @@
                         <p class="action-desc">All posts & notices</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 10. Head Message -->
-                {% if user.is_power_user or user|has_granted_permission:'edit_head_message' %}
-                <a href="{% url 'designs:manage_head_message' %}" class="action-card">
+                <a href="{% url 'designs:manage_head_message' %}" class="action-card {% if not user|has_permission:'edit_head_message' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -361,11 +349,9 @@
                         <p class="action-desc">HoD message</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 11. Manage Class Routines -->
-                {% if user.is_power_user or user|has_granted_permission:'post_routines' %}
-                <a href="{% url 'office:manage_routines' %}" class="action-card">
+                <a href="{% url 'office:manage_routines' %}" class="action-card {% if not user|has_permission:'post_routines' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -382,8 +368,7 @@
                 {% endif %}
                 
                 <!-- 12. Manage Exam Routines -->
-                {% if user.is_power_user or user|has_granted_permission:'post_routines' %}
-                <a href="{% url 'office:manage_exam_routines' %}" class="action-card">
+                <a href="{% url 'office:manage_exam_routines' %}" class="action-card {% if not user|has_permission:'post_routines' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -398,11 +383,9 @@
                         <p class="action-desc">Exam timetables</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 13. Manage Gallery -->
-                {% if user.is_power_user %}
-                <a href="{% url 'office:manage_gallery' %}" class="action-card">
+                <a href="{% url 'office:manage_gallery' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -415,11 +398,9 @@
                         <p class="action-desc">Homepage photo gallery</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 14. Academic Calendars -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_academic_calendars' %}
-                <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card">
+                <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card {% if not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -439,12 +420,10 @@
                         <p class="action-desc">Manage calendars</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 15. Admission Results -->
-                {% if user.is_power_user or user|has_granted_permission:'post_admission_results' %}
-                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
-                    <a href="{% url 'office:manage_admission_results' %}" class="action-card">
+                {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    <a href="{% url 'office:manage_admission_results' %}" class="action-card {% if not user|has_permission:'post_admission_results' %}action-disabled{% endif %}">
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -459,13 +438,11 @@
                             <p class="action-desc">Publish test results</p>
                         </div>
                     </a>
-                    {% endif %}
                 {% endif %}
                 
                 <!-- 16. Manage Clubs -->
-                {% if user.is_power_user or user|has_granted_permission:'manage_club_settings' %}
-                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
-                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card">
+                {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user|has_permission:'manage_club_settings' %}action-disabled{% endif %}">
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -479,12 +456,10 @@
                             <p class="action-desc">Create & edit clubs</p>
                         </div>
                     </a>
-                    {% endif %}
                 {% endif %}
                 
                 <!-- 17. Manage Users -->
-                {% if user.is_power_user %}
-                <a href="{% url 'people:manage_users' %}" class="action-card">
+                <a href="{% url 'people:manage_users' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -498,11 +473,9 @@
                         <p class="action-desc">Allowed emails</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 18. Manage Faculty -->
-                {% if user.is_power_user %}
-                <a href="{% url 'people:manage_faculty' %}" class="action-card">
+                <a href="{% url 'people:manage_faculty' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -514,11 +487,9 @@
                         <p class="action-desc">Edit & reorder</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 19. Feature Cards -->
-                {% if user.is_power_user or user|has_granted_permission:'edit_feature_cards' %}
-                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card">
+                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card {% if not user|has_permission:'edit_feature_cards' %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="7" height="7"></rect>
@@ -532,11 +503,9 @@
                         <p class="action-desc">Homepage cards</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 18. Hero Tags -->
-                {% if user.is_power_user %}
-                <a href="{% url 'designs:manage_hero_tags' %}" class="action-card">
+                <a href="{% url 'designs:manage_hero_tags' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 7h.01"></path>
@@ -548,11 +517,9 @@
                         <p class="action-desc">Homepage tags</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 19. Admission Elements -->
-                {% if user.is_power_user %}
-                <a href="{% url 'designs:manage_admission_elements' %}" class="action-card">
+                <a href="{% url 'designs:manage_admission_elements' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -566,7 +533,6 @@
                         <p class="action-desc">Manage admission pages</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- Need More Permissions - Available to all non-power users -->
                 {% if not user.is_power_user %}
@@ -1161,9 +1127,21 @@
 }
 
 .action-card.action-disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     position: relative;
+    pointer-events: none;
+    filter: grayscale(70%);
+}
+
+.action-card.action-disabled .action-icon {
+    opacity: 0.6;
+}
+
+.action-card.action-disabled .action-title,
+.action-card.action-disabled .action-desc {
+    color: var(--text-secondary);
+    opacity: 0.7;
 }
 
 .action-icon {

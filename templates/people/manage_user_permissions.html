@@ -76,21 +76,22 @@
                         <div class="permissions-list" style="display: grid; gap: 0.5rem;">
                             {% for permission in permissions %}
                                 {% with is_granted=permission.codename|in_list:user_permission_codenames %}
-                                <div class="permission-item" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: {% if is_granted %}color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)){% else %}var(--bg-secondary){% endif %}; transition: all 0.2s;">
+                                <div class="permission-item {% if not is_granted %}permission-not-granted{% endif %}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: {% if is_granted %}color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary)){% else %}var(--bg-secondary){% endif %}; transition: all 0.2s;">
                                     <input 
                                         type="checkbox" 
                                         name="permissions" 
                                         value="{{ permission.codename }}"
                                         id="perm_{{ permission.codename }}"
                                         {% if is_granted %}checked{% endif %}
+                                        class="permission-checkbox"
                                         style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;"
                                     >
                                     <label for="perm_{{ permission.codename }}" style="flex: 1; cursor: pointer; margin: 0;">
-                                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
+                                        <div style="font-weight: 600; color: {% if is_granted %}var(--text-primary){% else %}var(--text-secondary); opacity: 0.6;{% endif %}; margin-bottom: 0.25rem;">
                                             {{ permission.name }}
                                         </div>
                                         {% if permission.description %}
-                                            <div style="color: var(--text-secondary); font-size: 0.85rem;">
+                                            <div style="color: var(--text-secondary); font-size: 0.85rem; {% if not is_granted %}opacity: 0.5;{% endif %}">
                                                 {{ permission.description }}
                                             </div>
                                         {% endif %}
@@ -100,6 +101,10 @@
                                                     ✓ Granted {{ status.granted_at|date:"M d, Y" }}
                                                 </div>
                                             {% endwith %}
+                                        {% else %}
+                                            <div style="margin-top: 0.25rem; color: var(--text-secondary); font-size: 0.8rem; opacity: 0.6;">
+                                                Not granted
+                                            </div>
                                         {% endif %}
                                     </label>
                                 </div>
@@ -137,6 +142,23 @@
     
     .permission-item input[type="checkbox"]:checked + label {
         color: var(--color-primary);
+    }
+    
+    /* Grayed out style for permissions not granted */
+    .permission-not-granted {
+        opacity: 0.6;
+    }
+    
+    .permission-not-granted:hover {
+        opacity: 0.85;
+    }
+    
+    .permission-not-granted .permission-checkbox {
+        opacity: 0.7;
+    }
+    
+    .permission-not-granted .permission-checkbox:checked {
+        opacity: 1;
     }
     
     /* Button styles following theme */
