@@ -361,12 +361,14 @@ def club_member_list(request):
             elif position.club_member:
                 member_positions.append(position)
         
-        # Only add club if it has positions, convener, or president (after filtering)
-        if faculty_positions or member_positions:
+        # Combine all positions with faculty first, then students
+        all_positions = faculty_positions + member_positions
+        
+        # Only add club if it has positions (after filtering)
+        if all_positions:
             clubs_data.append({
                 'club': club,
-                'faculty_positions': faculty_positions,
-                'member_positions': member_positions,
+                'all_positions': all_positions,
             })
     
     # Apply sorting

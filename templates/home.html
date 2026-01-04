@@ -311,11 +311,15 @@
             </div>
             <div class="research-stat-item">
                 <div class="research-stat-value" data-target="{{ research_stats.avg_pubs_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
-                <div class="research-stat-label">Avg. per Faculty</div>
+                <div class="research-stat-label">Avg Papers per Faculty</div>
+            </div>
+            <div class="research-stat-item">
+                <div class="research-stat-value" data-target="{{ research_stats.avg_citations_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
+                <div class="research-stat-label">Avg Citations per Faculty</div>
             </div>
             <div class="research-stat-item">
                 <div class="research-stat-value" data-target="{{ research_stats.num_faculty }}" data-is-decimal="false">0</div>
-                <div class="research-stat-label">Faculty Members</div>
+                <div class="research-stat-label">Contributing Faculty</div>
             </div>
         </div>
         
@@ -1693,7 +1697,7 @@ html, body {
     backdrop-filter: blur(20px) saturate(200%);
     -webkit-backdrop-filter: blur(20px) saturate(200%);
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, rgba(255, 255, 255, 0.2));
-    border-radius: 999px;
+    border-radius: 24px;
     width: 100%;
     max-width: 900px;
     max-height: 90vh;
@@ -2963,7 +2967,8 @@ html, body {
     flex-direction: column;
     gap: 1.75rem;
     width: 100%;
-    max-width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
     box-sizing: border-box;
 }
 
@@ -2980,9 +2985,9 @@ html, body {
 
 .research-stats-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
-    max-width: 900px;
+    max-width: 1400px;
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
@@ -3084,7 +3089,7 @@ html, body {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    max-width: 1000px;
+    max-width: 1400px;
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;

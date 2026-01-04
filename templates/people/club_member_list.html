@@ -79,12 +79,13 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Faculty Positions -->
-                    {% if club_data.faculty_positions %}
+                    <!-- All Positions (Faculty first, then Students) -->
+                    {% if club_data.all_positions %}
                     <div class="positions-group">
-                        <h3 class="group-title">Faculty</h3>
                         <div class="positions-grid">
-                            {% for position in club_data.faculty_positions %}
+                            {% for position in club_data.all_positions %}
+                            {% if position.faculty %}
+                            <!-- Faculty Position -->
                             <div class="position-card {% if position.is_convener %}position-card-special{% endif %}">
                                 <div class="position-card-image">
                                     {% if position.faculty.profile_pic %}
@@ -108,17 +109,8 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Club Member Positions -->
-                    {% if club_data.member_positions %}
-                    <div class="positions-group">
-                        <h3 class="group-title">Students</h3>
-                        <div class="positions-grid">
-                            {% for position in club_data.member_positions %}
+                            {% elif position.club_member %}
+                            <!-- Student Position -->
                             <div class="position-card {% if position.is_president %}position-card-special{% endif %}">
                                 <div class="position-card-image">
                                     {% if position.club_member.profile_pic %}
@@ -142,6 +134,7 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </div>

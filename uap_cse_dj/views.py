@@ -168,6 +168,7 @@ def home(request):
         total_citations = current_faculty.aggregate(total=Sum('citation'))['total'] or 0
         num_faculty = current_faculty.count()
         avg_pubs_per_faculty = round(total_pubs / num_faculty, 2) if num_faculty > 0 else 0
+        avg_citations_per_faculty = round(total_citations / num_faculty, 2) if num_faculty > 0 else 0
         
         # Count by ranking
         stats_by_ranking = {}
@@ -182,6 +183,7 @@ def home(request):
             'total_pubs': total_pubs,
             'total_citations': total_citations,
             'avg_pubs_per_faculty': avg_pubs_per_faculty,
+            'avg_citations_per_faculty': avg_citations_per_faculty,
             'num_faculty': num_faculty,
             'stats_by_ranking': stats_by_ranking,
         }
