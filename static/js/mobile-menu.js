@@ -39,18 +39,26 @@
             }
         }, { passive: false });
 
-        // Prevent touch scroll propagation
+        // Prevent touch scroll propagation at boundaries only
+        let touchStartY = 0;
+        navMenu.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
         navMenu.addEventListener('touchmove', function(e) {
             const menu = e.currentTarget;
-            const isScrollingDown = e.touches[0].clientY < (menu.scrollTop + menu.clientHeight);
-            const isScrollingUp = e.touches[0].clientY > menu.scrollTop;
-            const isAtTop = menu.scrollTop === 0;
+            const touchY = e.touches[0].clientY;
+            const scrollDelta = touchY - touchStartY;
+            const isScrollingDown = scrollDelta < 0;
+            const isScrollingUp = scrollDelta > 0;
+            const isAtTop = menu.scrollTop <= 0;
             const isAtBottom = menu.scrollTop + menu.clientHeight >= menu.scrollHeight - 1;
 
-            // Allow scrolling within menu, but prevent propagation at boundaries
+            // Only prevent propagation if trying to scroll past boundaries
             if ((isScrollingUp && isAtTop) || (isScrollingDown && isAtBottom)) {
                 e.stopPropagation();
             }
+            // Otherwise, allow normal scrolling within the menu
         }, { passive: true });
     }
 
