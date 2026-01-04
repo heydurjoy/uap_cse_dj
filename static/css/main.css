@@ -1012,34 +1012,75 @@ body {
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 1002; /* Higher z-index to ensure visibility */
-    gap: 4px;
-    position: relative; /* Ensure proper positioning */
-    flex-shrink: 0; /* Prevent shrinking */
-    min-width: 32px; /* Ensure minimum size */
-    min-height: 32px;
+    z-index: 1002;
+    position: relative;
 }
 
+/* Lines unchanged */
 .hamburger span {
     width: 100%;
     height: 3px;
     background-color: var(--text-primary);
     border-radius: 6px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s ease;
     transform-origin: center;
 }
 
+/* Active cross styling */
+.hamburger.active span:nth-child(1),
+.hamburger.active span:nth-child(3) {
+    position: fixed; /* fixed keeps it at top-right even on scroll */
+    top: 180px;       /* distance from top */
+    right: 0;     /* distance from right */
+    width: 36px;
+    height: 36px;
+    border-radius: 50%; /* circle shape */
+    border: 3px solid var(--color-primary); /* border changes with theme */
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* on top of everything */
+}
+
+/* Inner cross lines (white) */
+.hamburger.active span:nth-child(1)::before,
+.hamburger.active span:nth-child(3)::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px;
+}
+/* Rotate lines to make the X */
 .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .hamburger.active span:nth-child(2) {
     opacity: 0;
-    transform: translateX(-20px);
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(8px, -8px);
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Inner line color for contrast */
+.hamburger.active span:nth-child(1),
+.hamburger.active span:nth-child(3) {
+    background: none; /* remove bg for inner line */
+}
+
+.hamburger.active span:nth-child(1)::before,
+.hamburger.active span:nth-child(3)::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 3px;
+    background: var(--color-primary);
+    border-radius: 2px;
 }
 
 .nav-logo {
@@ -1546,10 +1587,10 @@ body {
 /* Nav Menu - Mobile First (Hidden by default, shown in hamburger) */
 .nav-menu {
     position: fixed;
-    top: 55px;
+    top: 150px;
     left: 0;
     width: 100%;
-    height: calc(100vh - 55px);
+    height: 100vh;
     background: var(--nav-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1562,7 +1603,11 @@ body {
     z-index: 1000;
     box-shadow: 0 4px 30px var(--glow-shadow);
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
 }
 
 .nav-menu.active {
@@ -2852,7 +2897,6 @@ p {
     font-size: 3.15rem;
     font-weight: 900;
     color: var(--text-primary);
-    margin-bottom: 2.2rem;
     line-height: 1.2;
     text-shadow: none;
     -webkit-text-stroke: none;
@@ -3021,8 +3065,7 @@ p {
   position: relative;
   height: 405px;
   width: 100%;
-  max-width: 432px;
-  padding-top: 2.5rem;
+  max-width: 480px;
   margin-left: 170px;
   margin-top: 0.9rem;
 }
@@ -3038,7 +3081,7 @@ p {
 }
 
 .polaroid-frame {
-  width: 216px;
+  width: 300px;
   background: #fafafa;
    padding: 10px 10px 38px 10px;
   border-radius: 16px;
@@ -3049,17 +3092,9 @@ p {
   opacity: 1;
   filter: blur(0);
   transition: transform 0.6s ease, opacity 0.6s ease, filter 0.6s ease, box-shadow 0.6s ease;
+    margin: 0 auto;
 }
 
-/*.polaroid-frame.moving-back {*/
-/*  transform: scale(0.95);*/
-/*  opacity: 1;*/
-/*}*/
-
-/*.polaroid-frame.moving-forward {*/
-/*  transform: scale(1.05);*/
-/*  opacity: 1;*/
-/*}*/
 
 .polaroid-image {
   width: 100%;
@@ -3083,7 +3118,7 @@ p {
 }
 
 .polaroid-caption {
-  margin-top: 10.0px;
+  margin-top: 10px;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -3315,24 +3350,23 @@ p {
     margin-top:1.2rem;
 }
     .hero-visuals {
-        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
         margin-left: 0;
         display: flex;
         justify-content: center;
         align-items: center;
     }
-
-    .polaroid-container {
-        height: 260px;
-        max-width: 260px;
+  .polaroid-container {
+        height: 300px;
+        width: 100%;
+        max-width: 300px;
         margin: 0 auto;
-        padding-top: 1rem;
         position: relative;
     }
 
     /* Frame resize — FIXED WIDTH */
     .polaroid-frame {
-        width: 140px !important;         /* << FIX: consistent width */
+        width: 300px !important;         /* << FIX: consistent width */
         padding: 8px 8px 35px 8px;
         border-radius: 12px;
         overflow: hidden;               /* << FIX: prevent stretching */
@@ -3349,6 +3383,7 @@ p {
         width: 40px;
         height: 40px;
     }
+
 
     /* FIX: ensure text doesn't break card width */
     .polaroid-title,
@@ -3389,17 +3424,24 @@ p {
 /*       EXTRA SMALL SCREENS       */
 /* =============================== */
 @media (max-width: 480px) {
-
+.hero-visuals {
+        margin-bottom: 1.5rem;
+        margin-left: 0;
+    padding-right: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     .polaroid-container {
-        height: 220px;
-        max-width: 220px;
+        height: 300px;
+        width: 100%;
+        max-width: 300px;
     }
 
     .polaroid-frame {
-        width: 120px !important;        /* << FIX: stable small width */
-        padding: 6px 6px 30px 6px;
-        overflow: hidden;
-    }
+        width: 240px !important;        /* << FIX: stable small width */
+        margin: 0 auto;
+        overflow: hidden;    }
 
     .polaroid-link.polaroid-1 { top: 0; left: 25px; }
     .polaroid-link.polaroid-2 { top: 25px; left: 45px; }
@@ -3606,7 +3648,7 @@ p {
 }
 
 .made-with-love-btn:hover::before {
-    width: 300px;
+    width: 500px;
     height: 300px;
 }
 

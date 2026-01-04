@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Page Not Found - UAP CSE{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-content">
+            <div class="error-illustration">
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" class="error-svg">
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="var(--color-primary)" stroke-width="3" opacity="0.3"/>
+                    <path d="M70 70 L130 130 M130 70 L70 130" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="100" cy="100" r="60" fill="none" stroke="var(--color-primary)" stroke-width="2" opacity="0.2" stroke-dasharray="5,5"/>
+                </svg>
+            </div>
+            <h1 class="error-code">404</h1>
+            <h2 class="error-title">Page Not Found</h2>
+            <p class="error-message">
+                Oops! The page you're looking for doesn't exist or has been moved.
+            </p>
+            {% if request_path %}
+            <p class="error-path">
+                <code>{{ request_path }}</code>
+            </p>
+            {% endif %}
+            <div class="error-actions">
+                <a href="{% url 'home' %}" class="error-btn error-btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Go Home
+                </a>
+                <button onclick="window.history.back()" class="error-btn error-btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5"></path>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-page {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: var(--bg-primary);
+    }
+
+    .error-container {
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .error-content {
+        background: var(--bg-secondary);
+        backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
+        -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
+        padding: 3rem 2rem;
+        border-radius: 24px;
+        box-shadow: 
+            0 8px 32px var(--shadow),
+            0 0 0 1px var(--border-color-light) inset;
+        border: 1px solid var(--border-color-light);
+    }
+
+    .error-illustration {
+        margin-bottom: 2rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .error-svg {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        opacity: 0.8;
+    }
+
+    .error-code {
+        font-size: 5rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin: 0 0 0.5rem 0;
+        line-height: 1;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .error-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 1rem 0;
+    }
+
+    .error-message {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin: 0 0 1.5rem 0;
+        line-height: 1.6;
+    }
+
+    .error-path {
+        margin: 1rem 0 2rem 0;
+        padding: 0.75rem 1rem;
+        background: var(--bg-tertiary);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .error-path code {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        color: var(--color-primary);
+        word-break: break-all;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .error-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .error-btn svg {
+        flex-shrink: 0;
+    }
+
+    .error-btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+
+    .error-btn-primary:hover {
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    }
+
+    .error-btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+
+    .error-btn-secondary:hover {
+        background: var(--bg-secondary);
+        border-color: var(--color-primary-light);
+        color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .error-content {
+            padding: 2rem 1.5rem;
+        }
+
+        .error-code {
+            font-size: 4rem;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+        }
+
+        .error-message {
+            font-size: 1rem;
+        }
+
+        .error-actions {
+            flex-direction: column;
+        }
+
+        .error-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .error-svg {
+            width: 120px;
+            height: 120px;
+        }
+    }
+</style>
+{% endblock %}
+

@@ -26,12 +26,15 @@
         </div>
     </section>
 
-    <section class="credits-intro">
-        <div class="intro-card">
-            <p class="intro-text">
-                This website was born from <strong>CSE 302: Object-Oriented Programming II: Lab, instructed by Durjoy Mistry</strong>.
-                Rebuilt from scratch with commitment—driven by ownership rather than obligation.
-            </p>
+    <!-- Team Image with Text Overlay -->
+    <section class="team-image-section">
+        <div class="team-image-wrapper">
+            <img src="{% static 'images/team.png' %}" alt="Development Team" class="team-image">
+            <div class="team-text-overlay">
+                <p class="team-text">
+                    This website was born from <strong>CSE 302: Object-Oriented Programming II: Lab, instructed by Durjoy Mistry</strong>. Rebuilt from scratch with commitment—driven by ownership rather than obligation.
+                </p>
+            </div>
         </div>
     </section>
 
@@ -393,61 +396,214 @@
         margin: 0;
     }
 
-    .credits-intro {
-        padding: 2rem 1rem;
-        text-align: center;
-        max-width: 900px;
-        margin: 0 auto;
+    /* Team Image Section */
+    .team-image-section {
+        max-width: 1400px;
+        margin: 0 auto 3rem auto;
+        padding: 0 1rem;
     }
 
-    .intro-card {
-        max-width: 800px;
-        margin: 0 auto;
-        background: var(--bg-secondary);
-        backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
-        -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.2);
-        padding: 2rem;
+    .team-image-wrapper {
+        width: 100%;
+        position: relative;
         border-radius: 20px;
-        box-shadow:
-            0 8px 32px var(--shadow),
-            0 0 0 1px var(--border-color-light) inset;
-        border: 1px solid var(--border-color-light);
+        overflow: hidden;
+        box-shadow: 0 8px 32px var(--shadow);
     }
 
- .intro-text {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--text-primary);
-    margin: 0;
-    text-align: center;
-    animation: textGlowStrong 4s ease-in-out infinite;
-}
-
-.intro-text strong {
-    color: var(--color-primary);
-    font-weight: 600;
-    animation: textGlowStrong 4s ease-in-out infinite;
-}
-@keyframes textGlowStrong {
-    0%, 100% {
-        text-shadow:
-            0 0 1px var(--color-primary),
-            0 0 3px var(--glow-shadow);
+    .team-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+        aspect-ratio: 21 / 9;
     }
 
-    33% {
-        text-shadow:
-            0 0 1px var(--text-secondary),
-            0 0 3px var(--shadow-md);
+    .team-text-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 50%, rgba(0, 0, 0, 0.3) 80%, transparent 100%);
+        padding: 3rem 2rem 2rem 2rem;
+        margin: 0;
     }
 
-    66% {
-        text-shadow:
-            0 0 1px var(--text-tertiary),
-            0 0 3px var(--shadow);
+    .team-text {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #ffffff;
+        margin: 0;
+        text-align: center;
+        animation: subtleColorShift 10s ease-in-out infinite, subtleGlow 8s ease-in-out infinite;
+        position: relative;
     }
-}
 
+    .team-text strong {
+        color: var(--color-primary);
+        font-weight: 600;
+        animation: subtleColorShiftStrong 10s ease-in-out infinite, subtleGlowStrong 8s ease-in-out infinite;
+        position: relative;
+    }
+
+    /* Very subtle color shift animation */
+    @keyframes subtleColorShift {
+        0%, 100% {
+            color: #ffffff;
+        }
+        25% {
+            color: #f8f9ff;
+        }
+        50% {
+            color: #f0f4ff;
+        }
+        75% {
+            color: #f8f9ff;
+        }
+    }
+
+    /* Subtle color shift for strong text */
+    @keyframes subtleColorShiftStrong {
+        0%, 100% {
+            color: var(--color-primary);
+        }
+        25% {
+            color: color-mix(in srgb, var(--color-primary) 95%, #ffffff);
+        }
+        50% {
+            color: color-mix(in srgb, var(--color-primary) 90%, #ffffff);
+        }
+        75% {
+            color: color-mix(in srgb, var(--color-primary) 95%, #ffffff);
+        }
+    }
+
+    /* Subtle glow animation - very gentle */
+    @keyframes subtleGlow {
+        0%, 100% {
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+        50% {
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+    }
+
+    /* Subtle glow for strong text */
+    @keyframes subtleGlowStrong {
+        0%, 100% {
+            text-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
+        }
+        50% {
+            text-shadow: 0 0 8px rgba(25, 118, 210, 0.4);
+        }
+    }
+
+    /* Fallback for color-mix() */
+    @supports not (color: color-mix(in srgb, red, blue)) {
+        @keyframes subtleColorShiftStrong {
+            0%, 100% {
+                color: var(--color-primary);
+            }
+            25% {
+                color: rgba(25, 118, 210, 0.95);
+            }
+            50% {
+                color: rgba(25, 118, 210, 0.9);
+            }
+            75% {
+                color: rgba(25, 118, 210, 0.95);
+            }
+        }
+    }
+
+    /* Blurry dots - carefully increased */
+    .team-text::before,
+    .team-text::after {
+        content: '';
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        filter: blur(2.5px);
+        opacity: 0;
+        pointer-events: none;
+        animation: sparkleDot 4s ease-in-out infinite;
+    }
+
+    .team-text::before {
+        top: 5%;
+        left: 10%;
+        animation-delay: 0s;
+        box-shadow: 
+            15px 20px 0 0 rgba(255, 255, 255, 0.4),
+            -20px 30px 0 0 rgba(255, 255, 255, 0.35),
+            25px -15px 0 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .team-text::after {
+        bottom: 10%;
+        right: 15%;
+        animation-delay: 2s;
+        box-shadow: 
+            -18px -25px 0 0 rgba(255, 255, 255, 0.4),
+            20px -10px 0 0 rgba(255, 255, 255, 0.35),
+            -25px 15px 0 0 rgba(255, 255, 255, 0.45);
+    }
+
+    /* Additional dots on overlay */
+    .team-text-overlay::before,
+    .team-text-overlay::after {
+        content: '';
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        filter: blur(2px);
+        opacity: 0;
+        pointer-events: none;
+        animation: sparkleDot 5s ease-in-out infinite;
+    }
+
+    .team-text-overlay::before {
+        top: 15%;
+        left: 5%;
+        animation-delay: 1s;
+        box-shadow: 
+            30px 25px 0 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .team-text-overlay::after {
+        bottom: 20%;
+        right: 8%;
+        animation-delay: 3s;
+        box-shadow: 
+            -28px -20px 0 0 rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes sparkleDot {
+        0%, 100% {
+            opacity: 0;
+            transform: scale(0.5) translateY(0);
+        }
+        20% {
+            opacity: 0.6;
+            transform: scale(1.2) translateY(-3px);
+        }
+        40% {
+            opacity: 0.8;
+            transform: scale(1.4) translateY(-6px);
+        }
+        60% {
+            opacity: 0.6;
+            transform: scale(1.2) translateY(-3px);
+        }
+        80%, 100% {
+            opacity: 0;
+            transform: scale(0.5) translateY(0);
+        }
+    }
 
     /* Final Description Container */
     .final-description-container {
@@ -1274,6 +1430,20 @@
 
         .credits-section {
             padding: 1.5rem 0.75rem;
+        }
+
+        .team-image-section {
+            padding: 0 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .team-text-overlay {
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+
+        .team-text {
+            font-size: 1rem;
+            line-height: 1.6;
         }
     }
 
