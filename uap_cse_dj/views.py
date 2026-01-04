@@ -441,15 +441,25 @@ def signup(request):
                         shortname=shortname,
                     )
                 elif allowed_email.user_type == 'staff':
+                    # Get the next available serial number for Staff
+                    from django.db.models import Max
+                    max_sl = Staff.objects.aggregate(Max('sl'))['sl__max'] or 0
+                    next_sl = max_sl + 1
                     Staff.objects.create(
                         base_user=user,
                         name=fullname,
                         designation='Lab Assistant',  # Default, can be changed later
+                        sl=next_sl,
                     )
                 elif allowed_email.user_type == 'officer':
+                    # Get the next available serial number for Officer
+                    from django.db.models import Max
+                    max_sl = Officer.objects.aggregate(Max('sl'))['sl__max'] or 0
+                    next_sl = max_sl + 1
                     Officer.objects.create(
                         base_user=user,
                         name=fullname,
+                        sl=next_sl,
                     )
                 elif allowed_email.user_type == 'club_member':
                     ClubMember.objects.create(
@@ -686,15 +696,25 @@ def google_callback(request):
                         shortname=shortname,
                     )
                 elif allowed_email.user_type == 'staff':
+                    # Get the next available serial number for Staff
+                    from django.db.models import Max
+                    max_sl = Staff.objects.aggregate(Max('sl'))['sl__max'] or 0
+                    next_sl = max_sl + 1
                     Staff.objects.create(
                         base_user=user,
                         name=full_name or email,
                         designation='Lab Assistant',
+                        sl=next_sl,
                     )
                 elif allowed_email.user_type == 'officer':
+                    # Get the next available serial number for Officer
+                    from django.db.models import Max
+                    max_sl = Officer.objects.aggregate(Max('sl'))['sl__max'] or 0
+                    next_sl = max_sl + 1
                     Officer.objects.create(
                         base_user=user,
                         name=full_name or email,
+                        sl=next_sl,
                     )
                 elif allowed_email.user_type == 'club_member':
                     ClubMember.objects.create(
