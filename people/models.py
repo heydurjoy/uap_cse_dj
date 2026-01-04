@@ -310,7 +310,27 @@ class BaseUser(AbstractUser):
         # Superusers have all permissions
         if self.is_superuser:
             return True
-        # Check for granted permission
+        # Power users automatically have all permissions (unless explicitly revoked)
+        if self.is_power_user:
+            # Check if this permission has been explicitly revoked (inactive UserPermission exists)
+            revoked = UserPermission.objects.filter(
+                user=self,
+                permission__codename=permission_codename,
+                is_active=False
+            ).exists()
+            if revoked:
+                return False  # Explicitly revoked, don't grant automatically
+            # Check if there's an active grant (explicitly granted)
+            active_grant = UserPermission.objects.filter(
+                user=self,
+                permission__codename=permission_codename,
+                is_active=True
+            ).exists()
+            if active_grant:
+                return True  # Explicitly granted
+            # No record exists - power users get it automatically
+            return True
+        # Regular users: only if explicitly granted
         return UserPermission.objects.filter(
             user=self,
             permission__codename=permission_codename,

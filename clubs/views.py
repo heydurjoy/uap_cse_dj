@@ -14,15 +14,15 @@ from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TY
 
 
 def check_club_access(user):
-    """Check if user has manage_club_settings permission and is Faculty or Officer"""
+    """Check if user has manage_club_settings permission and is Faculty, Officer, or Power User"""
     if not user.is_authenticated:
         return False
     # Check permission
     if not user.has_permission('manage_club_settings'):
         return False
-    # Check if user is Faculty or Officer
+    # Allow if user is Faculty, Officer, or a Power User (power users can have any permission)
     user_type = user.user_type
-    return user_type and user_type in ['faculty', 'officer']
+    return user_type and (user_type in ['faculty', 'officer'] or user.is_power_user)
 
 
 def check_club_convener_access(user, club):

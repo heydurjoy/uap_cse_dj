@@ -933,12 +933,28 @@ def manage_user_permissions(request, user_id=None):
             permissions_by_category[category] = []
         permissions_by_category[category].append(perm)
     
-    # Get user's current permissions
+    # Get user's current permissions (active grants)
     user_permissions = UserPermission.objects.filter(
         user=target_user,
         is_active=True
     ).select_related('permission', 'granted_by')
     user_permission_codenames = set(up.permission.codename for up in user_permissions)
+    
+    # Get revoked permissions (inactive UserPermissions)
+    revoked_permissions = UserPermission.objects.filter(
+        user=target_user,
+        is_active=False
+    ).select_related('permission')
+    revoked_permission_codenames = set(up.permission.codename for up in revoked_permissions)
+    
+    # For power users: all permissions are granted by default unless explicitly revoked
+    # So we need to determine which permissions should appear as checked
+    if target_user.is_power_user:
+        # Power users have all permissions except revoked ones
+        # Get all permission codenames
+        all_permission_codenames = {perm.codename for perm in all_permissions}
+        # Permissions that should appear as checked = all permissions minus revoked ones
+        user_permission_codenames = all_permission_codenames - revoked_permission_codenames
     
     # Create permission status dict
     permission_status = {}
@@ -957,60 +973,105 @@ def manage_user_permissions(request, user_id=None):
                 selected_permissions = request.POST.getlist('permissions')
                 selected_permission_set = set(selected_permissions)
                 
-                # Grant new permissions
-                for perm_codename in selected_permission_set:
-                    if perm_codename not in user_permission_codenames:
-                        # Check if permission exists and is active
+                # Get all permission codenames for reference
+                all_permission_codenames = {perm.codename for perm in all_permissions}
+                
+                # Handle power users differently
+                if target_user.is_power_user:
+                    # For power users: unchecking a permission means revoking it (creating inactive UserPermission)
+                    # Checking a permission means unrevoking it (deleting inactive UserPermission if exists)
+                    
+                    # Permissions that should be granted (checked)
+                    for perm_codename in selected_permission_set:
                         try:
                             permission = Permission.objects.get(codename=perm_codename, is_active=True)
-                            
-                            # Check role requirements
-                            if permission.requires_role:
-                                if not target_user.user_type or target_user.user_type not in permission.requires_role:
-                                    messages.warning(
-                                        request,
-                                        f'Permission "{permission.name}" requires role: {", ".join(permission.requires_role)}. '
-                                        f'User has role: {target_user.user_type or "None"}. Skipping.'
-                                    )
-                                    continue
-                            
-                            # Revoke any existing inactive grants for this permission
+                            # Delete any revoked (inactive) UserPermission for this permission
                             UserPermission.objects.filter(
                                 user=target_user,
                                 permission=permission,
                                 is_active=False
                             ).delete()
-                            
-                            # Create new permission grant
-                            UserPermission.objects.create(
-                                user=target_user,
-                                permission=permission,
-                                granted_by=request.user,
-                                notes=request.POST.get(f'notes_{perm_codename}', '').strip() or None,
-                            )
-                            
-                        except Permission.DoesNotExist:
-                            messages.warning(request, f'Permission "{perm_codename}" not found. Skipping.')
-                
-                # Revoke permissions that were unchecked
-                for perm_codename in user_permission_codenames:
-                    if perm_codename not in selected_permission_set:
-                        try:
-                            permission = Permission.objects.get(codename=perm_codename)
-                            user_perm = UserPermission.objects.get(
+                            # Create active grant if it doesn't exist (optional, but good for tracking)
+                            if not UserPermission.objects.filter(
                                 user=target_user,
                                 permission=permission,
                                 is_active=True
-                            )
-                            
-                            # Revoke permission
-                            user_perm.is_active = False
-                            user_perm.revoked_by = request.user
-                            user_perm.revoked_at = timezone.now()
-                            user_perm.save()
-                            
-                        except (Permission.DoesNotExist, UserPermission.DoesNotExist):
-                            pass
+                            ).exists():
+                                UserPermission.objects.create(
+                                    user=target_user,
+                                    permission=permission,
+                                    granted_by=request.user,
+                                    notes=request.POST.get(f'notes_{perm_codename}', '').strip() or None,
+                                )
+                        except Permission.DoesNotExist:
+                            messages.warning(request, f'Permission "{perm_codename}" not found. Skipping.')
+                    
+                    # Permissions that should be revoked (unchecked)
+                    for perm_codename in all_permission_codenames:
+                        if perm_codename not in selected_permission_set:
+                            try:
+                                permission = Permission.objects.get(codename=perm_codename)
+                                # Delete any active UserPermission for this permission
+                                UserPermission.objects.filter(
+                                    user=target_user,
+                                    permission=permission,
+                                    is_active=True
+                                ).delete()
+                                # Create inactive UserPermission to mark it as revoked
+                                UserPermission.objects.get_or_create(
+                                    user=target_user,
+                                    permission=permission,
+                                    defaults={
+                                        'is_active': False,
+                                        'revoked_by': request.user,
+                                        'revoked_at': timezone.now(),
+                                    }
+                                )
+                            except Permission.DoesNotExist:
+                                pass
+                else:
+                    # Regular users: normal grant/revoke logic
+                    # Grant new permissions
+                    for perm_codename in selected_permission_set:
+                        if perm_codename not in user_permission_codenames:
+                            try:
+                                permission = Permission.objects.get(codename=perm_codename, is_active=True)
+                                
+                                # Revoke any existing inactive grants for this permission
+                                UserPermission.objects.filter(
+                                    user=target_user,
+                                    permission=permission,
+                                    is_active=False
+                                ).delete()
+                                
+                                # Create new permission grant
+                                UserPermission.objects.create(
+                                    user=target_user,
+                                    permission=permission,
+                                    granted_by=request.user,
+                                    notes=request.POST.get(f'notes_{perm_codename}', '').strip() or None,
+                                )
+                            except Permission.DoesNotExist:
+                                messages.warning(request, f'Permission "{perm_codename}" not found. Skipping.')
+                    
+                    # Revoke permissions that were unchecked
+                    for perm_codename in user_permission_codenames:
+                        if perm_codename not in selected_permission_set:
+                            try:
+                                permission = Permission.objects.get(codename=perm_codename)
+                                user_perm = UserPermission.objects.get(
+                                    user=target_user,
+                                    permission=permission,
+                                    is_active=True
+                                )
+                                
+                                # Revoke permission
+                                user_perm.is_active = False
+                                user_perm.revoked_by = request.user
+                                user_perm.revoked_at = timezone.now()
+                                user_perm.save()
+                            except (Permission.DoesNotExist, UserPermission.DoesNotExist):
+                                pass
                 
                 messages.success(request, f'Permissions updated successfully for {target_user.email}!')
                 return redirect('people:manage_user_permissions', user_id=target_user.id)

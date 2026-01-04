@@ -1290,16 +1290,8 @@ def manage_admission_results(request):
         messages.error(request, 'You do not have permission to manage admission results.')
         return redirect('people:user_profile')
     
-    # Check if user is faculty or officer
-    profile_type = None
-    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile:
-        profile_type = 'faculty'
-    elif hasattr(request.user, 'officer_profile') and request.user.officer_profile:
-        profile_type = 'officer'
-    
-    if profile_type not in ['faculty', 'officer']:
-        messages.error(request, 'Only Faculty and Officers can manage admission results.')
-        return redirect('people:user_profile')
+    # Note: Permission check above is sufficient - no need to restrict by user_type
+    # Power users with the permission can access regardless of user_type
     
     results = AdmissionResult.objects.all()
     
@@ -1353,16 +1345,8 @@ def create_admission_result(request):
         messages.error(request, 'You do not have permission to create admission results.')
         return redirect('people:user_profile')
     
-    # Check if user is faculty or officer
-    profile_type = None
-    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile:
-        profile_type = 'faculty'
-    elif hasattr(request.user, 'officer_profile') and request.user.officer_profile:
-        profile_type = 'officer'
-    
-    if profile_type not in ['faculty', 'officer']:
-        messages.error(request, 'Only Faculty and Officers can create admission results.')
-        return redirect('people:user_profile')
+    # Note: Permission check above is sufficient - no need to restrict by user_type
+    # Power users with the permission can access regardless of user_type
     
     if request.method == 'POST':
         try:
@@ -1510,16 +1494,8 @@ def edit_admission_result(request, pk):
         messages.error(request, 'You do not have permission to edit admission results.')
         return redirect('people:user_profile')
     
-    # Check if user is faculty or officer
-    profile_type = None
-    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile:
-        profile_type = 'faculty'
-    elif hasattr(request.user, 'officer_profile') and request.user.officer_profile:
-        profile_type = 'officer'
-    
-    if profile_type not in ['faculty', 'officer']:
-        messages.error(request, 'Only Faculty and Officers can edit admission results.')
-        return redirect('people:user_profile')
+    # Note: Permission check above is sufficient - no need to restrict by user_type
+    # Power users with the permission can access regardless of user_type
     
     result = get_object_or_404(AdmissionResult, pk=pk)
     
@@ -1588,16 +1564,8 @@ def delete_admission_result(request, pk):
         messages.error(request, 'You do not have permission to delete admission results.')
         return redirect('people:user_profile')
     
-    # Check if user is faculty or officer
-    profile_type = None
-    if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile:
-        profile_type = 'faculty'
-    elif hasattr(request.user, 'officer_profile') and request.user.officer_profile:
-        profile_type = 'officer'
-    
-    if profile_type not in ['faculty', 'officer']:
-        messages.error(request, 'Only Faculty and Officers can delete admission results.')
-        return redirect('people:user_profile')
+    # Note: Permission check above is sufficient - no need to restrict by user_type
+    # Power users with the permission can access regardless of user_type
     
     result = get_object_or_404(AdmissionResult, pk=pk)
     

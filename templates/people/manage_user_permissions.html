@@ -44,15 +44,34 @@
         </div>
         
         <!-- Permissions Form -->
-        <form method="post" action="{% if target_user.id == user.id %}{% url 'people:manage_own_permissions' %}{% else %}{% url 'people:manage_user_permissions' target_user.id %}{% endif %}">
+        <form method="post" action="{% if target_user.id == user.id %}{% url 'people:manage_own_permissions' %}{% else %}{% url 'people:manage_user_permissions' target_user.id %}{% endif %}" id="permissions-form">
             {% csrf_token %}
+            
+            <!-- Select All Controls -->
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: var(--text-primary);">
+                    <input type="checkbox" id="select-all-permissions" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span>Select All Permissions</span>
+                </label>
+                {% if target_user.is_power_user %}
+                <span style="padding: 0.25rem 0.75rem; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); border-radius: 6px; font-size: 0.85rem;">
+                    Power User: All permissions granted by default (uncheck to revoke)
+                </span>
+                {% endif %}
+            </div>
             
             <div class="permissions-form">
                 {% for category, permissions in permissions_by_category.items %}
                     <div class="permission-category" style="margin-bottom: 1.5rem;">
-                        <h3 style="margin: 0 0 0.75rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary); color: var(--text-primary); font-size: 1.1rem;">
-                            {{ category|title }}
-                        </h3>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary);">
+                            <h3 style="margin: 0; color: var(--text-primary); font-size: 1.1rem;">
+                                {{ category|title }}
+                            </h3>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; color: var(--text-secondary);">
+                                <input type="checkbox" class="select-category-all" data-category="{{ category }}" style="width: 16px; height: 16px; cursor: pointer;">
+                                <span>Select All</span>
+                            </label>
+                        </div>
                         
                         <div class="permissions-list" style="display: grid; gap: 0.5rem;">
                             {% for permission in permissions %}
@@ -156,5 +175,83 @@
         transform: translateY(-1px);
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-permissions');
+    const categorySelectAllCheckboxes = document.querySelectorAll('.select-category-all');
+    const permissionCheckboxes = document.querySelectorAll('input[name="permissions"]');
+    
+    // Select All checkbox functionality
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            permissionCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            // Update category checkboxes
+            categorySelectAllCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    }
+    
+    // Category Select All functionality
+    categorySelectAllCheckboxes.forEach(categoryCheckbox => {
+        categoryCheckbox.addEventListener('change', function() {
+            const category = this.getAttribute('data-category');
+            const categoryDiv = this.closest('.permission-category');
+            const categoryPermissionCheckboxes = categoryDiv.querySelectorAll('input[name="permissions"]');
+            categoryPermissionCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            // Update main select all checkbox
+            updateSelectAllCheckbox();
+        });
+    });
+    
+    // Individual checkbox change - update category and main select all
+    permissionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateCategorySelectAll(this);
+            updateSelectAllCheckbox();
+        });
+    });
+    
+    // Update category select all checkbox based on individual checkboxes
+    function updateCategorySelectAll(checkbox) {
+        const categoryDiv = checkbox.closest('.permission-category');
+        if (!categoryDiv) return;
+        const categoryCheckbox = categoryDiv.querySelector('.select-category-all');
+        if (!categoryCheckbox) return;
+        const categoryPermissionCheckboxes = categoryDiv.querySelectorAll('input[name="permissions"]');
+        const allChecked = Array.from(categoryPermissionCheckboxes).every(cb => cb.checked);
+        const someChecked = Array.from(categoryPermissionCheckboxes).some(cb => cb.checked);
+        categoryCheckbox.checked = allChecked;
+        categoryCheckbox.indeterminate = someChecked && !allChecked;
+    }
+    
+    // Update main select all checkbox based on all permission checkboxes
+    function updateSelectAllCheckbox() {
+        if (!selectAllCheckbox) return;
+        const allChecked = Array.from(permissionCheckboxes).every(cb => cb.checked);
+        const someChecked = Array.from(permissionCheckboxes).some(cb => cb.checked);
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+    }
+    
+    // Initialize category checkboxes on load
+    categorySelectAllCheckboxes.forEach(categoryCheckbox => {
+        const categoryDiv = categoryCheckbox.closest('.permission-category');
+        if (categoryDiv) {
+            const categoryPermissionCheckboxes = categoryDiv.querySelectorAll('input[name="permissions"]');
+            const allChecked = Array.from(categoryPermissionCheckboxes).every(cb => cb.checked);
+            categoryCheckbox.checked = allChecked;
+        }
+    });
+    
+    // Initialize main select all checkbox on load
+    updateSelectAllCheckbox();
+});
+</script>
 {% endblock %}
 
