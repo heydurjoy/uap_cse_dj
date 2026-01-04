@@ -8,7 +8,9 @@ from django.db.models import Q, Max
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ObjectDoesNotExist
+from types import SimpleNamespace
 from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail, Publication
+from clubs.models import Club, ClubPosition
 from .permissions import PERMISSION_DEFINITIONS
 import re
 
@@ -269,13 +271,140 @@ def serve_faculty_cv(request, pk):
         return HttpResponse(f"Error serving CV: {str(e)}", status=500)
 
 
+def club_member_list(request):
+    """
+    Display list of all club members grouped by club, sorted by serial number.
+    Faculty positions shown first, then student positions.
+    """
+    # Get search query
+    search_query = request.GET.get('search', '').strip()
+    
+    # Get sort parameter
+    sort_by = request.GET.get('sort', 'club_serial')  # Default: sort by club serial
+    
+    # Get all clubs ordered by serial number
+    clubs = Club.objects.all().order_by('sl', 'name')
+    
+    # Structure to hold clubs with their members
+    clubs_data = []
+    
+    for club in clubs:
+        # Get all positions for this club, ordered by serial number
+        positions = ClubPosition.objects.filter(club=club).select_related('faculty', 'club_member').order_by('sl')
+        
+        # Separate faculty and club members
+        faculty_positions = []
+        member_positions = []
+        
+        # Add convener from club object (if exists)
+        if club.convener:
+            # Check if search matches
+            include_convener = True
+            if search_query:
+                search_lower = search_query.lower()
+                person_name = club.convener.name.lower()
+                club_name = club.name.lower()
+                
+                include_convener = (search_lower in person_name or 
+                                   search_lower in club_name or 
+                                   search_lower in 'convener' or 
+                                   search_lower in 'advisor')
+            
+            if include_convener:
+                # Create a simple object-like dict for convener
+                convener_obj = SimpleNamespace(
+                    faculty=club.convener,
+                    club_member=None,
+                    position_title='Convener',
+                    is_convener=True,
+                )
+                faculty_positions.insert(0, convener_obj)  # Insert at beginning
+        
+        # Add president from club object (if exists)
+        if club.president:
+            # Check if search matches
+            include_president = True
+            if search_query:
+                search_lower = search_query.lower()
+                person_name = club.president.name.lower()
+                club_name = club.name.lower()
+                
+                include_president = (search_lower in person_name or 
+                                   search_lower in club_name or 
+                                   search_lower in 'president')
+            
+            if include_president:
+                # Create a simple object-like dict for president
+                president_obj = SimpleNamespace(
+                    faculty=None,
+                    club_member=club.president,
+                    position_title='President',
+                    is_president=True,
+                )
+                member_positions.insert(0, president_obj)  # Insert at beginning
+        
+        for position in positions:
+            # Apply search filter if provided
+            if search_query:
+                search_lower = search_query.lower()
+                person_name = position.get_person_name().lower()
+                position_title = position.position_title.lower()
+                club_name = club.name.lower()
+                
+                if (search_lower not in person_name and 
+                    search_lower not in position_title and 
+                    search_lower not in club_name):
+                    continue
+            
+            if position.faculty:
+                faculty_positions.append(position)
+            elif position.club_member:
+                member_positions.append(position)
+        
+        # Only add club if it has positions, convener, or president (after filtering)
+        if faculty_positions or member_positions:
+            clubs_data.append({
+                'club': club,
+                'faculty_positions': faculty_positions,
+                'member_positions': member_positions,
+            })
+    
+    # Apply sorting
+    if sort_by == 'name':
+        # Sort clubs by name
+        clubs_data.sort(key=lambda x: x['club'].name)
+    elif sort_by == 'club_serial':
+        # Sort by club serial (already sorted, but ensure it)
+        clubs_data.sort(key=lambda x: (x['club'].sl or 9999, x['club'].name))
+    
+    # Get all unique clubs for filter dropdown
+    all_clubs = Club.objects.all().order_by('sl', 'name')
+    
+    # Get selected club filter
+    club_filter = request.GET.get('club', '')
+    if club_filter:
+        try:
+            selected_club = Club.objects.get(pk=club_filter)
+            # Filter clubs_data to only show selected club
+            clubs_data = [cd for cd in clubs_data if cd['club'].pk == selected_club.pk]
+        except Club.DoesNotExist:
+            pass
+    
+    context = {
+        'clubs_data': clubs_data,
+        'all_clubs': all_clubs,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'club_filter': club_filter,
+    }
+    
+    return render(request, 'people/club_member_list.html', context)
+
+
 def club_member_detail(request, pk):
     """
     Display detailed view of a single club member.
     """
-    from .models import ClubMember
-    from clubs.models import ClubPosition, Club
-    
     club_member = get_object_or_404(ClubMember, pk=pk)
     
     # Get club positions for this member

@@ -101,7 +101,7 @@
 
 .officer-card-image {
     width: 100%;
-    height: 300px;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     background: var(--bg-tertiary);
     position: relative;
@@ -111,6 +111,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
     transition: transform 0.3s ease;
 }
 

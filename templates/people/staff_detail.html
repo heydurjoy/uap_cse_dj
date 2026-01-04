@@ -97,6 +97,16 @@
                 {% endif %}
             </div>
         </div>
+        
+        <!-- Bio Section -->
+        {% if staff.bio %}
+        <div class="staff-bio-section">
+            <h2 class="section-title-main">About</h2>
+            <div class="staff-bio-content">
+                <p>{{ staff.bio }}</p>
+            </div>
+        </div>
+        {% endif %}
     </section>
 </div>
 
@@ -451,6 +461,39 @@
     color: var(--text-primary);
     opacity: 0.9;
     white-space: nowrap;
+}
+
+/* Bio Section */
+.staff-bio-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.section-title-main {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.staff-bio-content {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text-primary);
+}
+
+.staff-bio-content p {
+    margin: 0 0 1.25rem 0;
+}
+
+.staff-bio-content p:last-child {
+    margin-bottom: 0;
 }
 
 @media (max-width: 968px) {

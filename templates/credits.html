@@ -75,7 +75,7 @@
             </div>
             <div class="percentage-explanation">
                 <p class="percentage-explanation-text">
-                    <strong>Contribution Percentage:</strong> Each contributor's percentage is calculated based on their total contribution (commits + lines added + lines deleted) relative to the total contribution of all contributors in that phase. If the total contribution is 100%, this percentage shows how much each person contributed.
+                    <strong>Contribution Metrics:</strong> Each contributor's work is measured by their commits, lines of code added, and lines deleted. These metrics reflect the scope of their contributions, but every contribution—regardless of size—is valuable to the project's success.
                 </p>
             </div>
         </div>
@@ -95,7 +95,7 @@
         </div>
         <div class="course-grid">
             {% for item in course_contributors_with_percent %}
-            {% with contributor=item.contributor percentage=item.percentage %}
+            {% with contributor=item.contributor %}
             {% if "durjoy" in contributor.name|lower and "mistry" in contributor.name|lower %}
                 <!-- Special flip card for Durjoy Mistry in course-based phase -->
                 <div class="student-flip-container special-card">
@@ -111,9 +111,6 @@
                                 </div>
                                 <div class="student-info">
                                     <h4 class="student-name">{{ contributor.name }}</h4>
-                                    <div class="contribution-percentage">
-                                        <span class="percentage-badge">{{ percentage|floatformat:1 }}%</span>
-                                    </div>
                                     <div class="student-contributions">
                                         {% if contributor.number_of_commits %}
                                         <span class="contribution-item">
@@ -212,9 +209,6 @@
                     </div>
                     <div class="student-info">
                         <h4 class="student-name">{{ contributor.name }}</h4>
-                        <div class="contribution-percentage">
-                            <span class="percentage-badge">{{ percentage|floatformat:1 }}%</span>
-                        </div>
                         <div class="student-contributions">
                             {% if contributor.number_of_commits %}
                             <span class="contribution-item">
@@ -313,7 +307,7 @@
         </div>
         <div class="final-grid">
             {% for item in final_contributors_with_percent %}
-            {% with contributor=item.contributor percentage=item.percentage %}
+            {% with contributor=item.contributor %}
             <div class="final-card">
                     {% if contributor.photo %}
                 <div class="card-bg-image" style="background-image: url('{{ contributor.photo.url }}');"></div>
@@ -332,9 +326,6 @@
                             {% if contributor.student_id %}
                             <span class="card-student-id">{{ contributor.student_id }}</span>
                             {% endif %}
-                            <div class="contribution-percentage-final">
-                                <span class="percentage-badge-final">{{ percentage|floatformat:1 }}%</span>
-                            </div>
                 </div>
                         <p class="card-role">{{ contributor.role }}</p>
                         <div class="image-overlay-stats">

@@ -1,0 +1,558 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Club Members - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="club-member-list-section">
+        <div class="club-member-header">
+            <h1>Club Members</h1>
+            <p class="subtitle">Browse all club members organized by club and position</p>
+        </div>
+        
+        <!-- Search and Filter Controls -->
+        <div class="controls-section">
+            <form method="get" action="{% url 'people:club_member_list' %}" class="controls-form">
+                <div class="search-filter-row">
+                    <div class="search-input-wrapper">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            class="search-input" 
+                            placeholder="Search by name, position, or club..." 
+                            value="{{ search_query }}"
+                        >
+                        <button type="submit" class="search-btn" aria-label="Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <select name="club" class="club-filter-select">
+                            <option value="">All Clubs</option>
+                            {% for club in all_clubs %}
+                            <option value="{{ club.pk }}" {% if club_filter == club.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ club.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <select name="sort" class="sort-select">
+                            <option value="club_serial" {% if sort_by == 'club_serial' %}selected{% endif %}>Sort by Club Serial</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Club Name</option>
+                        </select>
+                        
+                        <button type="submit" class="apply-filters-btn">Apply</button>
+                        {% if search_query or club_filter %}
+                        <a href="{% url 'people:club_member_list' %}" class="clear-filters-btn">Clear</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Club Members List -->
+        {% if clubs_data %}
+            <div class="clubs-container">
+                {% for club_data in clubs_data %}
+                <div class="club-section">
+                    <div class="club-header">
+                        <div class="club-header-content">
+                            {% if club_data.club.logo %}
+                            <img src="/media/{{ club_data.club.logo.name }}" alt="{{ club_data.club.name }}" class="club-logo">
+                            {% else %}
+                            <div class="club-logo-placeholder">👥</div>
+                            {% endif %}
+                            <div class="club-info">
+                                <h2 class="club-name">{{ club_data.club.name }}</h2>
+                                {% if club_data.club.short_name %}
+                                <p class="club-short-name">{{ club_data.club.short_name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if club_data.club.sl %}
+                        <span class="club-serial">#{{ club_data.club.sl }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Faculty Positions -->
+                    {% if club_data.faculty_positions %}
+                    <div class="positions-group">
+                        <h3 class="group-title">Faculty</h3>
+                        <div class="positions-grid">
+                            {% for position in club_data.faculty_positions %}
+                            <div class="position-card {% if position.is_convener %}position-card-special{% endif %}">
+                                <div class="position-card-image">
+                                    {% if position.faculty.profile_pic %}
+                                    <img src="/media/{{ position.faculty.profile_pic.name }}" alt="{{ position.faculty.name }}">
+                                    {% else %}
+                                    <div class="position-placeholder">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="position-card-body">
+                                    <a href="{% url 'people:faculty_detail' position.faculty.pk %}" class="position-name-link">
+                                        <h4 class="position-name">{{ position.faculty.name }}</h4>
+                                    </a>
+                                    <p class="position-title {% if position.is_convener %}position-title-special{% endif %}">{{ position.position_title }}</p>
+                                    {% if position.faculty.designation %}
+                                    <p class="position-designation">{{ position.faculty.get_designation_display }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Club Member Positions -->
+                    {% if club_data.member_positions %}
+                    <div class="positions-group">
+                        <h3 class="group-title">Students</h3>
+                        <div class="positions-grid">
+                            {% for position in club_data.member_positions %}
+                            <div class="position-card {% if position.is_president %}position-card-special{% endif %}">
+                                <div class="position-card-image">
+                                    {% if position.club_member.profile_pic %}
+                                    <img src="/media/{{ position.club_member.profile_pic.name }}" alt="{{ position.club_member.name }}">
+                                    {% else %}
+                                    <div class="position-placeholder">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="position-card-body">
+                                    <a href="{% url 'people:club_member_detail' position.club_member.pk %}" class="position-name-link">
+                                        <h4 class="position-name">{{ position.club_member.name }}</h4>
+                                    </a>
+                                    <p class="position-title {% if position.is_president %}position-title-special{% endif %}">{{ position.position_title }}</p>
+                                    {% if position.club_member.student_id %}
+                                    <p class="position-student-id">ID: {{ position.club_member.student_id }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-results">
+                <p>No club members found{% if search_query %} matching "{{ search_query }}"{% endif %}.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.club-member-list-section {
+    padding: 3rem 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.club-member-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.club-member-header h1 {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.club-member-header .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.controls-section {
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.controls-form {
+    width: 100%;
+}
+
+.search-filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.search-btn {
+    padding: 0.75rem 1.25rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.filter-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.club-filter-select,
+.sort-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.club-filter-select:focus,
+.sort-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.apply-filters-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.apply-filters-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-2px);
+}
+
+.clear-filters-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.clear-filters-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+}
+
+.clubs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.club-section {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.club-header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.club-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.club-logo-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 15%, var(--bg-tertiary)) 0%,
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary)) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.club-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.club-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.club-short-name {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.club-serial {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    opacity: 0.7;
+}
+
+.positions-group {
+    margin-bottom: 2rem;
+}
+
+.positions-group:last-child {
+    margin-bottom: 0;
+}
+
+.group-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.positions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.position-card {
+    background: var(--bg-primary);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.position-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+}
+
+.position-card-special {
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.position-card-special:hover {
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.position-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    position: relative;
+}
+
+.position-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.position-card:hover .position-card-image img {
+    transform: scale(1.05);
+}
+
+.position-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 15%, var(--bg-tertiary)) 0%,
+        color-mix(in srgb, var(--color-primary) 8%, var(--bg-tertiary)) 100%);
+    color: var(--color-primary);
+    opacity: 0.5;
+}
+
+.position-card-body {
+    padding: 1.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.position-name-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.position-name {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.position-name-link:hover .position-name {
+    color: var(--color-primary);
+}
+
+.position-title {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.position-title-special {
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.position-designation,
+.position-student-id {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.no-results p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .club-member-header h1 {
+        font-size: 2rem;
+    }
+    
+    .search-filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .club-filter-select,
+    .sort-select,
+    .apply-filters-btn,
+    .clear-filters-btn {
+        width: 100%;
+    }
+    
+    .club-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .positions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .club-section {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+

@@ -1026,34 +1026,10 @@ def credits(request):
         commits_sorted=Coalesce('number_of_commits', Value(0), output_field=IntegerField())
     ).order_by('-lines_added_sorted', '-commits_sorted', 'name')
     
-    # Calculate percentages for final contributors
-    # Total contribution = sum of (commits + lines_added + lines_deleted) for all final contributors
-    final_total = sum(
-        (c.number_of_commits or 0) + (c.lines_added or 0) + (c.lines_deleted or 0)
-        for c in final_contributors
-    )
-    final_contributors_with_percent = []
-    for contributor in final_contributors:
-        contributor_total = (contributor.number_of_commits or 0) + (contributor.lines_added or 0) + (contributor.lines_deleted or 0)
-        percentage = (contributor_total / final_total * 100) if final_total > 0 else 0
-        final_contributors_with_percent.append({
-            'contributor': contributor,
-            'percentage': percentage
-        })
-    
-    # Calculate percentages for course contributors
-    course_total = sum(
-        (c.number_of_commits or 0) + (c.lines_added or 0) + (c.lines_deleted or 0)
-        for c in course_contributors
-    )
-    course_contributors_with_percent = []
-    for contributor in course_contributors:
-        contributor_total = (contributor.number_of_commits or 0) + (contributor.lines_added or 0) + (contributor.lines_deleted or 0)
-        percentage = (contributor_total / course_total * 100) if course_total > 0 else 0
-        course_contributors_with_percent.append({
-            'contributor': contributor,
-            'percentage': percentage
-        })
+    # Prepare contributors without percentages - just pass them directly
+    # We'll show raw contribution numbers without comparison
+    final_contributors_list = [{'contributor': c} for c in final_contributors]
+    course_contributors_list = [{'contributor': c} for c in course_contributors]
     
     # Get Durjoy's faculty object for linking
     durjoy_faculty = None
@@ -1098,8 +1074,8 @@ This project stands as a reflection of what students and teachers can create tog
         "intro_text": intro_text,
         "final_contributors": final_contributors,
         "course_contributors": course_contributors,
-        "final_contributors_with_percent": final_contributors_with_percent,
-        "course_contributors_with_percent": course_contributors_with_percent,
+        "final_contributors_with_percent": final_contributors_list,
+        "course_contributors_with_percent": course_contributors_list,
         "durjoy_faculty": durjoy_faculty,
     }
 
