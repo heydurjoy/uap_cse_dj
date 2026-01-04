@@ -432,8 +432,8 @@
                                         <div class="researcher-card-home-info">
                                             <h3 class="researcher-name-home">{{ researcher.faculty.name }}</h3>
                                             <div class="researcher-meta-home">
-                                                <div class="researcher-score-home">Score: {{ researcher.score }}</div>
                                                 <div class="researcher-citation-home">Cited by: {{ researcher.citations|floatformat:0 }}</div>
+                                                <div class="researcher-score-home">Score: {{ researcher.score }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -521,7 +521,7 @@
             <button class="info-modal-close-home" onclick="closeTabInfoModal('top-designation')">&times;</button>
         </div>
         <div class="info-modal-body-home">
-            <p>Top researchers by designation are selected based on their highest research score within each faculty title (Professor, Associate Professor, etc.).</p>
+            <p>Top researchers by designation are selected based on their highest citation count within each faculty title (Professor, Associate Professor, etc.).</p>
         </div>
     </div>
 </div>

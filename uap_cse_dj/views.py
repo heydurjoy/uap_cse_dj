@@ -263,7 +263,7 @@ def home(request):
         leading_active_researchers = recent_faculty_scores[:4]  # Top 4
         
         # ===== SECTION 3: Top Researchers (Designation Wise) =====
-        # Get top researcher from each designation using existing ranking logic
+        # Get top cited researcher from each designation (sorted by citations)
         # Use OrderedDict to maintain order
         from collections import OrderedDict
         top_researchers = OrderedDict()
@@ -272,6 +272,8 @@ def home(request):
         for designation in designations:
             designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
             if designation_faculty:
+                # Sort by citations (descending), then by score as tiebreaker
+                designation_faculty.sort(key=lambda x: (-x['citations'], -x['score']))
                 top_researchers[designation] = designation_faculty[0]
     except Exception as e:
         # Handle errors gracefully - research data is optional

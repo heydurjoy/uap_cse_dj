@@ -368,31 +368,82 @@
                         
                         <!-- Tab 4: Top by Designation -->
                         <div class="faculty-tab-content" id="top-designation-tab">
-                            <div class="faculty-cards-grid">
-                                {% for item in all_faculty_designation_wise %}
-                                <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
-                                    <div class="faculty-card {% if item.is_top_1 %}golden-rank{% endif %}">
-                                        <div class="faculty-card-image">
-                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
-                                            <div class="faculty-card-overlay">
-                                                <div class="faculty-card-info">
-                                                    <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
-                                                    <div class="faculty-card-meta">
-                                                        <span class="faculty-card-score">Score: {{ item.score }}</span>
-                                                        <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                            <!-- Most Cited in Designation -->
+                            <div class="designation-section">
+                                <h3 class="designation-section-title">Most Cited in</h3>
+                                <div class="faculty-cards-grid">
+                                    {% regroup all_faculty_most_cited_by_designation by designation as cited_by_designation %}
+                                    {% for designation_group in cited_by_designation %}
+                                    <div class="designation-group">
+                                        <h4 class="designation-group-title">{{ designation_group.grouper }}</h4>
+                                        <div class="faculty-cards-grid-designation">
+                                            {% for item in designation_group.list %}
+                                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                                                <div class="faculty-card {% if item.is_top_1_cited %}golden-rank{% endif %}">
+                                                    <div class="faculty-card-image">
+                                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                                        <div class="faculty-card-overlay">
+                                                            <div class="faculty-card-info">
+                                                                <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                                <div class="faculty-card-meta">
+                                                                    <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                                                                    <span class="faculty-card-score">Score: {{ item.score }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
+                                                    <div class="faculty-card-designation">{{ item.designation }}</div>
+                                                    {% if item.is_top_1_cited %}
+                                                    <div class="golden-rank-badge-below">Most Cited in {{ item.designation }}</div>
+                                                    {% endif %}
                                                 </div>
-                                            </div>
+                                            </a>
+                                            {% endfor %}
                                         </div>
-                                        <div class="faculty-card-designation">{{ item.designation }}</div>
-                                        {% if item.is_top_1 %}
-                                        <div class="golden-rank-badge-below">Top in {{ item.designation }}</div>
-                                        {% endif %}
                                     </div>
-                                </a>
-                                {% empty %}
-                                <p class="empty-message">No faculty found.</p>
-                                {% endfor %}
+                                    {% empty %}
+                                    <p class="empty-message">No faculty found.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Most Active in Designation -->
+                            <div class="designation-section">
+                                <h3 class="designation-section-title">Most Active in</h3>
+                                <div class="faculty-cards-grid">
+                                    {% regroup all_faculty_most_active_by_designation by designation as active_by_designation %}
+                                    {% for designation_group in active_by_designation %}
+                                    <div class="designation-group">
+                                        <h4 class="designation-group-title">{{ designation_group.grouper }}</h4>
+                                        <div class="faculty-cards-grid-designation">
+                                            {% for item in designation_group.list %}
+                                            <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                                                <div class="faculty-card {% if item.is_top_1_active %}golden-rank{% endif %}">
+                                                    <div class="faculty-card-image">
+                                                        <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                                        <div class="faculty-card-overlay">
+                                                            <div class="faculty-card-info">
+                                                                <h3 class="faculty-card-name">{{ item.faculty.name }}</h3>
+                                                                <div class="faculty-card-meta">
+                                                                    <span class="faculty-card-score">Score: {{ item.score }}</span>
+                                                                    <span class="faculty-card-citation">Citations: {{ item.citations|floatformat:0 }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="faculty-card-designation">{{ item.designation }}</div>
+                                                    {% if item.is_top_1_active %}
+                                                    <div class="golden-rank-badge-below">Most Active in {{ item.designation }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <p class="empty-message">No faculty found.</p>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1330,8 +1381,48 @@
     }
 }
 
-.faculty-card-designation {
+.designation-section {
+    margin-bottom: 3rem;
+}
 
+.designation-section:last-child {
+    margin-bottom: 0;
+}
+
+.designation-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.designation-group {
+    margin-bottom: 2rem;
+}
+
+.designation-group:last-child {
+    margin-bottom: 0;
+}
+
+.designation-group-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--color-primary);
+}
+
+.faculty-cards-grid-designation {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.faculty-card-designation {
     color: var(--text-secondary);
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;

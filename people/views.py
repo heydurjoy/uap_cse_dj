@@ -3372,21 +3372,44 @@ def departmental_research(request):
         })
     all_faculty_leading_active.sort(key=lambda x: -x['score'])
     
-    # Top by Designation - all faculty grouped by designation, sorted by score
-    all_faculty_designation_wise = []
+    # Top by Designation - create two separate lists:
+    # 1. Most cited in (sorted by citations)
+    # 2. Most active in (sorted by score)
+    all_faculty_most_cited_by_designation = []
+    all_faculty_most_active_by_designation = []
     designations_order = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
+    
     for designation in designations_order:
         designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
-        designation_faculty.sort(key=lambda x: (-x['score'], x['year_span']))
-        for item in designation_faculty:
-            all_faculty_designation_wise.append({
+        
+        # Most cited - sorted by citations (descending)
+        designation_faculty_cited = sorted(designation_faculty, key=lambda x: (-x['citations'], -x['score']))
+        top_cited_value = designation_faculty_cited[0]['citations'] if designation_faculty_cited else 0
+        for item in designation_faculty_cited:
+            all_faculty_most_cited_by_designation.append({
                 'faculty': item['faculty'],
                 'citations': item['citations'],
                 'score': item['score'],
                 'publication_count': item['publication_count'],
                 'designation': designation,
-                'is_top_1': item['faculty'].pk in top_by_designation_ids,
+                'is_top_1_cited': item['citations'] == top_cited_value and top_cited_value > 0,
             })
+        
+        # Most active - sorted by score (descending)
+        designation_faculty_active = sorted(designation_faculty, key=lambda x: (-x['score'], -x['citations']))
+        top_active_value = designation_faculty_active[0]['score'] if designation_faculty_active else 0
+        for item in designation_faculty_active:
+            all_faculty_most_active_by_designation.append({
+                'faculty': item['faculty'],
+                'citations': item['citations'],
+                'score': item['score'],
+                'publication_count': item['publication_count'],
+                'designation': designation,
+                'is_top_1_active': item['score'] == top_active_value and top_active_value > 0,
+            })
+    
+    # Keep old variable for backward compatibility but use new structure
+    all_faculty_designation_wise = all_faculty_most_active_by_designation
     
     context = {
         'publications': publications,
@@ -3410,6 +3433,8 @@ def departmental_research(request):
         'all_faculty_most_cited': all_faculty_most_cited,
         'all_faculty_leading_active': all_faculty_leading_active,
         'all_faculty_designation_wise': all_faculty_designation_wise,
+        'all_faculty_most_cited_by_designation': all_faculty_most_cited_by_designation,
+        'all_faculty_most_active_by_designation': all_faculty_most_active_by_designation,
         'scoring_system': SCORING,
         'pub_type': pub_type,
         'ranking_filter': ranking_filter,
