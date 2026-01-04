@@ -780,14 +780,12 @@ body {
     }
 
     .nav-menu {
-        top: 0 !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
-        overflow-y: scroll !important;
+        top: 45px !important;
+        height: calc(100vh - 45px) !important;
+        max-height: calc(100vh - 45px) !important;
+        overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior-y: contain !important;
-        overscroll-behavior-x: none !important;
         position: fixed !important;
     }
 }
@@ -856,14 +854,13 @@ body {
     }
     
     .nav-menu {
-        top: 42px;
-        height: calc(100vh - 42px);
-        max-height: calc(100vh - 42px);
-        overflow-y: scroll !important;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
-        overscroll-behavior-x: none;
+        top: 42px !important;
+        height: calc(100vh - 42px) !important;
+        max-height: calc(100vh - 42px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        position: fixed !important;
     }
 }
 
@@ -1616,18 +1613,14 @@ body {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
     box-shadow: 0 4px 30px var(--glow-shadow);
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     display: flex;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    overscroll-behavior-y: contain;
-    overscroll-behavior-x: none;
+    overscroll-behavior: contain;
     will-change: scroll-position;
     min-height: 0;
-    /* Ensure scrolling works even when body is locked */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .nav-menu.active {
@@ -1636,6 +1629,7 @@ body {
 
 .nav-menu li {
     width: 100%;
+    flex-shrink: 0;
 }
 
 .nav-menu .nav-link {
@@ -1660,6 +1654,7 @@ body {
         padding: 0.5rem 0.5rem;
         border-bottom: 1px solid var(--border-color);
         margin-bottom: 0.25rem;
+        flex-shrink: 0;
     }
 
     .mobile-top-bar-content {
@@ -1686,22 +1681,30 @@ body {
     }
 
     .mobile-top-bar-content .top-bar-search {
-        width: 100%;
+        width: auto;
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .mobile-search .search-input {
-        width: 100%;
+        width: 12rem;
+        max-width: 70%;
         padding: 0.4rem 0.75rem;
         font-size: 0.85rem;
+        flex-shrink: 1;
     }
 
     .mobile-search .search-input:focus {
-        width: 100%;
+        width: 12rem;
+        max-width: 70%;
     }
 
     .mobile-search .search-btn {
         width: 32px;
         height: 32px;
+        flex-shrink: 0;
     }
 
     .mobile-search .search-btn svg {
@@ -1715,6 +1718,7 @@ body {
         background: var(--border-color);
         margin: 0.25rem 0;
         padding: 0 !important;
+        flex-shrink: 0;
     }
 }
 
