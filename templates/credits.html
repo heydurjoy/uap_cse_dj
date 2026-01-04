@@ -38,7 +38,50 @@
         </div>
     </section>
 
-    {% if course_contributors %}
+    <!-- Explanation Section for Contribution Metrics -->
+    <section class="credits-section metrics-explanation-section">
+        <div class="section-header">
+            <h2 class="section-title">📊 Understanding Contribution Metrics</h2>
+        </div>
+        <div class="metrics-explanation-container">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                            <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                        </svg>
+                    </div>
+                    <h3 class="metric-title">Number of Commits</h3>
+                    <p class="metric-description">The total number of code commits made by the contributor. Each commit represents a saved change to the codebase.</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="metric-title">Lines Added</h3>
+                    <p class="metric-description">The total number of lines of code added to the codebase by the contributor across all their commits.</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                            <path d="M19 13H5v-2h14v2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="metric-title">Lines Deleted</h3>
+                    <p class="metric-description">The total number of lines of code removed from the codebase by the contributor. This includes code refactoring, cleanup, and feature removal.</p>
+                </div>
+            </div>
+            <div class="percentage-explanation">
+                <p class="percentage-explanation-text">
+                    <strong>Contribution Percentage:</strong> Each contributor's percentage is calculated based on their total contribution (commits + lines added + lines deleted) relative to the total contribution of all contributors in that phase. If the total contribution is 100%, this percentage shows how much each person contributed.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    {% if course_contributors_with_percent %}
     <section class="credits-section">
         <div class="section-header">
             <h2 class="section-title">🎓 Course-Based Development</h2>
@@ -51,7 +94,8 @@
             </p>
         </div>
         <div class="course-grid">
-            {% for contributor in course_contributors %}
+            {% for item in course_contributors_with_percent %}
+            {% with contributor=item.contributor percentage=item.percentage %}
             {% if "durjoy" in contributor.name|lower and "mistry" in contributor.name|lower %}
                 <!-- Special flip card for Durjoy Mistry in course-based phase -->
                 <div class="student-flip-container special-card">
@@ -67,6 +111,9 @@
                                 </div>
                                 <div class="student-info">
                                     <h4 class="student-name">{{ contributor.name }}</h4>
+                                    <div class="contribution-percentage">
+                                        <span class="percentage-badge">{{ percentage|floatformat:1 }}%</span>
+                                    </div>
                                     <div class="student-contributions">
                                         {% if contributor.number_of_commits %}
                                         <span class="contribution-item">
@@ -165,6 +212,9 @@
                     </div>
                     <div class="student-info">
                         <h4 class="student-name">{{ contributor.name }}</h4>
+                        <div class="contribution-percentage">
+                            <span class="percentage-badge">{{ percentage|floatformat:1 }}%</span>
+                        </div>
                         <div class="student-contributions">
                             {% if contributor.number_of_commits %}
                             <span class="contribution-item">
@@ -241,12 +291,13 @@
                     </div>
                 </div>
             {% endif %}
+            {% endwith %}
             {% endfor %}
         </div>
     </section>
     {% endif %}
 
-    {% if final_contributors %}
+    {% if final_contributors_with_percent %}
     <section id="final-development" class="credits-section">
         <div class="section-header">
             <h2 class="section-title">🚀 Final Development & Deployment</h2>
@@ -261,7 +312,8 @@
 
         </div>
         <div class="final-grid">
-            {% for contributor in final_contributors %}
+            {% for item in final_contributors_with_percent %}
+            {% with contributor=item.contributor percentage=item.percentage %}
             <div class="final-card">
                     {% if contributor.photo %}
                 <div class="card-bg-image" style="background-image: url('{{ contributor.photo.url }}');"></div>
@@ -280,6 +332,9 @@
                             {% if contributor.student_id %}
                             <span class="card-student-id">{{ contributor.student_id }}</span>
                             {% endif %}
+                            <div class="contribution-percentage-final">
+                                <span class="percentage-badge-final">{{ percentage|floatformat:1 }}%</span>
+                            </div>
                 </div>
                         <p class="card-role">{{ contributor.role }}</p>
                         <div class="image-overlay-stats">
@@ -333,6 +388,7 @@
                     </div>
                 </div>
             </div>
+            {% endwith %}
             {% endfor %}
         </div>
     </section>
@@ -394,6 +450,113 @@
         font-size: 1.1rem;
         color: var(--text-secondary);
         margin: 0;
+    }
+
+    /* Metrics Explanation Section */
+    .metrics-explanation-section {
+        margin: 4rem auto;
+    }
+
+    .metrics-explanation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .metric-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px var(--shadow-md);
+    }
+
+    .metric-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+        border-radius: 16px;
+        color: var(--color-primary);
+    }
+
+    .metric-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 1rem 0;
+    }
+
+    .metric-description {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .percentage-explanation {
+        background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
+        text-align: center;
+    }
+
+    .percentage-explanation-text {
+        font-size: 1.05rem;
+        color: var(--text-primary);
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .percentage-explanation-text strong {
+        color: var(--color-primary);
+    }
+
+    /* Percentage Badges */
+    .contribution-percentage {
+        margin: 0.5rem 0;
+    }
+
+    .percentage-badge {
+        display: inline-block;
+        background: var(--color-primary);
+        color: white;
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .contribution-percentage-final {
+        margin: 0.5rem 0 0;
+    }
+
+    .percentage-badge-final {
+        display: inline-block;
+        background: var(--color-primary);
+        color: white;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
     }
 
     /* Team Image Section */

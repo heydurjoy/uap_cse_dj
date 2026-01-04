@@ -1012,7 +1012,7 @@ def credits(request):
     # Query contributors from database, grouped by project_type
     # Sort by contribution: first by lines_added (descending), then by number_of_commits (descending), then by name
     # Handle None values by treating them as 0 for sorting purposes
-    from django.db.models import Value, IntegerField
+    from django.db.models import Value, IntegerField, Sum
     from django.db.models.functions import Coalesce
     from people.models import Faculty
     
@@ -1025,6 +1025,35 @@ def credits(request):
         lines_added_sorted=Coalesce('lines_added', Value(0), output_field=IntegerField()),
         commits_sorted=Coalesce('number_of_commits', Value(0), output_field=IntegerField())
     ).order_by('-lines_added_sorted', '-commits_sorted', 'name')
+    
+    # Calculate percentages for final contributors
+    # Total contribution = sum of (commits + lines_added + lines_deleted) for all final contributors
+    final_total = sum(
+        (c.number_of_commits or 0) + (c.lines_added or 0) + (c.lines_deleted or 0)
+        for c in final_contributors
+    )
+    final_contributors_with_percent = []
+    for contributor in final_contributors:
+        contributor_total = (contributor.number_of_commits or 0) + (contributor.lines_added or 0) + (contributor.lines_deleted or 0)
+        percentage = (contributor_total / final_total * 100) if final_total > 0 else 0
+        final_contributors_with_percent.append({
+            'contributor': contributor,
+            'percentage': percentage
+        })
+    
+    # Calculate percentages for course contributors
+    course_total = sum(
+        (c.number_of_commits or 0) + (c.lines_added or 0) + (c.lines_deleted or 0)
+        for c in course_contributors
+    )
+    course_contributors_with_percent = []
+    for contributor in course_contributors:
+        contributor_total = (contributor.number_of_commits or 0) + (contributor.lines_added or 0) + (contributor.lines_deleted or 0)
+        percentage = (contributor_total / course_total * 100) if course_total > 0 else 0
+        course_contributors_with_percent.append({
+            'contributor': contributor,
+            'percentage': percentage
+        })
     
     # Get Durjoy's faculty object for linking
     durjoy_faculty = None
@@ -1069,6 +1098,8 @@ This project stands as a reflection of what students and teachers can create tog
         "intro_text": intro_text,
         "final_contributors": final_contributors,
         "course_contributors": course_contributors,
+        "final_contributors_with_percent": final_contributors_with_percent,
+        "course_contributors_with_percent": course_contributors_with_percent,
         "durjoy_faculty": durjoy_faculty,
     }
 
