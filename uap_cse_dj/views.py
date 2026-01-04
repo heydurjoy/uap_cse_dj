@@ -159,6 +159,7 @@ def home(request):
         SCORING = {
             'q1': 10, 'q2': 7, 'q3': 5, 'q4': 3,
             'a_star': 8, 'a': 6, 'b': 4, 'c': 2,
+            'wos_scopus_indexed': 2,
             'not_indexed': 1,
         }
         

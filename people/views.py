@@ -2979,6 +2979,7 @@ def departmental_research(request):
         'a': 6,
         'b': 4,
         'c': 2,
+        'wos_scopus_indexed': 2,
         'not_indexed': 1,
     }
     

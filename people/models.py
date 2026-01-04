@@ -596,6 +596,7 @@ class Publication(models.Model):
         ('a', 'A'),
         ('b', 'B'),
         ('c', 'C'),
+        ('wos_scopus_indexed', 'WoS/Scopus Indexed'),
         ('not_indexed', 'Not Indexed'),
     ]
     
