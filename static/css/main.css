@@ -780,12 +780,15 @@ body {
     }
 
     .nav-menu {
-        top: 45px;
-        height: calc(100vh - 45px);
-        max-height: calc(100vh - 45px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
+        top: 0 !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow-y: scroll !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: contain !important;
+        overscroll-behavior-x: none !important;
+        position: fixed !important;
     }
 }
 
@@ -856,9 +859,11 @@ body {
         top: 42px;
         height: calc(100vh - 42px);
         max-height: calc(100vh - 42px);
-        overflow-y: auto;
+        overflow-y: scroll !important;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        overscroll-behavior-x: none;
     }
 }
 
@@ -1611,13 +1616,18 @@ body {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
     box-shadow: 0 4px 30px var(--glow-shadow);
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: hidden;
     display: flex;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: none;
     will-change: scroll-position;
+    min-height: 0;
+    /* Ensure scrolling works even when body is locked */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .nav-menu.active {
