@@ -515,14 +515,15 @@ body {
     
     /* Hide only mobile-specific buttons from nav-buttons-row on desktop */
     .nav-buttons-row > .hamburger,
-    .nav-buttons-row > .nav-search-btn {
+    .nav-buttons-row > .nav-search-btn,
+    .nav-buttons-row > .nav-buttons-home {
         display: none !important;
     }
     
-    /* Show desktop buttons from nav-buttons-row (heart, notification) */
+    /* Hide heart and notification from nav-buttons-row on desktop (use nav-actions instead) */
     .nav-buttons-row > .nav-love-btn,
     .nav-buttons-row > .notification-btn {
-        display: flex !important;
+        display: none !important;
     }
     
     /* Hide theme-toggle-wrapper from nav-buttons-row (use the one from nav-actions) */
@@ -530,9 +531,126 @@ body {
         display: none !important;
     }
     
-    /* Show theme-toggle-wrapper from nav-actions on desktop */
-    .nav-actions > .theme-toggle-wrapper {
+    /* Hide home and diamond icons from nav-menu on desktop */
+    .nav-menu li > .nav-link-home-icon,
+    .nav-menu li > .nav-link-why-btn {
+        display: none !important;
+    }
+    
+    /* Show nav-actions icons on desktop */
+    .nav-actions > .nav-actions-heart,
+    .nav-actions > .nav-actions-home,
+    .nav-actions > .nav-actions-diamond {
         display: flex !important;
+    }
+    
+    /* Hide theme-toggle-wrapper from nav-actions on desktop (use nav-menu version) */
+    .nav-actions > .theme-toggle-wrapper {
+        display: none !important;
+    }
+    
+    /* Show theme selector and notification button in nav-menu on desktop */
+    .nav-menu .nav-menu-theme-item,
+    .nav-menu .nav-menu-notification-item {
+        display: flex !important;
+        align-items: center;
+        width: auto !important;
+        flex-shrink: 0;
+    }
+    
+    /* Push theme and notification to far right */
+    .nav-menu .nav-menu-theme-item {
+        margin-left: auto;
+    }
+    
+    .nav-menu .nav-menu-notification-item {
+        margin-left: 0.5rem;
+    }
+    
+    /* Style notification button in nav-menu */
+    .nav-menu .nav-menu-notification {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        border: none;
+        outline: none;
+        color: var(--text-primary);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px var(--shadow);
+        cursor: pointer;
+        padding: 0;
+    }
+    
+    .nav-menu .nav-menu-notification:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px var(--glow-shadow);
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+    }
+    
+    .nav-menu .nav-menu-notification svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .nav-menu .nav-menu-notification .notification-badge {
+        position: absolute;
+        top: -0.25rem;
+        right: -0.25rem;
+        background: #ef4444;
+        color: white;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        padding: 0 0.375rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Style theme selector in nav-menu */
+    .nav-menu .nav-menu-theme-wrapper {
+        position: relative;
+    }
+    
+    .nav-menu .nav-menu-theme-wrapper .theme-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        border: none;
+        outline: none;
+        color: var(--text-primary);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px var(--shadow);
+        cursor: pointer;
+        padding: 0;
+    }
+    
+    .nav-menu .nav-menu-theme-wrapper .theme-toggle:hover {
+        transform: scale(1.1) rotate(15deg);
+        box-shadow: 0 4px 12px var(--glow-shadow);
+        background: var(--color-primary-light);
+    }
+    
+    .nav-menu .nav-menu-theme-wrapper .theme-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Position theme menu for nav-menu version */
+    .nav-menu .nav-menu-theme-wrapper .theme-menu {
+        right: 0;
+        left: auto;
     }
     
     /* Position elements using flexbox order */
@@ -540,39 +658,52 @@ body {
         order: 0; /* Logo first */
     }
     
-    .nav-buttons-row > .nav-love-btn {
-        order: 1; /* Heart after logo */
-    }
-    
     .nav-menu {
-        order: 2; /* Nav menu after heart */
+        order: 1; /* Nav menu after logo */
         flex: 1; /* Take up remaining space */
         display: flex;
         justify-content: center;
         align-items: center;
     }
     
-    .nav-actions > .theme-toggle-wrapper {
-        order: 3; /* Theme after nav menu */
-        margin-right: 0.75rem; /* Add spacing between theme and notification */
+    /* Nav-actions icons order: heart, home, theme, diamond, notification */
+    .nav-actions > .nav-actions-heart {
+        order: 2; /* Heart first in nav-actions */
     }
     
-    .nav-buttons-row > .notification-btn {
-        order: 4; /* Notification after theme */
+    .nav-actions > .nav-actions-home {
+        order: 3; /* Home second */
+    }
+    
+    .nav-actions > .nav-actions-diamond {
+        order: 4; /* Diamond third */
     }
     
     /* Keep notification modal in nav-actions but don't affect order */
     .nav-actions > .notification-modal {
         order: 5; /* Modal after everything */
-
     }
 }
 
 @media (max-width: 767px) {
-    /* Hide nav-actions buttons on mobile (they're in nav-buttons-row instead) */
-    .nav-actions > .theme-toggle-wrapper,
-    .nav-actions > .notification-btn {
+    /* Hide nav-actions buttons on mobile (they're in nav-buttons-row or nav-menu instead) */
+    .nav-actions > .nav-actions-heart,
+    .nav-actions > .nav-actions-home,
+    .nav-actions > .nav-actions-diamond,
+    .nav-actions > .theme-toggle-wrapper {
         display: none !important;
+    }
+    
+    /* Hide theme selector and notification button in nav-menu on mobile (they're in nav-buttons-row) */
+    .nav-menu .nav-menu-theme-item,
+    .nav-menu .nav-menu-notification-item {
+        display: none !important;
+    }
+    
+    /* Show home and diamond icons in nav-menu on mobile */
+    .nav-menu li > .nav-link-home-icon,
+    .nav-menu li > .nav-link-why-btn {
+        display: inline-flex !important;
     }
     
     .top-bar-right {
@@ -660,31 +791,78 @@ body {
         height: 2.5px;
     }
 
-    /* Justified buttons container: Heart → Theme → Search → Notification */
+    /* Mobile buttons order: Hamburger (left) → Home → Heart → Theme → Notification → Search */
+    .nav-buttons-row > .nav-buttons-home,
     .nav-buttons-row > .nav-love-btn,
     .nav-buttons-row > .theme-toggle-wrapper,
-    .nav-buttons-row > .nav-search-btn,
-    .nav-buttons-row > .notification-btn {
+    .nav-buttons-row > .notification-btn,
+    .nav-buttons-row > .nav-search-btn {
         flex: 1;
         display: flex;
         justify-content: center;
         align-items: center;
         flex-shrink: 0;
         min-width: 0;
+        margin: 0;
     }
 
+    /* All buttons in nav-buttons-row match heart button color scheme */
+    .nav-buttons-row > .nav-buttons-home,
+    .nav-buttons-row > .nav-love-btn,
+    .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle,
+    .nav-buttons-row > .notification-btn,
+    .nav-buttons-row > .nav-search-btn {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        min-height: 24px;
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: var(--text-primary);
+        padding: 0;
+        opacity: 1;
+        transition: color 0.2s ease;
+    }
+
+    /* Home icon specific */
+    .nav-buttons-row > .nav-buttons-home {
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .nav-buttons-row > .nav-buttons-home:hover,
+    .nav-buttons-row > .nav-buttons-home.active {
+        color: var(--color-primary);
+    }
+
+    .nav-buttons-row > .nav-buttons-home svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Heart icon specific */
     .nav-buttons-row > .nav-love-btn {
-        width: 20px;
-        height: 20px;
-        margin: 0;
+        text-decoration: none;
     }
 
-    .nav-heart {
-        font-size: 0.65rem;
+    .nav-buttons-row > .nav-love-btn:hover {
+        color: var(--color-primary);
+        transform: none;
     }
 
+    .nav-buttons-row > .nav-love-btn:active {
+        transform: none;
+    }
+
+    .nav-buttons-row .nav-heart {
+        font-size: 0.9rem;
+        color: inherit;
+    }
+
+    /* Theme toggle wrapper */
     .nav-buttons-row > .theme-toggle-wrapper {
-        margin: 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -692,77 +870,46 @@ body {
     }
 
     .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle {
-        width: 26px;
-        height: 26px;
         flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle:hover {
+        color: var(--color-primary);
+        transform: none;
+    }
+
+    .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle:active {
+        transform: none;
     }
 
     .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle svg {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
     }
 
-    .nav-buttons-row > .nav-search-btn {
-        width: 24px;
-        height: 24px;
-        min-width: 24px;
-        min-height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        color: var(--text-primary);
-        padding: 0;
-        border-radius: 50%;
-        transition: all 0.2s ease;
-        margin: 0;
-    }
-
-    .nav-buttons-row > .nav-search-btn:hover {
-        background-color: var(--bg-tertiary);
-        color: var(--color-primary);
-    }
-
-    .nav-buttons-row > .nav-search-btn svg {
-        width: 14px;
-        height: 14px;
-    }
-
+    /* Notification button specific */
     .nav-buttons-row > .notification-btn {
-        width: 26px;
-        height: 26px;
-        min-width: 26px;
-        min-height: 26px;
         flex-shrink: 0;
-        margin: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        background: transparent !important; /* No background on mobile */
-        box-shadow: none !important; /* No shadow on mobile */
-        border: none !important;
-        padding: 0;
         cursor: pointer;
     }
     
     .nav-buttons-row > .notification-btn:hover {
-        background: transparent !important;
-        transform: none;
-        box-shadow: none !important;
         color: var(--color-primary);
+        transform: none;
     }
     
     .nav-buttons-row > .notification-btn:active {
-        background: var(--bg-tertiary) !important;
-        border-radius: 50%;
+        transform: none;
     }
 
     .nav-buttons-row > .notification-btn svg {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
     }
     
     .nav-buttons-row > .notification-btn .notification-badge {
@@ -772,6 +919,28 @@ body {
         min-width: 1.1rem;
         height: 1.1rem;
         padding: 0 0.3rem;
+    }
+
+    /* Search button specific */
+    .nav-buttons-row > .nav-search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .nav-buttons-row > .nav-search-btn:hover {
+        color: var(--color-primary);
+    }
+
+    .nav-buttons-row > .nav-search-btn:active {
+        transform: none;
+    }
+
+    .nav-buttons-row > .nav-search-btn svg {
+        width: 18px;
+        height: 18px;
     }
 
 
@@ -810,43 +979,35 @@ body {
         padding: 0 0.15rem;
     }
     
-    .nav-buttons-row > .hamburger,
-    .nav-search-btn {
+    .nav-buttons-row > .hamburger {
         width: 22px;
         height: 22px;
         min-width: 22px;
         min-height: 22px;
     }
     
-    .nav-search-btn {
-        margin-left: 0.3rem;
+    /* All buttons maintain same size and styling on very small screens */
+    .nav-buttons-row > .nav-buttons-home,
+    .nav-buttons-row > .nav-love-btn,
+    .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle,
+    .nav-buttons-row > .notification-btn,
+    .nav-buttons-row > .nav-search-btn {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        min-height: 22px;
     }
     
-    .nav-search-btn svg {
-        width: 12px;
-        height: 12px;
+    .nav-buttons-row > .nav-buttons-home svg,
+    .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle svg,
+    .nav-buttons-row > .notification-btn svg,
+    .nav-buttons-row > .nav-search-btn svg {
+        width: 16px;
+        height: 16px;
     }
     
-    .nav-buttons-row > .nav-love-btn {
-        width: 18px;
-        height: 18px;
-        margin-left: 0.3rem;
-    }
-    
-    .nav-heart {
-        font-size: 0.6rem;
-    }
-    
-    .notification-btn,
-    .theme-toggle {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .notification-btn svg,
-    .theme-toggle svg {
-        width: 12px;
-        height: 12px;
+    .nav-buttons-row .nav-heart {
+        font-size: 0.8rem;
     }
     
     .nav-buttons-row > .nav-actions {
@@ -1176,6 +1337,126 @@ body {
     gap: 0.75rem;
     flex-shrink: 0;
     position: relative;
+}
+
+@media (min-width: 768px) {
+    /* Even spacing for desktop nav-actions icons */
+    .nav-actions {
+        gap: 0.75rem;
+    }
+}
+
+/* Uniform styling for nav-actions icons */
+.nav-actions > .nav-actions-heart,
+.nav-actions > .nav-actions-home,
+.nav-actions > .nav-actions-diamond {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px var(--shadow);
+    flex-shrink: 0;
+    cursor: pointer;
+    margin: 0; /* Remove any default margins */
+}
+
+.nav-actions > .nav-actions-heart:hover,
+.nav-actions > .nav-actions-home:hover,
+.nav-actions > .nav-actions-diamond:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.nav-actions > .nav-actions-heart:active,
+.nav-actions > .nav-actions-home:active,
+.nav-actions > .nav-actions-diamond:active {
+    transform: scale(0.95);
+}
+
+/* Home icon styling in nav-actions */
+.nav-actions > .nav-actions-home svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Active state for home icon in nav-actions */
+.nav-actions > .nav-actions-home.active {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    box-shadow: 0 4px 12px var(--glow-shadow);
+}
+
+/* Diamond symbol styling - match home icon color scheme */
+.nav-diamond-symbol {
+    font-size: 1.1rem;
+    line-height: 1;
+    display: inline-block;
+    font-weight: 400;
+    color: inherit; /* Inherit color from parent to match home icon */
+}
+
+.nav-actions > .nav-actions-diamond {
+    color: var(--text-primary); /* Match home icon default color */
+}
+
+.nav-actions > .nav-actions-diamond:hover {
+    color: var(--color-primary); /* Match home icon hover color */
+}
+
+.nav-actions > .nav-actions-diamond:hover .nav-diamond-symbol {
+    animation: gemPulseHover 0.6s ease-in-out infinite;
+    color: inherit; /* Ensure color inheritance on hover */
+}
+
+@keyframes gemPulseHover {
+    0%, 100% {
+        transform: scale(1.1) rotate(5deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2) rotate(-5deg);
+        opacity: 0.95;
+    }
+}
+
+/* Heart icon styling in nav-actions - match home icon color scheme */
+.nav-actions > .nav-actions-heart {
+    color: var(--text-primary); /* Match home icon default color */
+}
+
+.nav-actions > .nav-actions-heart:hover {
+    color: var(--color-primary); /* Match home icon hover color */
+}
+
+.nav-actions > .nav-actions-heart .nav-heart {
+    font-size: 0.9rem;
+    line-height: 1;
+    display: inline-block;
+    animation: subtle-pulse 4s ease-in-out infinite;
+    transition: transform 0.3s ease;
+    color: inherit; /* Inherit color from parent to match home icon */
+}
+
+.nav-actions > .nav-actions-heart:hover .nav-heart {
+    animation: heartbeat-subtle 1s ease-in-out infinite;
+    transform: scale(1.3);
+    color: inherit; /* Ensure color inheritance on hover */
+}
+
+.nav-actions > .nav-actions-heart:active .nav-heart {
+    transform: scale(1.4);
+    transition: transform 0.12s ease;
+    color: inherit; /* Ensure color inheritance on active */
 }
 
 @media (max-width: 767px) {

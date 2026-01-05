@@ -3,7 +3,7 @@
     // Wait for DOM to be ready
     function initThemeToggle() {
         // Get all theme toggle buttons (there may be duplicates for mobile/desktop)
-        const themeToggles = document.querySelectorAll('#themeToggle, .theme-toggle');
+        const themeToggles = document.querySelectorAll('#themeToggle, #themeToggleNavMenu, .theme-toggle');
         if (themeToggles.length === 0) {
             // Retry if element not found yet
             setTimeout(initThemeToggle, 100);
@@ -68,9 +68,13 @@
             }, duration);
         }
 
-        // Theme menu functionality - get the first theme menu (they're duplicates)
-        const themeMenu = document.querySelector('#themeMenu, .theme-menu');
+        // Theme menu functionality - get all theme menus (they're duplicates for mobile/desktop)
+        const themeMenus = document.querySelectorAll('#themeMenu, #themeMenuNavMenu, .theme-menu');
+        const themeMenu = themeMenus[0]; // Use first one for menu functionality
         const themeMenuItems = themeMenu ? themeMenu.querySelectorAll('.theme-menu-item') : [];
+        
+        // Get all theme menu items from all menus
+        const allThemeMenuItems = document.querySelectorAll('.theme-menu-item');
         
         // Function to switch theme
         function switchTheme(newTheme) {
@@ -92,7 +96,7 @@
         
         // Use event delegation for click handler (works even if buttons are dynamically shown/hidden)
         document.addEventListener('click', function(e) {
-            const clickedToggle = e.target.closest('#themeToggle, .theme-toggle');
+            const clickedToggle = e.target.closest('#themeToggle, #themeToggleNavMenu, .theme-toggle');
             if (clickedToggle) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -106,23 +110,38 @@
         
         // Attach hover listeners to all theme toggle buttons
         themeToggles.forEach(themeToggle => {
+            // Find the associated theme menu (closest parent's theme menu)
+            const wrapper = themeToggle.closest('.theme-toggle-wrapper');
+            const associatedMenu = wrapper ? wrapper.querySelector('.theme-menu') : themeMenu;
+            
             // Show menu on hover
             themeToggle.addEventListener('mouseenter', function() {
-                if (themeMenu) {
-                    themeMenu.classList.add('show');
+                if (associatedMenu) {
+                    associatedMenu.classList.add('show');
                 }
             });
             
             // Hide menu when mouse leaves
             themeToggle.addEventListener('mouseleave', function() {
-                if (themeMenu) {
+                if (associatedMenu) {
                     // Delay to allow moving to menu
                     setTimeout(() => {
-                        if (!themeMenu.matches(':hover')) {
-                            themeMenu.classList.remove('show');
+                        if (!associatedMenu.matches(':hover')) {
+                            associatedMenu.classList.remove('show');
                         }
                     }, 100);
                 }
+            });
+        });
+        
+        // Handle hover for all theme menus
+        themeMenus.forEach(menu => {
+            menu.addEventListener('mouseenter', function() {
+                this.classList.add('show');
+            });
+            
+            menu.addEventListener('mouseleave', function() {
+                this.classList.remove('show');
             });
         });
         
@@ -131,21 +150,12 @@
             item.addEventListener('click', function() {
                 const newTheme = this.getAttribute('data-theme');
                 switchTheme(newTheme);
-                if (themeMenu) {
-                    themeMenu.classList.remove('show');
-                }
+                // Hide all theme menus
+                themeMenus.forEach(menu => {
+                    menu.classList.remove('show');
+                });
             });
         });
-        
-        if (themeMenu) {
-            themeMenu.addEventListener('mouseenter', function() {
-                themeMenu.classList.add('show');
-            });
-            
-            themeMenu.addEventListener('mouseleave', function() {
-                themeMenu.classList.remove('show');
-            });
-        }
     }
     
     // Initialize when DOM is ready

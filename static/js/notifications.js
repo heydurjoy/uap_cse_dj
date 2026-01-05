@@ -158,14 +158,19 @@
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
         const notificationBtn = document.getElementById('notificationBtn');
+        const notificationBtnMobile = document.getElementById('notificationBtnMobile');
+        const notificationBtnNavMenu = document.getElementById('notificationBtnNavMenu');
         const notificationModal = document.getElementById('notificationModal');
         const clearAllBtn = document.getElementById('clearAllNotifications');
         const closeModal = document.getElementById('closeNotificationModal');
         
-        if (!notificationBtn || !notificationModal) return;
+        // Collect all notification buttons
+        const notificationButtons = [notificationBtn, notificationBtnMobile, notificationBtnNavMenu].filter(Boolean);
         
-        // Toggle modal
-        notificationBtn.addEventListener('click', function(e) {
+        if (notificationButtons.length === 0 || !notificationModal) return;
+        
+        // Toggle modal function
+        function toggleNotificationModal(e) {
             e.preventDefault();
             e.stopPropagation();
             if (notificationModal) {
@@ -174,11 +179,17 @@
                     updateNotifications();
                 }
             }
+        }
+        
+        // Add event listeners to all notification buttons
+        notificationButtons.forEach(btn => {
+            btn.addEventListener('click', toggleNotificationModal);
         });
         
         // Close modal when clicking outside
         document.addEventListener('click', function(e) {
-            if (!notificationModal.contains(e.target) && !notificationBtn.contains(e.target)) {
+            const clickedOnBtn = notificationButtons.some(btn => btn && btn.contains(e.target));
+            if (!notificationModal.contains(e.target) && !clickedOnBtn) {
                 notificationModal.classList.remove('active');
             }
         });
