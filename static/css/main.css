@@ -662,8 +662,66 @@ body {
         order: 1; /* Nav menu after logo */
         flex: 1; /* Take up remaining space */
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Center the middle group (Research to More) */
+    .nav-menu-middle-group {
+        flex: 1;
+        display: flex;
         justify-content: center;
         align-items: center;
+    }
+    
+    .nav-menu-middle-items {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .nav-menu-middle-items li {
+        width: auto;
+    }
+    
+    .nav-menu-middle-items .nav-link {
+        padding: 0;
+        width: auto;
+        font-size: 1rem;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    /* Mobile: Reset middle group to normal list behavior */
+    @media (max-width: 767px) {
+        .nav-menu-middle-group {
+            flex: none;
+            display: block;
+            width: 100%;
+        }
+        
+        .nav-menu-middle-items {
+            flex-direction: column;
+            gap: 0;
+            width: 100%;
+        }
+        
+        .nav-menu-middle-items li {
+            width: 100%;
+        }
+        
+        .nav-menu-middle-items .nav-link {
+            display: block;
+            padding: 0.75rem 0.5rem;
+            width: 100%;
+            text-align: left;
+            font-size: 0.95rem;
+        }
     }
     
     /* Nav-actions icons order: heart, home, theme, diamond, notification */
@@ -857,7 +915,7 @@ body {
     }
 
     .nav-buttons-row .nav-heart {
-        font-size: 0.9rem;
+        font-size: 1.65rem;
         color: inherit;
     }
 
@@ -1007,7 +1065,7 @@ body {
     }
     
     .nav-buttons-row .nav-heart {
-        font-size: 0.8rem;
+        font-size: 1.485rem;
     }
     
     .nav-buttons-row > .nav-actions {
@@ -1294,7 +1352,7 @@ body {
 }
 
 .nav-heart {
-    font-size: 0.9rem;
+    font-size: 1.65rem;
     line-height: 1;
     display: inline-block;
     animation: subtle-pulse 4s ease-in-out infinite;
@@ -1439,7 +1497,7 @@ body {
 }
 
 .nav-actions > .nav-actions-heart .nav-heart {
-    font-size: 0.9rem;
+    font-size: 1.65rem;
     line-height: 1;
     display: inline-block;
     animation: subtle-pulse 4s ease-in-out infinite;

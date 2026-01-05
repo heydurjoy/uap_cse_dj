@@ -145,15 +145,19 @@
             });
         });
         
-        // Handle theme selection from menu
-        themeMenuItems.forEach(item => {
-            item.addEventListener('click', function() {
+        // Handle theme selection from menu - attach to ALL menu items from all menus
+        allThemeMenuItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 const newTheme = this.getAttribute('data-theme');
-                switchTheme(newTheme);
-                // Hide all theme menus
-                themeMenus.forEach(menu => {
-                    menu.classList.remove('show');
-                });
+                if (newTheme && themes.includes(newTheme)) {
+                    switchTheme(newTheme);
+                    // Hide all theme menus
+                    themeMenus.forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
             });
         });
     }
