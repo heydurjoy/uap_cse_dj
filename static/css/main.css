@@ -1046,6 +1046,7 @@ body {
     
     /* All buttons maintain same size and styling on very small screens */
     .nav-buttons-row > .nav-buttons-home,
+    .nav-buttons-row > .nav-link-why-btn,
     .nav-buttons-row > .nav-love-btn,
     .nav-buttons-row > .theme-toggle-wrapper > .theme-toggle,
     .nav-buttons-row > .notification-btn,
@@ -1054,6 +1055,7 @@ body {
         height: 22px;
         min-width: 22px;
         min-height: 22px;
+        margin-left: 10px;
     }
     
     .nav-buttons-row > .nav-buttons-home svg,
