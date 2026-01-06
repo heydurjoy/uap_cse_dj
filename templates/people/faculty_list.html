@@ -261,19 +261,19 @@
                                         <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                                         <div class="faculty-card-overlay">
                                             <div class="faculty-card-info">
-                                                <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                                <div class="faculty-name-row">
+                                                    <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                                    {% if faculty.is_phd %}
+                                                        <span class="faculty-qualification-badge">PhD</span>
+                                                    {% endif %}
+                                                </div>
                                                 <div class="faculty-meta">
                                                     {% if faculty.designation %}
                                                         <span class="faculty-designation">{{ faculty.designation }}</span>
                                                     {% endif %}
-                                                    <div class="citation-phd-group">
-                                                        {% if faculty.is_phd %}
-                                                            <span class="faculty-qualification-badge">PhD</span>
-                                                        {% endif %}
-                                                        {% if faculty.citation %}
-                                                            <span class="faculty-citation">📊 {{ faculty.citation }}</span>
-                                                        {% endif %}
-                                                    </div>
+                                                    {% if faculty.citation %}
+                                                        <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -368,13 +368,17 @@
                                     <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                                     <div class="faculty-card-overlay">
                                         <div class="faculty-card-info">
-                                            <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                            <div class="faculty-name-row">
+                                                <h3 class="faculty-name" title="{{ faculty.name }}">{{ faculty.name }}</h3>
+                                                <h3 class="faculty-name" title="{{ faculty.name }}">{{ faculty.name }}</h3>
+                                                <h3 class="faculty-name" title="{{ faculty.name }}">{{ faculty.name }}</h3>
+                                                {% if faculty.citation %}
+                                                    <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                {% endif %}
+                                            </div>
                                             <div class="faculty-meta">
                                                 {% if faculty.designation %}
                                                     <span class="faculty-designation">{{ faculty.designation }}</span>
-                                                {% endif %}
-                                                {% if faculty.citation %}
-                                                    <span class="faculty-citation">📊 {{ faculty.citation }}</span>
                                                 {% endif %}
                                             </div>
                                             {% if faculty.last_office_date %}
@@ -768,14 +772,34 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
-    padding: 1.25rem 1rem 1rem 1rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    /* Slightly larger top padding so text sits lower, showing more of the image */
+    padding: 1.75rem 1rem 1rem 1rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faculty-card-link:hover .faculty-card-overlay {
-    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.9rem 1.25rem 1.25rem 1.25rem;
+}
+
+/* Name + PhD row */
+.faculty-name-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+}
+
+.faculty-name-row .faculty-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.faculty-name-row .faculty-qualification-badge {
+    flex-shrink: 0;
+}
+
+.faculty-card-footer .citation-phd-group {
+    justify-content: flex-end;
 }
 
 /* Card info container */
@@ -788,7 +812,7 @@
 
 /* Name styling - white text on dark overlay */
 .faculty-name {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     margin: 0;
     color: white;
@@ -807,8 +831,11 @@
 }
 
 .faculty-card-link:hover .faculty-name {
-    font-size: 1.2rem;
-    max-height: 2.8em; /* Slightly more space on hover */
+    font-size: 1rem;
+    /* On hover, allow the full name to expand instead of being clamped */
+    -webkit-line-clamp: unset;
+    max-height: none;
+    overflow: visible;
 }
 
 /* Meta info row - designation and citations side by side */
@@ -829,22 +856,30 @@
 }
 
 .faculty-designation {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.9);
     margin: 0;
     font-weight: 500;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     line-height: 1.2;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    /* Keep long designations from breaking the card layout */
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 1.2em;
 }
 
 .faculty-card-link:hover .faculty-designation {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    max-height: 1.3em;
 }
 
 /* Citations styling */
 .faculty-citation {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: rgba(255, 255, 255, 0.85);
     margin: 0;
     font-weight: 500;
@@ -853,12 +888,12 @@
 }
 
 .faculty-card-link:hover .faculty-citation {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
 }
 
 /* Qualification badges styling */
 .faculty-qualification-badge {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: rgba(255, 255, 255, 0.95);
     background: rgba(255, 255, 255, 0.2);
     padding: 0.25rem 0.5rem;

@@ -6,6 +6,7 @@ from image_cropping.fields import ImageRatioField, ImageCropField
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 import hashlib
+import os
 
 
 class Permission(models.Model):
@@ -590,12 +591,31 @@ class Faculty(models.Model):
     def __str__(self):
         return f'{self.sl}. {self.name} | {self.designation or "N/A"}'
     
-    # No custom save method - let Django and image_cropping handle everything automatically
-    # Just like the Club model does
-
-
-# No pre_save signal - let Django and image_cropping handle everything automatically
-# Just like the Club model does
+    def save(self, *args, **kwargs):
+        """
+        Make faculty edits robust when the original profile picture file
+        has been removed from disk (e.g. volume reset on Railway).
+        
+        If the stored path doesn't exist anymore, we simply clear the
+        image and cropping coordinates instead of raising [Errno 2].
+        """
+        try:
+            if self.profile_pic and hasattr(self.profile_pic, "path"):
+                image_path = self.profile_pic.path
+                if image_path and not os.path.exists(image_path):
+                    # Under some deployments media files may be wiped.
+                    # If someone edits this faculty later, the DB still
+                    # points to the old file. Clear it so Django/easy-thumbnails
+                    # don't try to open a non-existent file.
+                    self.profile_pic = None
+                    # Clear any old cropping data as well.
+                    if hasattr(self, "cropping"):
+                        self.cropping = ""
+        except Exception:
+            # Never block saving just because of filesystem issues.
+            pass
+        
+        super().save(*args, **kwargs)
 
 
 class Publication(models.Model):
