@@ -175,8 +175,13 @@ def check_post_access(user):
     """Check if user has permission to create/manage posts"""
     if not user.is_authenticated:
         return False
-    # Users with post_notices or manage_all_posts can create posts
-    return user.has_permission('post_notices') or user.has_permission('manage_all_posts')
+    # Users with post_notices or manage_all_posts can create posts.
+    # Additionally, any faculty user can manage their own posts even
+    # without explicit post_notices permission.
+    if user.has_permission('post_notices') or user.has_permission('manage_all_posts'):
+        return True
+    # Treat having a faculty profile as implicit level-3 posting access
+    return hasattr(user, 'faculty_profile')
 
 
 @login_required
@@ -192,7 +197,8 @@ def manage_posts(request):
     
     # Check permissions
     can_manage_all = request.user.has_permission('manage_all_posts')
-    can_post_notices = request.user.has_permission('post_notices')
+    # Faculty can always manage (but only see) their own posts even without explicit permission
+    can_post_notices = request.user.has_permission('post_notices') or hasattr(request.user, 'faculty_profile')
     
     # Base queryset
     if can_manage_all:
