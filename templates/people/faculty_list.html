@@ -548,7 +548,8 @@
 
 .faculty-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    /* Slightly wider cards for better text fit */
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
     gap: 1.25rem;
     transition: all 0.3s ease;
     overflow: visible;
@@ -558,7 +559,7 @@
 
 .faculty-grid .faculty-card-link,
 .faculty-grid .faculty-card-flip-container {
-    max-width: 250px;
+    max-width: 270px;
     width: 100%;
 }
 
