@@ -1291,14 +1291,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (callback) callback(); // Continue anyway, might work
         }, 5000); // 5 second timeout
         
-        script.onload = function() {
+            script.onload = function() {
             clearTimeout(timeoutId);
-            ckeditorLoaded = true;
+                ckeditorLoaded = true;
             console.log('CKEditor loaded successfully');
-            if (callback) callback();
-        };
+                if (callback) callback();
+            };
         
-        script.onerror = function() {
+            script.onerror = function() {
             clearTimeout(timeoutId);
             console.error('Failed to load CKEditor from primary CDN');
             // Try one fallback only
@@ -1316,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.head.appendChild(fallbackScript);
         };
         
-        document.head.appendChild(script);
+            document.head.appendChild(script);
     }
     
     // Create modal HTML
@@ -1546,8 +1546,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.stopPropagation();
                     showEditor(textarea.id, richTextFields[textarea.id]);
                 }
-            });
-        }
+                });
+            }
     });
 })();
 </script>

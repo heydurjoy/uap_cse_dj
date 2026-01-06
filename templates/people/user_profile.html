@@ -424,7 +424,7 @@
                 </a>
                 
                 <!-- 15. Admission Results -->
-                {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card {% if not user|has_permission:'post_admission_results' %}action-disabled{% endif %}">
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -443,7 +443,7 @@
                 {% endif %}
                 
                 <!-- 16. Manage Clubs -->
-                {% if profile_type == 'faculty' or profile_type == 'officer' %}
+                    {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user|has_permission:'manage_club_settings' %}action-disabled{% endif %}">
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

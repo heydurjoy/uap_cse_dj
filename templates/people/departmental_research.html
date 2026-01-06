@@ -320,7 +320,7 @@
     <div class="faculty-cards-grid">
         {% for item in all_faculty_most_cited %}
         <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
-            <div class="faculty-card {% if item.is_top_4 %}golden-rank{% endif %}">
+            <div class="faculty-card">
 
                 <div class="faculty-card-image">
                     <img src="{% if item.faculty.profile_pic %}
@@ -336,7 +336,7 @@
                             <!-- 🔹 FIRST ROW: # 🔥 📚 -->
                             <div class="faculty-card-header">
                                 <span class="faculty-card-sl">
-                                    #{{ item.faculty.sl|default:"-" }}
+                                    #{{ forloop.counter }}
                                 </span>
 
                                 <span class="faculty-card-score" title="Score: {{ item.score }}">
@@ -356,10 +356,6 @@
                         </div>
                     </div>
                 </div>
-
-                {% if item.is_top_4 %}
-                <div class="top-item">Top 4</div>
-                {% endif %}
             </div>
         </a>
                                 {% empty %}
@@ -389,7 +385,7 @@
                             <!-- 🔹 FIRST ROW: # 🔥 📄 -->
                             <div class="faculty-card-header">
                                 <span class="faculty-card-sl">
-                                    #{{ item.faculty.sl|default:"-" }}
+                                    #{{ forloop.counter }}
                                 </span>
 
                                 <span class="faculty-card-score" title="Score: {{ item.score }}">
@@ -409,10 +405,6 @@
                         </div>
                     </div>
                 </div>
-
-                {% if item.is_top_4 %}
-                <div class="top-item">Top 4</div>
-                {% endif %}
                  </div>
 
         </a>
@@ -427,75 +419,63 @@
     <!-- Most Cited in Designation -->
     <div class="designation-section">
         <h3 class="designation-section-title">Most Cited in</h3>
-        <div class="faculty-cards-grid">
-            {% regroup all_faculty_most_cited_by_designation by designation as cited_by_designation %}
+        {% regroup all_faculty_most_cited_by_designation by designation as cited_by_designation %}
 
-            {% for designation_group in cited_by_designation %}
-            <div class="designation-group">
-                <h4 class="designation-group-title">{{ designation_group.grouper }}</h4>
+        {% for designation_group in cited_by_designation %}
+        <div class="designation-group">
+            <h4 class="designation-group-title">{{ designation_group.grouper }}</h4>
 
-                <div class="faculty-cards-grid-designation">
-                    {% for item in designation_group.list %}
-                    <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
-                        <div class="faculty-card {% if item.is_top_1_cited %}golden-rank{% endif %}">
+            <div class="faculty-cards-grid-designation">
+                {% for item in designation_group.list %}
+                <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
+                    <div class="faculty-card">
 
-                            <!-- Image -->
-                            <div class="faculty-card-image">
-                                <img
-                                    src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}"
-                                    alt="{{ item.faculty.name }}"
-                                >
+                        <!-- Image -->
+                        <div class="faculty-card-image">
+                            <img
+                                src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}"
+                                alt="{{ item.faculty.name }}"
+                            >
 
-                                <div class="faculty-card-overlay">
-                                    <div class="faculty-card-info">
+                            <div class="faculty-card-overlay">
+                                <div class="faculty-card-info">
 
-                                        <!-- 🔹 FIRST ROW: SL, Score, Citations -->
-                                        <div class="faculty-card-header">
-                                            <span class="faculty-card-sl">
-                                                #{{ item.faculty.sl|default:"-" }}
-                                            </span>
-                                            <span class="faculty-card-score" title="Score: {{ item.score }}">
-                                                🔥 {{ item.score|default:"0" }}
-                                            </span>
-                                            <span class="faculty-card-citation" title="Citations: {{ item.citations|floatformat:0 }}">
-                                                📚 {{ item.citations|floatformat:0 }}
-                                            </span>
-                                        </div>
-
-                                        <!-- 🔹 SECOND ROW: Name -->
-                                        <h3 class="faculty-card-name">
-                                            {{ item.faculty.name }}
-                                        </h3>
-
+                                    <!-- 🔹 FIRST ROW: Rank, Score, Citations -->
+                                    <div class="faculty-card-header">
+                                        <span class="faculty-card-sl">
+                                            #{{ forloop.counter }}
+                                        </span>
+                                        <span class="faculty-card-score" title="Score: {{ item.score }}">
+                                            🔥 {{ item.score|default:"0" }}
+                                        </span>
+                                        <span class="faculty-card-citation" title="Citations: {{ item.citations|floatformat:0 }}">
+                                            📚 {{ item.citations|floatformat:0 }}
+                                        </span>
                                     </div>
+
+                                    <!-- 🔹 SECOND ROW: Name -->
+                                    <h3 class="faculty-card-name">
+                                        {{ item.faculty.name }}
+                                    </h3>
+
                                 </div>
                             </div>
-
-                            <!-- 🔹 Designation -->
-                            <div class="faculty-card-designation">
-                                {{ item.designation }}
-                            </div>
-
-                            <!-- 🔹 Golden Rank Badge -->
-                            {% if item.is_top_1_cited %}
-                            <div class="golden-rank-badge-below">
-                                Most Cited in {{ item.designation }}
-                            </div>
-                            {% endif %}
-
                         </div>
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-                                {% empty %}
-                                <p class="empty-message">No faculty found.</p>
-                                {% endfor %}
-                            </div>
+
+                        <!-- 🔹 Designation -->
+                        <div class="faculty-card-designation">
+                            {{ item.designation }}
                         </div>
+
                     </div>
-                </div>
+                </a>
+                {% endfor %}
             </div>
+        </div>
+        {% empty %}
+        <p class="empty-message">No faculty found.</p>
+        {% endfor %}
+    </div>
 
             <!-- Publications Tab -->
             <div class="tab-content {% if request.GET.tab == 'publications' %}active{% endif %}" id="publications-tab">
@@ -595,6 +575,147 @@
     margin: 0 0 1rem 0;
     padding-left: 0.5rem;
     border-left: 3px solid var(--color-primary);
+}
+
+.faculty-cards-grid-designation {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .faculty-cards-grid-designation {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .faculty-cards-grid-designation {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .faculty-cards-grid-designation {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .designation-group {
+        margin-bottom: 2.5rem;
+    }
+    
+    .designation-group-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card {
+        min-height: clamp(110px, 15vw, 140px);
+        border-radius: 8px;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card-image {
+        max-height: 210px;
+        aspect-ratio: 3 / 4;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card-name {
+        font-size: 0.55rem;
+        line-height: 1.1;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card-header {
+        font-size: 0.45rem;
+        gap: 0.25rem;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card-sl,
+    .faculty-cards-grid-designation .faculty-card-score,
+    .faculty-cards-grid-designation .faculty-card-citation {
+        font-size: 0.425rem;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card-overlay {
+        padding: 0.625rem 0.5rem 0.5rem 0.5rem;
+    }
+    
+    .faculty-cards-grid-designation .faculty-card-designation {
+        font-size: 0.375rem;
+        padding: 0.25rem 0.375rem;
+    }
+    
+    /* All Faculties, Most Cited and Leading Active tabs - mobile size reduction */
+    #all-faculties-tab .faculty-cards-grid,
+    #most-cited-tab .faculty-cards-grid,
+    #leading-active-tab .faculty-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    #all-faculties-tab .faculty-card,
+    #most-cited-tab .faculty-card,
+    #leading-active-tab .faculty-card {
+        min-height: clamp(110px, 15vw, 140px);
+        border-radius: 8px;
+    }
+    
+    #all-faculties-tab .faculty-card-image,
+    #most-cited-tab .faculty-card-image,
+    #leading-active-tab .faculty-card-image {
+        max-height: 210px;
+        aspect-ratio: 3 / 4;
+    }
+    
+    #all-faculties-tab .faculty-card-name,
+    #most-cited-tab .faculty-card-name,
+    #leading-active-tab .faculty-card-name {
+        font-size: 0.55rem;
+        line-height: 1.1;
+    }
+    
+    #all-faculties-tab .faculty-card-header,
+    #most-cited-tab .faculty-card-header,
+    #leading-active-tab .faculty-card-header {
+        font-size: 0.45rem;
+        gap: 0.25rem;
+    }
+    
+    #all-faculties-tab .faculty-card-sl,
+    #all-faculties-tab .faculty-card-score,
+    #all-faculties-tab .faculty-card-citation,
+    #most-cited-tab .faculty-card-sl,
+    #most-cited-tab .faculty-card-score,
+    #most-cited-tab .faculty-card-citation,
+    #leading-active-tab .faculty-card-sl,
+    #leading-active-tab .faculty-card-score,
+    #leading-active-tab .faculty-card-pubs {
+        font-size: 0.425rem;
+    }
+    
+    #all-faculties-tab .faculty-card-overlay,
+    #most-cited-tab .faculty-card-overlay,
+    #leading-active-tab .faculty-card-overlay {
+        padding: 0.625rem 0.5rem 0.5rem 0.5rem;
+    }
+    
+    #all-faculties-tab .faculty-badge {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.75rem;
+    }
+    
+    #all-faculties-tab .faculty-badge i {
+        font-size: 0.7rem;
+    }
+    
+    /* Hide "Top 4" text on mobile */
+    #leading-active-tab .top-item {
+        display: none;
+    }
 }
 
 .research-page-section {
@@ -2103,6 +2224,22 @@
         overflow-x: auto;
         flex-wrap: nowrap;
         -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .faculty-tab-buttons::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .faculty-tab-buttons::-webkit-scrollbar-track {
+        background: var(--bg-tertiary);
+    }
+
+    .faculty-tab-buttons::-webkit-scrollbar-thumb {
+        background: var(--color-primary);
+        border-radius: 2px;
     }
 
     .faculty-tab-btn {
@@ -2336,6 +2473,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Faculty view tabs (All Faculties, Most Cited, Leading Active)
     const facultyTabButtons = document.querySelectorAll('.faculty-tab-btn');
     const facultyTabContents = document.querySelectorAll('.faculty-tab-content');
+    const facultyTabButtonsContainer = document.querySelector('.faculty-tab-buttons');
+    
+    // Function to scroll active tab into view on mobile
+    function scrollActiveFacultyTabIntoView() {
+        const activeButton = document.querySelector('.faculty-tab-btn.active');
+        if (activeButton && facultyTabButtonsContainer) {
+            // Check if we're on mobile (viewport width <= 768px)
+            if (window.innerWidth <= 768) {
+                activeButton.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'start'
+                });
+            }
+        }
+    }
+    
+    // Scroll active tab into view on page load
+    setTimeout(scrollActiveFacultyTabIntoView, 100);
+    
+    // Also scroll on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(scrollActiveFacultyTabIntoView, 150);
+    });
     
     facultyTabButtons.forEach(button => {
         button.addEventListener('click', function(e) {
@@ -2355,6 +2518,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (targetContent) {
                 targetContent.classList.add('active');
             }
+            
+            // Scroll the clicked button into view on mobile
+            setTimeout(() => {
+                if (window.innerWidth <= 768) {
+                    this.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'center'
+                    });
+                }
+            }, 50);
         });
     });
     

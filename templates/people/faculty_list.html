@@ -262,7 +262,7 @@
                                         <div class="faculty-card-overlay">
                                             <div class="faculty-card-info">
                                                 <div class="faculty-name-row">
-                                                    <h3 class="faculty-name">{{ faculty.name }}</h3>
+                                                <h3 class="faculty-name">{{ faculty.name }}</h3>
                                                     {% if faculty.is_phd %}
                                                         <span class="faculty-qualification-badge">PhD</span>
                                                     {% endif %}
@@ -270,10 +270,10 @@
                                                 <div class="faculty-meta">
                                                     {% if faculty.designation %}
                                                         <span class="faculty-designation">{{ faculty.designation }}</span>
-                                                    {% endif %}
-                                                    {% if faculty.citation %}
-                                                        <span class="faculty-citation">📊 {{ faculty.citation }}</span>
-                                                    {% endif %}
+                                                        {% endif %}
+                                                        {% if faculty.citation %}
+                                                            <span class="faculty-citation">📊 {{ faculty.citation }}</span>
+                                                        {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -1778,7 +1778,7 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
         // Handle head faculty card click
         const headCardLink = document.querySelector('.head-faculty-card-link');
         if (headCardLink) {
@@ -1793,9 +1793,9 @@
             });
         }
         
-        const gridViewBtn = document.getElementById('gridViewBtn');
-        const listViewBtn = document.getElementById('listViewBtn');
-        const copyAllBtn = document.getElementById('copyAllBtn');
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const copyAllBtn = document.getElementById('copyAllBtn');
     const facultyGrids = document.querySelectorAll('.faculty-grid');
     const facultyTableView = document.getElementById('facultyTableView');
     const facultyGridView = document.getElementById('facultyGridView');

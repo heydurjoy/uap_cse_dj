@@ -3717,7 +3717,7 @@ p {
         justify-content: center;
         align-items: center;
     }
-  .polaroid-container {
+    .polaroid-container {
         height: 300px;
         width: 100%;
         max-width: 300px;
