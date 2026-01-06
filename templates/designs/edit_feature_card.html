@@ -53,6 +53,22 @@
                     </label>
                     <textarea name="description" id="description" required class="rich-text-textarea" placeholder="Click here to edit with rich text editor...">{{ card.description }}</textarea>
                     <small style="color: var(--text-secondary);">Click on the textarea above to use the rich text editor</small>
+                    
+                    <!-- Optional: Paste raw HTML that will be copied into the description field -->
+                    <div style="margin-top: 0.75rem;">
+                        <button type="button" id="toggle-html-input" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-secondary); cursor: pointer;">
+                            Paste HTML instead
+                        </button>
+                        <div id="html-input-wrapper" style="margin-top: 0.6rem; display: none;">
+                            <label for="description_html" style="display: block; margin-bottom: 0.35rem; font-weight: 500; color: var(--text-secondary);">
+                                Paste HTML (this will overwrite the Description field)
+                            </label>
+                            <textarea id="description_html" style="width: 100%; min-height: 140px; padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); font-family: monospace; font-size: 0.9rem;" placeholder="Paste HTML here..."></textarea>
+                            <small style="color: var(--text-secondary); display: block; margin-top: 0.35rem;">
+                                When you paste HTML above, it will automatically be copied into the main Description field before saving.
+                            </small>
+                        </div>
+                    </div>
                 </div>
                 
                 <div>
@@ -66,24 +82,6 @@
                     {% endif %}
                     <input type="file" name="picture" id="picture" accept="image/*" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary);">
                     <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">Max 600KB. Image will be automatically compressed and resized to 600x600px (1:1 ratio) if larger.</small>
-                    
-                    <!-- Image Cropping Field -->
-                    <div id="cropping-container" style="{% if card.picture %}display: block;{% else %}display: none;{% endif %} margin-top: 1rem;">
-                        <label for="cropping" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
-                            Crop Image (1:1 ratio)
-                        </label>
-                        <input type="text" name="cropping" id="cropping" class="image-ratio" 
-                               value="{{ card.cropping|default:'' }}"
-                               data-min-width="600" data-min-height="600" 
-                               data-box-max-width="600" data-box-max-height="600" 
-                               data-ratio="1" data-image-field="picture" 
-                               data-my-name="cropping" 
-                               data-adapt-rotation="false" 
-                               data-allow-fullsize="false" 
-                               data-size-warning="true"
-                               style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary);">
-                        <small style="color: var(--text-secondary);">Crop the image to 600x600 (1:1 aspect ratio)</small>
-                    </div>
                 </div>
                 
                 <div>
@@ -276,8 +274,6 @@
 
 <link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{% static 'image_cropping/js/jquery.Jcrop.min.js' %}"></script>
-<script src="{% static 'image_cropping/js/image_cropping.js' %}"></script>
 <script>
 // CKEditor Modal - Full Page Popup
 (function() {
@@ -526,51 +522,22 @@
                 });
             }
         });
-        
-        // Handle image upload to show cropping widget
-        const pictureInput = document.getElementById('picture');
-        if (pictureInput) {
-            pictureInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const container = document.getElementById('cropping-container');
-                        if (container) {
-                            // Hide current picture if exists
-                            const currentPic = document.getElementById('current-picture');
-                            if (currentPic) {
-                                currentPic.style.display = 'none';
-                            }
-                            
-                            // Remove existing preview if any
-                            const existingPreview = document.getElementById('picture-preview');
-                            if (existingPreview) {
-                                existingPreview.remove();
-                            }
-                            
-                            const img = document.createElement('img');
-                            img.src = event.target.result;
-                            img.id = 'picture-preview';
-                            img.style.maxWidth = '600px';
-                            img.style.maxHeight = '600px';
-                            img.style.marginTop = '1rem';
-                            img.style.borderRadius = '8px';
-                            img.style.border = '1px solid var(--border-color)';
-                            
-                            container.insertBefore(img, container.firstChild.nextSibling);
-                            container.style.display = 'block';
-                            
-                            // Initialize image cropping after a short delay
-                            setTimeout(function() {
-                                if (typeof jQuery !== 'undefined' && jQuery.fn.Jcrop) {
-                                    // The image cropping widget should auto-initialize
-                                }
-                            }, 100);
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                }
+
+        // Simple "Paste HTML" helper – keep description in sync
+        const toggleHtmlBtn = document.getElementById('toggle-html-input');
+        const htmlWrapper = document.getElementById('html-input-wrapper');
+        const htmlTextarea = document.getElementById('description_html');
+        const mainDescription = document.getElementById('description');
+
+        if (toggleHtmlBtn && htmlWrapper && htmlTextarea && mainDescription) {
+            toggleHtmlBtn.addEventListener('click', function () {
+                const isVisible = htmlWrapper.style.display === 'block';
+                htmlWrapper.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Whenever the HTML textarea changes, copy its value into the main description field
+            htmlTextarea.addEventListener('input', function () {
+                mainDescription.value = htmlTextarea.value;
             });
         }
     });

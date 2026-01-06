@@ -532,6 +532,58 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+// Simple "Paste HTML" helper for all rich text areas on this page
+document.addEventListener('DOMContentLoaded', function () {
+    var areas = document.querySelectorAll('.rich-text-textarea');
+    areas.forEach(function (textarea) {
+        if (!textarea || textarea.dataset.htmlHelperAttached === '1') return;
+        textarea.dataset.htmlHelperAttached = '1';
+
+        var container = document.createElement('div');
+        container.style.marginTop = '0.75rem';
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Paste HTML instead';
+        btn.style.cssText = 'padding:0.35rem 0.75rem;font-size:0.85rem;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;';
+
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'margin-top:0.6rem;display:none;';
+
+        var label = document.createElement('label');
+        label.textContent = 'Paste HTML (this will overwrite the main field)';
+        label.style.cssText = 'display:block;margin-bottom:0.35rem;font-weight:500;color:var(--text-secondary);';
+
+        var htmlTa = document.createElement('textarea');
+        htmlTa.placeholder = 'Paste HTML here...';
+        htmlTa.style.cssText = 'width:100%;min-height:140px;padding:0.65rem;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-family:monospace;font-size:0.9rem;';
+
+        var hint = document.createElement('small');
+        hint.textContent = 'Anything you paste here will be copied into the main field before saving.';
+        hint.style.cssText = 'color:var(--text-secondary);display:block;margin-top:0.35rem;';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(htmlTa);
+        wrapper.appendChild(hint);
+        container.appendChild(btn);
+        container.appendChild(wrapper);
+
+        if (textarea.parentNode) {
+            textarea.parentNode.insertBefore(container, textarea.nextSibling);
+        }
+
+        btn.addEventListener('click', function () {
+            wrapper.style.display = wrapper.style.display === 'block' ? 'none' : 'block';
+        });
+
+        htmlTa.addEventListener('input', function () {
+            textarea.value = htmlTa.value;
+        });
+    });
+});
+</script>
 {% endblock %}
 
 
