@@ -647,16 +647,15 @@
         <iframe
             id="footer-map-iframe"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d44203.88561937511!2d90.32284922217674!3d23.748943881898036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b0a98eaf3b%3A0xc692432124fcc478!2sUniversity%20of%20Asia%20Pacific%20%7C%20UAP!5e1!3m2!1sen!2sbd!4v1766090903952!5m2!1sen!2sbd"
-            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-            onerror="this.style.display='none'; console.warn('Google Maps embed failed to load');">
+            width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            title="University of Asia Pacific Location">
         </iframe>
     </div>
 <div class="footer-column">
     <h4>Contact</h4>
-    <p>Department Administrative Office,</p>
     <p>74/A, Green Road, Dhaka‑1205, Bangladesh</p>
-   <p><i class="fas fa-phone-alt"></i> Office: +88‑01601311283</p>
-<p><i class="fas fa-phone-alt"></i> Shahiduzzaman Suza: +88‑01722398613</p>
+   <p><i class="fas fa-phone-alt"></i> Office: 777</p>
+<p><i class="fas fa-phone-alt"></i> Shahiduzzaman Suza: +880 1711-579502</p>
 <p><i class="fas fa-phone-alt"></i> Hasanul Kabir: +88‑01722398613</p>
 </div>
         <div class="footer-column">
@@ -1161,10 +1160,33 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
     document.addEventListener('DOMContentLoaded', function() {
         const mapIframe = document.getElementById('footer-map-iframe');
         if (mapIframe) {
+            let mapLoaded = false;
+            
+            // Check if iframe loads successfully
+            mapIframe.addEventListener('load', function() {
+                mapLoaded = true;
+                console.log('Google Maps embed loaded successfully');
+            });
+            
+            // Handle load errors
             mapIframe.addEventListener('error', function() {
                 console.warn('Google Maps embed failed to load');
-                this.style.display = 'none';
+                showMapFallback(mapIframe);
             });
+            
+            // Fallback: if iframe doesn't load within 5 seconds, show link
+            setTimeout(function() {
+                if (!mapLoaded && mapIframe.offsetHeight === 0) {
+                    showMapFallback(mapIframe);
+                }
+            }, 5000);
+            
+            function showMapFallback(iframe) {
+                const mapContainer = iframe.closest('.footer-map');
+                if (mapContainer) {
+                    mapContainer.innerHTML = '<a href="https://www.google.com/maps/place/University+of+Asia+Pacific+%7C+UAP/@23.7489439,90.3228492,17z/data=!3m1!4b1!4m6!3m5!1s0x3755b8b0a98eaf3b:0xc692432124fcc478!8m2!3d23.7489439!4d90.3254241!16s%2Fg%2F11c5q8vx5j" target="_blank" rel="noopener noreferrer" style="display: block; padding: 1rem; text-align: center; color: var(--color-primary); text-decoration: none; border: 1px solid var(--border-color); border-radius: 2rem;">View on Google Maps</a>';
+                }
+            }
         }
         
         // Handle mobile nav search button click
