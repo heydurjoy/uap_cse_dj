@@ -239,7 +239,12 @@
                                     <a href="{% url 'credits' %}#final-development" class="faculty-card-back-link">
                                         <div class="faculty-card-back">
                                             <div class="special-message">
-                                                <p>🧠Brain behind this project</p>
+                                                <div class="brain-emoji">🧠</div>
+                                                <div class="special-content-wrapper">
+                                                    <p class="special-title">System Architect & Core Programmer</p>
+                                                    <div class="special-divider"></div>
+                                                    <p class="special-subtitle">Wrote over 2.2 million lines of code (~90% of this website*)</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </a>
@@ -346,7 +351,12 @@
                                 <a href="{% url 'credits' %}#final-development" class="faculty-card-back-link">
                                     <div class="faculty-card-back">
                                         <div class="special-message">
-                                            <p>🧠 behind this project</p>
+                                            <div class="brain-emoji">🧠</div>
+                                            <div class="special-content-wrapper">
+                                                <p class="special-title">System Architect & Core Programmer</p>
+                                                <div class="special-divider"></div>
+                                                <p class="special-subtitle">Wrote over 2.2 million lines of code (~90% of this website*)</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </a>
@@ -1220,21 +1230,22 @@
     width: 100%;
     height: 100%;
     min-height: 280px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 1.5rem 1rem;
     box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 0 0 2px rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     background-image: 
-        linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+        linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, transparent 50%);
     transition: all 0.3s ease;
 }
 
@@ -1250,15 +1261,63 @@
     text-align: center;
     color: var(--text-primary);
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
-.special-message p {
-    font-size: 1.5rem;
+.brain-emoji {
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+}
+
+.special-content-wrapper {
+    width: 85%;
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+}
+
+.special-title {
+    font-size: 0.9rem;
     font-weight: 700;
     margin: 0;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     color: var(--text-primary);
+    line-height: 1.3;
+    width: 100%;
+}
+
+.special-divider {
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right, 
+        transparent 0%, 
+        color-mix(in srgb, var(--text-primary) 30%, transparent) 50%, 
+        transparent 100%);
+    margin: 0.25rem 0;
+}
+
+.special-subtitle {
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: var(--text-secondary);
     line-height: 1.4;
+    opacity: 0.85;
+    width: 100%;
 }
 
 .special-card {
@@ -1406,44 +1465,129 @@
         font-size: 2rem;
     }
     
-    /* Grid view: One card per row on mobile */
+    /* Grid view: Two cards per row on mobile */
     .faculty-grid[data-view="grid"] {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    /* Staggered effect: right card slightly lower and to the left */
+    .faculty-grid[data-view="grid"] .faculty-card-link:nth-child(even) {
+        transform: translateY(12px) translateX(-4px);
+    }
+    
+    .faculty-grid[data-view="grid"] .faculty-card-link:nth-child(even):hover {
+        transform: translateY(12px) translateX(-4px) scale(1.05) translateY(-4px);
     }
     
     /* Adjust card sizing for mobile */
     .faculty-grid[data-view="grid"] .faculty-card {
-        min-height: 240px;
+        min-height: clamp(110px, 15vw, 140px);
+        border-radius: 8px;
     }
     
     .faculty-grid[data-view="grid"] .faculty-card-image {
-        min-height: 240px;
+        min-height: clamp(110px, 15vw, 140px);
+        max-height: 210px;
+        aspect-ratio: 3 / 4;
+        border-radius: 8px;
+    }
+    
+    /* Ensure special card matches other cards' height on mobile */
+    .faculty-grid[data-view="grid"] .special-card.faculty-card-flip-container {
+        min-height: clamp(110px, 15vw, 140px);
+    }
+    
+    .faculty-grid[data-view="grid"] .special-card .faculty-card-flip-inner {
+        min-height: clamp(110px, 15vw, 140px);
+    }
+    
+    .faculty-grid[data-view="grid"] .special-card .faculty-card-back-link {
+        min-height: clamp(110px, 15vw, 140px);
+    }
+    
+    .faculty-grid[data-view="grid"] .special-card .faculty-card-back {
+        min-height: clamp(110px, 15vw, 140px);
+    }
+    
+    /* Special card front card styling for mobile */
+    .faculty-grid[data-view="grid"] .special-card .faculty-card-front .faculty-card {
+        width: 100%;
+        height: 75%;
+        min-height: 280px;
+        margin: 0;
+        margin-top: 10px;
+        padding: 0;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    /* Special card back styling for mobile */
+    .faculty-grid[data-view="grid"] .special-card .faculty-card-back {
+        margin-top: 10px;
+    }
+    
+    /* Special content wrapper for back of card in mobile */
+    .faculty-grid[data-view="grid"] .special-card .special-content-wrapper {
+        width: 100%;
+        max-width: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0;
+        padding: 0;
     }
     
     .faculty-card-overlay {
-        padding: 1rem 0.75rem 0.75rem 0.75rem;
+        padding: 0.625rem 0.5rem 0.5rem 0.5rem;
     }
     
     .faculty-name {
-        font-size: 1rem;
-        max-height: 2.4em; /* Slightly smaller on mobile */
+        font-size: 0.55rem;
+        line-height: 1.1;
+        max-height: 3rem;
+        white-space: normal;
+        word-break: break-word;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    
+    .faculty-name::-webkit-scrollbar {
+        display: none;
     }
     
     .faculty-card-link:hover .faculty-name {
-        font-size: 1.1rem;
-        max-height: 2.6em;
+        font-size: 0.55rem;
+        max-height: 3rem;
+    }
+    
+    .faculty-designation {
+        font-size: 0.45rem;
     }
     
     /* Less dramatic scaling on mobile for better performance */
     .faculty-grid[data-view="grid"]:has(.faculty-card-link:hover) .faculty-card-link:not(:hover) {
-        transform: scale(0.95);
         opacity: 0.7;
         filter: blur(1px);
     }
     
-    .faculty-card-link:hover {
+    .faculty-grid[data-view="grid"]:has(.faculty-card-link:hover) .faculty-card-link:nth-child(odd):not(:hover) {
+        transform: scale(0.95);
+    }
+    
+    .faculty-grid[data-view="grid"]:has(.faculty-card-link:hover) .faculty-card-link:nth-child(even):not(:hover) {
+        transform: translateY(12px) translateX(-4px) scale(0.95);
+    }
+    
+    .faculty-card-link:nth-child(odd):hover {
         transform: scale(1.05) translateY(-4px);
+    }
+    
+    .faculty-card-link:nth-child(even):hover {
+        transform: translateY(8px) translateX(-4px) scale(1.05) translateY(-4px);
     }
     
     /* Adjust bubble size on mobile */
