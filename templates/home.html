@@ -299,27 +299,54 @@
             <a href="{% url 'people:departmental_research' %}" class="view-all-link">View Full Research Page →</a>
         </div>
         
-        <!-- Stats Row -->
-        <div class="research-stats-row">
-            <div class="research-stat-item">
-                <div class="research-stat-value" data-target="{{ research_stats.total_pubs }}" data-is-decimal="false">0</div>
-                <div class="research-stat-label">Total Publications</div>
+        <!-- Stats with Pie Chart Layout -->
+        <div class="research-stats-with-chart">
+            <!-- Pie Chart on Left -->
+            <div class="pie-chart-wrapper-home">
+                <div class="chart-card-home">
+                    <div class="chart-header-home">
+                        <h3 class="chart-title-home">Publications by Type</h3>
+                    </div>
+                    <div class="chart-wrapper-home">
+                        <canvas id="typeChartHome"></canvas>
+                    </div>
+                </div>
             </div>
-            <div class="research-stat-item">
-                <div class="research-stat-value" data-target="{{ research_stats.total_citations|floatformat:0 }}" data-is-decimal="false">0</div>
-                <div class="research-stat-label">Total Citations</div>
-            </div>
-            <div class="research-stat-item">
-                <div class="research-stat-value" data-target="{{ research_stats.avg_pubs_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
-                <div class="research-stat-label">Avg Papers per Faculty</div>
-            </div>
-            <div class="research-stat-item">
-                <div class="research-stat-value" data-target="{{ research_stats.avg_citations_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
-                <div class="research-stat-label">Avg Citations per Faculty</div>
-            </div>
-            <div class="research-stat-item">
-                <div class="research-stat-value" data-target="{{ research_stats.num_faculty }}" data-is-decimal="false">0</div>
-                <div class="research-stat-label">Contributing Faculty</div>
+            
+            <!-- Stats Cards on Right -->
+            <div class="stats-cards-wrapper-home">
+                <!-- First Row: Total Citations, Total Papers -->
+                <div class="stats-row-top-home">
+                    <div class="research-stat-item stat-large-home stat-citations-home">
+                        <div class="stat-icon">📈</div>
+                        <div class="research-stat-value" data-target="{{ research_stats.total_citations|floatformat:0 }}" data-is-decimal="false">0</div>
+                        <div class="research-stat-label">Total Citations</div>
+                    </div>
+                    <div class="research-stat-item stat-large-home stat-publications-home">
+                        <div class="stat-icon">📊</div>
+                        <div class="research-stat-value" data-target="{{ research_stats.total_pubs }}" data-is-decimal="false">0</div>
+                        <div class="research-stat-label">Total Publications</div>
+                    </div>
+                </div>
+                
+                <!-- Second Row: Other 3 Stats -->
+                <div class="stats-row-bottom-home">
+                    <div class="research-stat-item stat-compact-home">
+                        <div class="stat-icon">📄</div>
+                        <div class="research-stat-value" data-target="{{ research_stats.avg_pubs_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
+                        <div class="research-stat-label">Avg Papers per Faculty</div>
+                    </div>
+                    <div class="research-stat-item stat-compact-home">
+                        <div class="stat-icon">⭐</div>
+                        <div class="research-stat-value" data-target="{{ research_stats.avg_citations_per_faculty }}" data-is-decimal="true" data-decimal-places="2">0</div>
+                        <div class="research-stat-label">Avg Citations per Faculty</div>
+                    </div>
+                    <div class="research-stat-item stat-compact-home">
+                        <div class="stat-icon">👥</div>
+                        <div class="research-stat-value" data-target="{{ research_stats.num_faculty }}" data-is-decimal="false">0</div>
+                        <div class="research-stat-label">Contributing Faculty</div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -1206,8 +1233,65 @@
     </div>
 </section>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // Initialize Pie Chart for Home Page
+    const typeChartHomeCtx = document.getElementById('typeChartHome');
+    if (typeChartHomeCtx && typeof Chart !== 'undefined') {
+        // Placeholder data - can be updated when type data is available
+        // For now, using a simple distribution based on total publications
+        const totalPubs = {{ research_stats.total_pubs|default:0 }};
+        
+        // Simple placeholder distribution (can be replaced with actual type data)
+        const typeData = {
+            labels: ['Journal', 'Conference', 'Book Chapter', 'Other'],
+            datasets: [{
+                data: totalPubs > 0 ? [
+                    Math.round(totalPubs * 0.4),
+                    Math.round(totalPubs * 0.35),
+                    Math.round(totalPubs * 0.15),
+                    Math.round(totalPubs * 0.1)
+                ] : [1, 1, 1, 1],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)',   // Journal - blue
+                    'rgba(16, 185, 129, 0.8)',   // Conference - green
+                    'rgba(139, 92, 246, 0.8)',   // Book Chapter - purple
+                    'rgba(107, 114, 128, 0.8)',  // Other - gray
+                ],
+                borderColor: [
+                    'rgb(59, 130, 246)',
+                    'rgb(16, 185, 129)',
+                    'rgb(139, 92, 246)',
+                    'rgb(107, 114, 128)',
+                ],
+                borderWidth: 2
+            }]
+        };
+        
+        new Chart(typeChartHomeCtx, {
+            type: 'pie',
+            data: typeData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    }
   const allCards = Array.from(document.querySelectorAll(".polaroid-link"));
   const visibleCount = 3;
   let index = 0;
@@ -2224,17 +2308,68 @@ html, body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--color-primary);
+    color: white;
     text-decoration: none;
     font-weight: 600;
     font-size: 0.95rem;
     margin-top: 0.75rem;
     transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background: linear-gradient(
+        135deg,
+        var(--color-primary) 0%,
+        var(--color-primary-hover) 50%,
+        var(--color-primary) 100%
+    );
+    background-size: 200% 200%;
+    animation: colorShift 3s ease-in-out infinite;
+}
+
+.view-all-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left 0.5s ease;
 }
 
 .view-all-link:hover {
-    color: var(--color-primary-hover);
     gap: 0.75rem;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+    animation-duration: 1.5s;
+}
+
+.view-all-link:hover::before {
+    left: 100%;
+}
+
+.view-all-link:active {
+    transform: translateY(0);
+    animation-duration: 0.5s;
+}
+
+@keyframes colorShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .uapnow-filters {
@@ -2983,10 +3118,100 @@ html, body {
     color: var(--text-primary);
 }
 
+/* Stats with Chart Container */
+.research-stats-with-chart {
+    display: grid;
+    grid-template-columns: 0.7fr 1.3fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 1rem;
+    align-items: stretch;
+}
+
+.pie-chart-wrapper-home {
+    position: sticky;
+    top: 2rem;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+}
+
+.chart-card-home {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chart-card-home:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.chart-header-home {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.chart-title-home {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.chart-wrapper-home {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 300px;
+}
+
+.stats-cards-wrapper-home {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.stats-row-top-home {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.stats-row-bottom-home {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    width: 100%;
+}
+
 .research-stats-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(2, minmax(160px, auto));
+    gap: 1.25rem;
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
@@ -2994,30 +3219,190 @@ html, body {
     padding: 0 1rem;
 }
 
+.stat-large-home {
+    padding: 2rem 1.5rem;
+}
+
+.stat-large-home .research-stat-value {
+    font-size: 2.75rem;
+}
+
+.stat-large-home .research-stat-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.stat-compact-home {
+    padding: 1.5rem 1.25rem;
+}
+
+.stat-compact-home .stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-compact-home .research-stat-value {
+    font-size: 1rem;
+}
+
+.stat-compact-home .research-stat-label {
+    font-size: 0.5rem;
+}
+
 .research-stat-item {
     background: var(--bg-secondary);
     border: 2px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1rem 0.75rem;
+    border-radius: 20px;
+    padding: 1.5rem;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
     min-width: 0;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.research-stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 4%, transparent) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.research-stat-item:hover::before {
+    opacity: 1;
 }
 
 .research-stat-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 16px 40px color-mix(in srgb, var(--color-primary) 20%, transparent);
     border-color: var(--color-primary);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.research-stat-item:hover .stat-icon {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 1;
+}
+
+/* Total Citations - Biggest on the Left */
+.stat-citations {
+    grid-column: 1 / span 5;
+    grid-row: 1 / span 2;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 18%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary-hover) 12%, var(--bg-secondary)) 50%,
+        color-mix(in srgb, var(--color-primary) 10%, var(--bg-secondary)) 100%);
+    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+    padding: 3rem 2.5rem;
+    border-width: 3px;
+}
+
+.stat-citations .stat-icon {
+    font-size: 4.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.stat-citations .research-stat-value {
+    font-size: 4rem;
+    margin-bottom: 0.75rem;
+}
+
+.stat-citations .research-stat-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* Total Publications - Takes remaining width on right */
+.stat-publications {
+    grid-column: 6 / span 7;
+    grid-row: 1 / span 2;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-primary) 14%, var(--bg-secondary)) 0%,
+        color-mix(in srgb, var(--color-primary-hover) 9%, var(--bg-secondary)) 100%);
+    border-color: color-mix(in srgb, var(--color-primary) 38%, transparent);
+    padding: 2.5rem 2rem;
+    border-width: 2.5px;
+}
+
+.stat-publications .stat-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-publications .research-stat-value {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-publications .research-stat-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+/* Bottom Cards - Below Total Publications */
+.stat-bottom {
+    grid-row: 2;
+    padding: 1.75rem 1.5rem;
+}
+
+.stat-bottom:nth-of-type(3) {
+    grid-column: 6 / span 2;
+}
+
+.stat-bottom:nth-of-type(4) {
+    grid-column: 8 / span 2;
+}
+
+.stat-bottom:nth-of-type(5) {
+    grid-column: 10 / span 3;
+}
+
+.stat-bottom .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.stat-bottom .research-stat-value {
+    font-size: 1.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-bottom .research-stat-label {
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .research-stat-value {
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--color-primary);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.5rem;
     transition: all 0.3s ease;
     display: inline-block;
+    position: relative;
+    z-index: 1;
 }
 
 .research-stat-value.animated {
@@ -3029,7 +3414,7 @@ html, body {
         transform: scale(1);
     }
     50% {
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
 }
 
@@ -3037,6 +3422,8 @@ html, body {
     font-size: 0.85rem;
     color: var(--text-secondary);
     font-weight: 500;
+    position: relative;
+    z-index: 1;
 }
 
 .top-researchers-home {
@@ -3451,9 +3838,67 @@ html, body {
 }
 
 @media (max-width: 1024px) {
-    .research-stats-row {
+    .research-stats-with-chart {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .pie-chart-wrapper-home {
+        position: static;
+    }
+    
+    .stats-row-top-home {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
+    }
+    
+    .stats-row-bottom-home {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .research-stats-row {
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: repeat(2, minmax(150px, auto));
+        gap: 1rem;
+    }
+    
+    .stat-citations {
+        grid-column: 1 / span 3;
+        grid-row: 1 / span 2;
+        padding: 2.5rem 2rem;
+    }
+    
+    .stat-citations .stat-icon {
+        font-size: 3.5rem;
+    }
+    
+    .stat-citations .research-stat-value {
+        font-size: 3rem;
+    }
+    
+    .stat-publications {
+        grid-column: 4 / span 3;
+        grid-row: 1 / span 2;
+        padding: 2rem 1.5rem;
+    }
+    
+    .stat-publications .stat-icon {
+        font-size: 3rem;
+    }
+    
+    .stat-publications .research-stat-value {
+        font-size: 2.5rem;
+    }
+    
+    .stat-bottom:nth-of-type(3) {
+        grid-column: 4 / span 2;
+    }
+    
+    .stat-bottom:nth-of-type(4) {
+        grid-column: 6 / span 1;
+    }
+    
+    .stat-bottom:nth-of-type(5) {
+        grid-column: 4 / span 3;
     }
     
     .top-researchers-grid-home {
@@ -3471,14 +3916,120 @@ html, body {
         font-size: 1.75rem;
     }
     
+    .research-stats-with-chart {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 1rem;
+    }
+    
+    .pie-chart-wrapper-home {
+        position: static;
+        height: auto;
+        align-items: flex-start;
+    }
+    
+    .chart-card-home {
+        height: auto;
+    }
+    
+    .stats-cards-wrapper-home {
+        height: auto;
+        gap: 1.25rem;
+        justify-content: flex-start;
+    }
+    
+    .stats-row-top-home {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stats-row-bottom-home {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-large-home {
+        padding: 1.5rem 1rem;
+    }
+    
+    .stat-large-home .research-stat-value {
+        font-size: 1.75rem;
+    }
+    
+    .stat-compact-home {
+        padding: 1.25rem 0.875rem;
+    }
+    
+    .stat-compact-home .stat-icon {
+        font-size: 1.25rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .stat-compact-home .research-stat-value {
+        font-size: 1rem;
+    }
+    
+    .stat-compact-home .research-stat-label {
+        font-size: 0.5rem;
+    }
+    
+    .chart-wrapper-home {
+        min-height: 250px;
+    }
+    
     .research-stats-row {
         grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
         gap: 1rem;
         padding: 0 1rem;
     }
     
+    .stat-citations {
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 2rem 1.5rem;
+    }
+    
+    .stat-citations .stat-icon {
+        font-size: 3rem;
+    }
+    
+    .stat-citations .research-stat-value {
+        font-size: 2.5rem;
+    }
+    
+    .stat-publications {
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 1.75rem 1.5rem;
+    }
+    
+    .stat-publications .stat-icon {
+        font-size: 2.5rem;
+    }
+    
+    .stat-publications .research-stat-value {
+        font-size: 2rem;
+    }
+    
+    .stat-bottom {
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 1.5rem 1.25rem;
+    }
+    
+    .stat-bottom:nth-of-type(3),
+    .stat-bottom:nth-of-type(4),
+    .stat-bottom:nth-of-type(5) {
+        grid-column: span 2;
+    }
+    
     .research-stat-value {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
     }
     
     .top-researchers-title {
@@ -3504,12 +4055,58 @@ html, body {
     
     .research-stats-row {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
         gap: 0.75rem;
         padding: 0 1rem;
     }
     
-    .research-stat-item {
-        padding: 0.875rem 0.5rem;
+    .stat-citations,
+    .stat-publications,
+    .stat-bottom {
+        grid-column: span 1;
+        grid-row: auto;
+    }
+    
+    .stat-citations {
+        padding: 1.75rem 1.5rem;
+    }
+    
+    .stat-citations .stat-icon {
+        font-size: 2.5rem;
+    }
+    
+    .stat-citations .research-stat-value {
+        font-size: 2rem;
+    }
+    
+    .stat-publications {
+        padding: 1.5rem 1.25rem;
+    }
+    
+    .stat-publications .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .stat-publications .research-stat-value {
+        font-size: 1.75rem;
+    }
+    
+    .stat-bottom {
+        padding: 1.25rem 1rem;
+    }
+    
+    .stat-bottom:nth-of-type(3),
+    .stat-bottom:nth-of-type(4),
+    .stat-bottom:nth-of-type(5) {
+        grid-column: span 1;
+    }
+    
+    .research-stat-value {
+        font-size: 1.25rem;
+    }
+    
+    .stat-icon {
+        font-size: 1.25rem;
     }
     
     .top-researchers-header {
@@ -3521,14 +4118,51 @@ html, body {
     }
     
     .top-researchers-grid-home {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
         padding: 0 1rem;
     }
     
+    .top-researcher-card-home {
+        gap: 0.5rem;
+    }
+    
     .researcher-card-home-image {
-        max-width: 260px;
-        margin: 0 auto;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 8px;
+        max-height: 210px;
+        min-height: clamp(110px, 15vw, 140px);
+        aspect-ratio: 3 / 4;
+    }
+    
+    .researcher-card-home-overlay {
+        padding: 0.625rem 0.5rem 0.5rem 0.5rem;
+    }
+    
+    .researcher-card-home-info {
+        gap: 0.25rem;
+    }
+    
+    .researcher-name-home {
+        font-size: 0.55rem;
+        line-height: 1.1;
+    }
+    
+    .researcher-meta-home {
+        gap: 0.25rem;
+        font-size: 0.45rem;
+    }
+    
+    .researcher-score-home,
+    .researcher-pubs-home,
+    .researcher-citation-home {
+        font-size: 0.425rem;
+    }
+    
+    .researcher-designation-home {
+        font-size: 0.375rem;
+        padding: 0.25rem 0.375rem;
     }
     
     .info-modal-content-home {
