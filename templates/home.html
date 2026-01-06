@@ -474,6 +474,13 @@
                     {% endif %}
                 </div>
             </div>
+            
+            <!-- Browse More Faculties Button -->
+            <div class="browse-faculties-wrapper">
+                <a href="{% url 'people:departmental_research' %}?tab=faculty" class="browse-faculties-btn">
+                    Browse More Faculties →
+                </a>
+            </div>
         </div>
     </div>
     
@@ -2370,6 +2377,59 @@ html, body {
     50% {
         background-position: 100% 50%;
     }
+}
+
+/* Browse More Faculties Button */
+.browse-faculties-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 0 1rem;
+}
+
+.browse-faculties-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--color-primary);
+    border-radius: 8px;
+    background: transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.browse-faculties-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--color-primary);
+    transition: left 0.3s ease;
+    z-index: -1;
+}
+
+.browse-faculties-btn:hover {
+    color: white;
+    gap: 0.75rem;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.browse-faculties-btn:hover::before {
+    left: 0;
+}
+
+.browse-faculties-btn:active {
+    transform: translateY(0);
 }
 
 .uapnow-filters {
