@@ -288,8 +288,6 @@
                 </a>
                 {% endif %}
                 
-                {% endif %} {# end user.is_power_user block #}
-                
                 <!-- 4 (public for faculty): Manage Own Publications -->
                 {% if profile_type == 'faculty' %}
                 <a href="{% url 'people:manage_publications' profile.pk %}" class="action-card">
