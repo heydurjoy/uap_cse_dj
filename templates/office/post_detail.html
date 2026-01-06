@@ -29,6 +29,33 @@
             
             <h1 class="post-detail-title">{{ post.long_title }}</h1>
             
+            {% if post.created_by_name or post.created_by %}
+            <div class="post-author">
+                <span class="author-label">Posted by:</span>
+                {% if post.created_by %}
+                    {% if post.created_by.user_type == 'faculty' and post.created_by.faculty_profile %}
+                        <a href="{% url 'people:faculty_detail' post.created_by.faculty_profile.pk %}" class="author-name">
+                            {% if post.created_by.faculty_profile.name %}{{ post.created_by.faculty_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </a>
+                    {% elif post.created_by.user_type == 'officer' and post.created_by.officer_profile %}
+                        <a href="{% url 'people:officer_detail' post.created_by.officer_profile.pk %}" class="author-name">
+                            {% if post.created_by.officer_profile.name %}{{ post.created_by.officer_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </a>
+                    {% elif post.created_by.user_type == 'staff' and post.created_by.staff_profile %}
+                        <span class="author-name">
+                            {% if post.created_by.staff_profile.name %}{{ post.created_by.staff_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </span>
+                    {% else %}
+                        <span class="author-name">
+                            {% if post.created_by.first_name or post.created_by.last_name %}{{ post.created_by.get_full_name }}{% else %}{{ post.created_by.email }}{% endif %}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span class="author-name">{{ post.created_by_name|default:"Unknown User" }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
             {% if post.tags %}
             <div class="post-tags">
                 {% for tag in post.get_tags_list %}
@@ -56,33 +83,6 @@
                     </a>
                     {% endfor %}
                 </div>
-            </div>
-            {% endif %}
-            
-            {% if post.created_by_name or post.created_by %}
-            <div class="post-author">
-                <span class="author-label">Posted by:</span>
-                {% if post.created_by %}
-                    {% if post.created_by.user_type == 'faculty' and post.created_by.faculty_profile %}
-                        <a href="{% url 'people:faculty_detail' post.created_by.faculty_profile.pk %}" class="author-name">
-                            {% if post.created_by.faculty_profile.name %}{{ post.created_by.faculty_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
-                        </a>
-                    {% elif post.created_by.user_type == 'officer' and post.created_by.officer_profile %}
-                        <a href="{% url 'people:officer_detail' post.created_by.officer_profile.pk %}" class="author-name">
-                            {% if post.created_by.officer_profile.name %}{{ post.created_by.officer_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
-                        </a>
-                    {% elif post.created_by.user_type == 'staff' and post.created_by.staff_profile %}
-                        <span class="author-name">
-                            {% if post.created_by.staff_profile.name %}{{ post.created_by.staff_profile.name }}{% else %}{{ post.created_by.email }}{% endif %}
-                        </span>
-                    {% else %}
-                        <span class="author-name">
-                            {% if post.created_by.first_name or post.created_by.last_name %}{{ post.created_by.get_full_name }}{% else %}{{ post.created_by.email }}{% endif %}
-                        </span>
-                    {% endif %}
-                {% else %}
-                    <span class="author-name">{{ post.created_by_name|default:"Unknown User" }}</span>
-                {% endif %}
             </div>
             {% endif %}
         </article>
@@ -257,26 +257,28 @@
 }
 
 .post-author {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
     font-size: 0.9rem;
+}
+
+.post-author .author-label {
     color: var(--text-secondary);
-}
-
-.author-label {
     font-weight: 600;
-    margin-right: 0.5rem;
 }
 
-.author-name {
-    color: var(--color-primary);
+.post-author .author-name {
+    color: var(--text-primary);
     font-weight: 500;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
-a.author-name:hover {
+.post-author a.author-name:hover {
     color: var(--color-primary-hover);
 }
 
