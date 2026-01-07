@@ -249,7 +249,7 @@
                                 </div>
                             </div>
                             <div class="resume-pdf-viewer">
-                                <iframe src="{% url 'people:serve_faculty_cv' faculty.pk %}#toolbar=1&navpanes=0&scrollbar=1" frameborder="0" class="resume-iframe" title="Faculty CV PDF" allow="fullscreen" type="application/pdf" id="cvIframe">
+                                <iframe src="{% url 'people:serve_faculty_cv' faculty.pk %}#toolbar=1&navpanes=0&scrollbar=1" frameborder="0" class="resume-iframe" title="Faculty CV PDF" allow="fullscreen" id="cvIframe">
                                 </iframe>
                                 <div class="resume-fallback">
                                     <p>Your browser doesn't support PDF viewing.</p>
@@ -1550,33 +1550,47 @@ document.addEventListener('DOMContentLoaded', function() {
     const resumeFallback = document.querySelector('.resume-fallback');
     
     if (cvIframe && resumeFallback) {
+        let iframeLoaded = false;
+        let checkTimeout = null;
+        
         // Check after iframe loads
         cvIframe.addEventListener('load', function() {
-            // Iframe loaded successfully
+            iframeLoaded = true;
+            // Iframe loaded successfully - hide fallback
             resumeFallback.classList.remove('active');
+            if (checkTimeout) {
+                clearTimeout(checkTimeout);
+            }
         });
         
         cvIframe.addEventListener('error', function() {
             // Iframe failed to load, show fallback
+            iframeLoaded = false;
             resumeFallback.classList.add('active');
             cvIframe.style.display = 'none';
         });
         
-        // Fallback: if iframe doesn't load within 3 seconds, show fallback
-        setTimeout(function() {
-            try {
-                // Try to check if iframe has content
-                const iframeDoc = cvIframe.contentDocument || cvIframe.contentWindow.document;
-                if (!iframeDoc || !iframeDoc.body || iframeDoc.body.innerHTML.trim() === '') {
-                    resumeFallback.classList.add('active');
-                    cvIframe.style.display = 'none';
+        // Fallback: if iframe doesn't load within 5 seconds, check if it's actually an error
+        checkTimeout = setTimeout(function() {
+            if (!iframeLoaded) {
+                try {
+                    // Try to check if iframe has content (might fail due to CORS)
+                    const iframeDoc = cvIframe.contentDocument || cvIframe.contentWindow.document;
+                    if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.trim() !== '') {
+                        // Iframe has content, it's loading
+                        iframeLoaded = true;
+                        resumeFallback.classList.remove('active');
+                    } else {
+                        // No content detected, might be an error
+                        resumeFallback.classList.add('active');
+                    }
+                } catch (e) {
+                    // Cross-origin or access denied - this is normal for PDFs
+                    // Don't show fallback, let the PDF viewer handle it
+                    // The iframe load event should have fired if the PDF loaded
                 }
-            } catch (e) {
-                // Cross-origin or access denied - iframe might still be loading
-                // Show fallback as alternative option
-                resumeFallback.classList.add('active');
             }
-        }, 3000);
+        }, 5000);
     }
 });
 </script>

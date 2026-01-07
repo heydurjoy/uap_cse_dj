@@ -252,15 +252,23 @@ def serve_faculty_cv(request, pk):
         return HttpResponse("CV not found", status=404)
     
     try:
-        # Get the file path
-        file_path = faculty.cv.path
+        # Check if file exists on disk
+        if hasattr(faculty.cv, 'path'):
+            file_path = faculty.cv.path
+            if not os.path.exists(file_path):
+                return HttpResponse("CV file not found on server", status=404)
         
-        # Serve the file with proper headers
+        # Open the file using Django's file field (handles storage backends properly)
+        cv_file = faculty.cv.open('rb')
+        
+        # Serve the file with proper headers for iframe embedding
         response = FileResponse(
-            open(file_path, 'rb'),
+            cv_file,
             content_type='application/pdf'
         )
-        response['Content-Disposition'] = f'inline; filename="{faculty.cv.name}"'
+        # Use inline disposition for iframe embedding
+        filename = os.path.basename(faculty.cv.name) if faculty.cv.name else 'cv.pdf'
+        response['Content-Disposition'] = f'inline; filename="{filename}"'
         response['X-Content-Type-Options'] = 'nosniff'
         
         # Allow iframe embedding from same origin
