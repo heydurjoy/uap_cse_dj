@@ -12,6 +12,7 @@ class Permissions:
     MANAGE_ALL_POSTS = 'manage_all_posts'
     POST_ROUTINES = 'post_routines'
     POST_ADMISSION_RESULTS = 'post_admission_results'
+    MANAGE_GALLERY = 'manage_gallery'
     
     # Club permissions
     MANAGE_ALL_CLUBS = 'manage_club_settings'  # Renamed from MANAGE_CLUB_SETTINGS for clarity
@@ -71,6 +72,14 @@ PERMISSION_DEFINITIONS = [
         'category': Permissions.CATEGORY_OFFICE,
         'requires_role': ['faculty', 'officer'],
         'priority': 40,
+    },
+    {
+        'codename': Permissions.MANAGE_GALLERY,
+        'name': 'Manage Gallery',
+        'description': 'Can manage homepage photo gallery',
+        'category': Permissions.CATEGORY_OFFICE,
+        'requires_role': [],
+        'priority': 50,
     },
     {
         'codename': Permissions.MANAGE_ALL_CLUBS,

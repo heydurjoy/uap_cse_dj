@@ -195,8 +195,8 @@ def manage_posts(request):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('people:user_profile')
     
-    # Check permissions
-    can_manage_all = request.user.has_permission('manage_all_posts')
+    # Check permissions - all power users OR users with manage_all_posts permission
+    can_manage_all = request.user.is_power_user or request.user.has_permission('manage_all_posts')
     # Faculty can always manage (but only see) their own posts even without explicit permission
     can_post_notices = request.user.has_permission('post_notices') or hasattr(request.user, 'faculty_profile')
     
@@ -279,7 +279,7 @@ def create_post(request):
             post.created_by = request.user
             
             # Check permissions
-            can_manage_all = request.user.has_permission('manage_all_posts')
+            can_manage_all = request.user.is_power_user or request.user.has_permission('manage_all_posts')
             
             # Handle pinned posts limit - automatically unpin oldest if needed
             if post.is_pinned:
@@ -313,7 +313,7 @@ def create_post(request):
                 'tags': request.POST.get('tags', ''),
                 'description': request.POST.get('description', ''),
             }
-            can_manage_all = request.user.has_permission('manage_all_posts')
+            can_manage_all = request.user.is_power_user or request.user.has_permission('manage_all_posts')
             return render(request, 'office/create_post.html', {
                 'POST_TYPE_CHOICES': POST_TYPE_CHOICES,
                 'post': post_data,
@@ -1621,9 +1621,9 @@ def serve_admission_pdf(request, pk):
 
 @login_required
 def create_gallery_item(request):
-    """Create a new gallery item - power users only"""
-    if not request.user.is_power_user:
-        messages.error(request, 'Only power users can create gallery items.')
+    """Create a new gallery item - all power users OR users with manage_gallery permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_gallery'):
+        messages.error(request, 'You do not have permission to create gallery items.')
         return redirect('people:user_profile')
     
     if request.method == 'POST':
@@ -1678,9 +1678,9 @@ def create_gallery_item(request):
 
 @login_required
 def edit_gallery_item(request, pk):
-    """Edit an existing gallery item - power users only"""
-    if not request.user.is_power_user:
-        messages.error(request, 'Only power users can edit gallery items.')
+    """Edit an existing gallery item - all power users OR users with manage_gallery permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_gallery'):
+        messages.error(request, 'You do not have permission to edit gallery items.')
         return redirect('people:user_profile')
 
     item = get_object_or_404(Gallery, pk=pk)
@@ -1721,9 +1721,9 @@ def edit_gallery_item(request, pk):
 
 @login_required
 def delete_gallery_item(request, pk):
-    """Delete a gallery item - power users only"""
-    if not request.user.is_power_user:
-        messages.error(request, 'Only power users can delete gallery items.')
+    """Delete a gallery item - all power users OR users with manage_gallery permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_gallery'):
+        messages.error(request, 'You do not have permission to delete gallery items.')
         return redirect('people:user_profile')
 
     item = get_object_or_404(Gallery, pk=pk)
@@ -1749,11 +1749,11 @@ def gallery(request):
 @login_required
 def manage_gallery(request):
     """
-    Manage gallery items - power users only.
+    Manage gallery items - all power users OR users with manage_gallery permission.
     Simple list with drag-and-drop ordering by serial (sl).
     """
-    if not request.user.is_power_user:
-        messages.error(request, 'Only power users can manage the gallery.')
+    if not request.user.is_power_user and not request.user.has_permission('manage_gallery'):
+        messages.error(request, 'You do not have permission to manage the gallery.')
         return redirect('people:user_profile')
 
     items = Gallery.objects.all().order_by('sl', '-created_at')
@@ -1769,12 +1769,12 @@ def manage_gallery(request):
 def update_gallery_order(request):
     """
     Update the order (serial numbers) of gallery items via drag and drop.
-    Power users only.
+    All power users OR users with manage_gallery permission.
     """
-    if not request.user.is_power_user:
+    if not request.user.is_power_user and not request.user.has_permission('manage_gallery'):
         return JsonResponse({
             'success': False,
-            'message': 'Only power users can update gallery order.'
+            'message': 'You do not have permission to update gallery order.'
         }, status=403)
 
     try:

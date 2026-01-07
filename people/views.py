@@ -2171,11 +2171,11 @@ def manage_publications(request, faculty_id):
     
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -2209,11 +2209,11 @@ def add_publication(request, faculty_id):
     
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -2292,11 +2292,11 @@ def add_multiple_publications(request, faculty_id):
     
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -2619,11 +2619,11 @@ def bulk_import_publications(request, faculty_id):
     
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -2849,11 +2849,11 @@ def edit_publication(request, publication_id):
     publication = get_object_or_404(Publication, pk=publication_id)
     faculty = publication.faculty
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -2932,11 +2932,11 @@ def delete_publication(request, publication_id):
     publication = get_object_or_404(Publication, pk=publication_id)
     faculty = publication.faculty
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -2971,11 +2971,11 @@ def bulk_delete_publications(request, faculty_id):
     
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
@@ -3041,11 +3041,11 @@ def confirm_single_publication(request, faculty_id):
     
     faculty = get_object_or_404(Faculty, pk=faculty_id)
     
-    # Check permissions - allow if user is the faculty member OR has manage_all_publications permission
+    # Check permissions - allow if user is the faculty member OR power user OR has manage_all_publications permission
     can_manage = False
     if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile.pk == faculty.pk:
         can_manage = True
-    elif request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
+    elif request.user.is_power_user or request.user.has_permission(Permissions.MANAGE_ALL_PUBLICATIONS):
         can_manage = True
     
     if not can_manage:
