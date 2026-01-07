@@ -244,7 +244,7 @@ class Post(models.Model):
         return f"{self.get_post_type_display()}: {self.short_title} - {self.publish_date.strftime('%Y-%m-%d')}"
     
     def save(self, *args, **kwargs):
-        """Auto-populate created_by_name and created_by_email when created_by is set"""
+        """Auto-populate created_by_name and created_by_email when created_by is set, and resize thumbnail"""
         if self.created_by and not self.created_by_name:
             # Get the user's name based on their type
             name = None
@@ -262,6 +262,69 @@ class Post(models.Model):
             
             self.created_by_name = name or email
             self.created_by_email = email
+        
+        # Resize and compress thumbnail if it exists (maintains aspect ratio)
+        if self.thumbnail and hasattr(self.thumbnail, 'file'):
+            try:
+                # Check if thumbnail is being uploaded/changed
+                thumbnail_changed = False
+                if self.pk:
+                    try:
+                        old_post = self.__class__.objects.get(pk=self.pk)
+                        thumbnail_changed = old_post.thumbnail != self.thumbnail
+                    except self.__class__.DoesNotExist:
+                        thumbnail_changed = True
+                else:
+                    thumbnail_changed = True
+                
+                if thumbnail_changed:
+                    self.thumbnail.file.seek(0)
+                    img = Image.open(self.thumbnail)
+                    
+                    # Convert RGBA/LA/P to RGB if necessary
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        rgb_img = Image.new('RGB', img.size, (255, 255, 255))
+                        if img.mode == 'P':
+                            img = img.convert('RGBA')
+                        rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                        img = rgb_img
+                    elif img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    
+                    # Resize maintaining aspect ratio (max 1200px width or 800px height)
+                    max_width = 1200
+                    max_height = 800
+                    width, height = img.size
+                    
+                    if width > max_width or height > max_height:
+                        # Calculate new dimensions maintaining aspect ratio
+                        ratio = min(max_width / width, max_height / height)
+                        new_width = int(width * ratio)
+                        new_height = int(height * ratio)
+                        img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                    
+                    # Compress to reduce file size (target: under 1MB, optimize quality)
+                    buffer = BytesIO()
+                    quality = 85
+                    img.save(buffer, format='JPEG', optimize=True, quality=quality)
+                    
+                    # If still too large, reduce quality iteratively
+                    max_size_bytes = 1024 * 1024  # 1 MB
+                    while buffer.tell() > max_size_bytes and quality > 50:
+                        quality -= 5
+                        buffer.seek(0)
+                        buffer.truncate()
+                        img.save(buffer, format='JPEG', optimize=True, quality=quality)
+                    
+                    # Save the resized and compressed image
+                    buffer.seek(0)
+                    file_name = self.thumbnail.name.rsplit('.', 1)[0] + '.jpg'
+                    self.thumbnail.save(file_name, ContentFile(buffer.read()), save=False)
+            except Exception as e:
+                # If image processing fails, continue with original image
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to resize thumbnail: {str(e)}")
         
         super().save(*args, **kwargs)
 
