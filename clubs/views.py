@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from datetime import datetime
+import os
 from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TYPE_CHOICES
 
 
