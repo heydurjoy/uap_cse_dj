@@ -486,6 +486,9 @@
     background-repeat: no-repeat;
     object-fit: cover;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 
 .post-card-overlay {
@@ -947,6 +950,23 @@
     .posts-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .post-card-with-thumbnail {
+        padding: 0 !important; /* Ensure no padding on thumbnail cards */
+        min-height: 240px; /* Reduced min-height for mobile */
+    }
+
+    .post-card-overlay {
+        padding: 1.25rem 0.9rem 0.9rem 0.9rem; /* Adjusted padding for mobile */
+    }
+
+    .post-card-with-thumbnail .post-card-title {
+        font-size: 1rem; /* Slightly smaller for mobile */
+    }
+
+    .post-card-with-thumbnail .post-card-description {
+        font-size: 0.75rem; /* Smaller for mobile */
+    }
 }
 
 @media (max-width: 480px) {
@@ -956,6 +976,24 @@
     
     .posts-stats {
         gap: 0.4rem;
+    }
+
+    .post-card-with-thumbnail {
+        padding: 0 !important; /* Ensure no padding on thumbnail cards */
+        min-height: 220px; /* Further reduced for small mobile */
+    }
+
+    .post-card-overlay {
+        padding: 1rem 0.75rem 0.75rem 0.75rem; /* Smaller padding for small mobile */
+    }
+
+    .post-card-with-thumbnail .post-card-title {
+        font-size: 0.95rem; /* Smaller for small mobile */
+    }
+
+    .post-card-with-thumbnail .post-card-description {
+        font-size: 0.7rem; /* Smaller for small mobile */
+    }
     }
     
     .stat-card {
