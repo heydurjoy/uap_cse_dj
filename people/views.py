@@ -647,8 +647,8 @@ def user_profile(request):
             associated_clubs.append({
                 'club': club,
                 'role': 'president',
-                'can_manage_info': False,
-                'can_manage_members': False,
+                'can_manage_info': True,  # Presidents have same access as conveners
+                'can_manage_members': True,  # Presidents can manage positions/members
                 'can_manage_posts': True,
             })
         

@@ -287,13 +287,17 @@ def create_club(request):
 def edit_club(request, pk):
     """
     Edit an existing club.
-    Level 4+ Faculty/Officers or conveners can edit clubs.
+    Level 4+ Faculty/Officers, conveners, or presidents can edit clubs.
+    Presidents cannot change the convener.
     """
     club = get_object_or_404(Club, pk=pk)
     
     if not check_club_management_access(request.user, club):
         messages.error(request, 'You do not have permission to edit this club.')
         return redirect('people:user_profile')
+    
+    # Check if user is president (not convener or power user)
+    is_president_only = check_club_president_access(request.user, club) and not check_club_convener_access(request.user, club) and not check_club_access(request.user)
     
     if request.method == 'POST':
         try:
@@ -305,15 +309,18 @@ def edit_club(request, pk):
             club.description = request.POST.get('description', '') or None
             
             # Handle ForeignKey fields
-            convener_id = request.POST.get('convener', '')
-            if convener_id:
-                try:
-                    from people.models import Faculty
-                    club.convener = Faculty.objects.get(pk=convener_id)
-                except (Faculty.DoesNotExist, ValueError):
+            # Presidents cannot change the convener
+            if not is_president_only:
+                convener_id = request.POST.get('convener', '')
+                if convener_id:
+                    try:
+                        from people.models import Faculty
+                        club.convener = Faculty.objects.get(pk=convener_id)
+                    except (Faculty.DoesNotExist, ValueError):
+                        club.convener = None
+                else:
                     club.convener = None
-            else:
-                club.convener = None
+            # If president only, preserve existing convener (don't change it)
             
             president_id = request.POST.get('president', '')
             if president_id:
@@ -357,6 +364,7 @@ def edit_club(request, pk):
         'club': club,
         'faculties': Faculty.objects.all().order_by('name'),
         'club_members': ClubMember.objects.all().order_by('name'),
+        'is_president_only': is_president_only,  # Pass flag to template
     }
     return render(request, 'clubs/edit_club.html', context)
 
