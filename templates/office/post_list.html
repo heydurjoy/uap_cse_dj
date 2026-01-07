@@ -282,12 +282,29 @@
     <div class="post-modal-content" id="postModalContent">
         <div class="post-modal-header">
             <h2 class="post-modal-title">Post Details</h2>
-            <button class="post-modal-close" onclick="closePostModal()" title="Close">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+            <div class="post-modal-actions">
+                <button class="post-modal-action-btn" onclick="openPostDetail()" title="Open in new page" id="postModalOpenBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    <span>Open</span>
+                </button>
+                <button class="post-modal-action-btn" onclick="copyPostLink()" title="Copy link" id="postModalCopyBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                    <span>Copy Link</span>
+                </button>
+                <button class="post-modal-close" onclick="closePostModal()" title="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
         </div>
         <div class="post-modal-body">
             <div class="post-modal-thumbnail-container" id="postModalThumbnail" style="display: none;">
@@ -710,6 +727,42 @@
     margin: 0;
 }
 
+.post-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.post-modal-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.post-modal-action-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.post-modal-action-btn svg {
+    flex-shrink: 0;
+}
+
+.post-modal-action-btn span {
+    white-space: nowrap;
+}
+
 .post-modal-close {
     background: var(--bg-tertiary);
     border: 2px solid var(--border-color);
@@ -837,6 +890,10 @@
     .post-modal-body {
         padding: 1.5rem;
     }
+
+    .post-modal-title {
+        display: none;
+    }
 }
 
 @media (max-width: 480px) {
@@ -851,6 +908,10 @@
     
     .post-modal-full-title {
         font-size: 1.25rem;
+    }
+
+    .post-modal-title {
+        display: none;
     }
 }
 
@@ -1161,6 +1222,10 @@ const postsData = {
     {% endfor %}
 };
 
+// Store current post info for sharing
+let currentPostType = null;
+let currentPostId = null;
+
 function openPostModal(postType, postId) {
     const key = postType + '_' + postId;
     const post = postsData[key];
@@ -1169,7 +1234,17 @@ function openPostModal(postType, postId) {
         return;
     }
     
+    // Store post info for sharing
+    currentPostType = postType;
+    currentPostId = postId;
+    
     const modal = document.getElementById('postModal');
+    
+    // Show/hide Open button based on post type (only show for regular posts)
+    const openBtn = document.getElementById('postModalOpenBtn');
+    if (openBtn) {
+        openBtn.style.display = postType === 'post' ? 'flex' : 'none';
+    }
     
     // Set modal content
     document.getElementById('postModalBadge').textContent = post.post_type_display;
@@ -1247,6 +1322,64 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// Open post detail page
+function openPostDetail() {
+    if (currentPostType === 'post' && currentPostId) {
+        const url = "{% url 'office:post_detail' 0 %}".replace('0', currentPostId);
+        window.location.href = url;
+    }
+}
+
+// Copy post link to clipboard
+function copyPostLink() {
+    if (!currentPostType || !currentPostId) {
+        return;
+    }
+    
+    let url;
+    if (currentPostType === 'post') {
+        url = "{% url 'office:post_detail' 0 %}".replace('0', currentPostId);
+    } else {
+        // For club posts, use the current page URL with a hash or parameter
+        url = window.location.origin + window.location.pathname + '?post=' + currentPostId;
+    }
+    
+    // Make it a full URL
+    if (!url.startsWith('http')) {
+        url = window.location.origin + url;
+    }
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(url).then(function() {
+        // Show feedback
+        const copyBtn = document.getElementById('postModalCopyBtn');
+        const originalText = copyBtn.querySelector('span').textContent;
+        copyBtn.querySelector('span').textContent = 'Copied!';
+        copyBtn.style.color = 'var(--color-primary)';
+        
+        setTimeout(function() {
+            copyBtn.querySelector('span').textContent = originalText;
+            copyBtn.style.color = '';
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Failed to copy link:', err);
+        // Fallback: select text in a temporary input
+        const tempInput = document.createElement('input');
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        
+        const copyBtn = document.getElementById('postModalCopyBtn');
+        const originalText = copyBtn.querySelector('span').textContent;
+        copyBtn.querySelector('span').textContent = 'Copied!';
+        setTimeout(function() {
+            copyBtn.querySelector('span').textContent = originalText;
+        }, 2000);
+    });
+}
 </script>
 
 {% endblock %}
