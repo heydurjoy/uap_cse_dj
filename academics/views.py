@@ -8,10 +8,10 @@ from .models import Program, Course, CourseOutcome, ProgramOutcome, BLOOMS_CHOIC
 
 
 def check_course_access(user):
-    """Check if user has manage_courses permission"""
+    """Check if user has manage_courses permission OR is a power user"""
     if not user.is_authenticated:
         return False
-    return user.has_permission('manage_courses')
+    return user.is_power_user or user.has_permission('manage_courses')
 
 
 @login_required

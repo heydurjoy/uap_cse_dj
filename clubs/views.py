@@ -14,15 +14,11 @@ from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TY
 
 
 def check_club_access(user):
-    """Check if user has manage_club_settings permission and is Faculty, Officer, or Power User"""
+    """Check if user is a power user - only power users can manage clubs"""
     if not user.is_authenticated:
         return False
-    # Check permission
-    if not user.has_permission('manage_club_settings'):
-        return False
-    # Allow if user is Faculty, Officer, or a Power User (power users can have any permission)
-    user_type = user.user_type
-    return user_type and (user_type in ['faculty', 'officer'] or user.is_power_user)
+    # Only power users can manage clubs
+    return user.is_power_user
 
 
 def check_club_convener_access(user, club):
@@ -68,20 +64,15 @@ def check_club_management_access(user, club=None):
 @login_required
 def manage_clubs(request):
     """
-    Manage clubs view.
-    Level 4+ Faculty/Officers can manage all clubs.
-    Conveners can manage their own clubs.
+    Manage clubs view - only power users can manage clubs.
     """
-    # Check if user has access
-    if check_club_access(request.user):
-        # Level 4+ Faculty/Officers see all clubs
-        clubs = Club.objects.all().select_related('convener', 'president')
-    elif hasattr(request.user, 'faculty_profile') and request.user.faculty_profile:
-        # Conveners see only their clubs
-        clubs = Club.objects.filter(convener=request.user.faculty_profile).select_related('convener', 'president')
-    else:
-        messages.error(request, 'You do not have permission to access this page.')
+    # Check if user is a power user
+    if not check_club_access(request.user):
+        messages.error(request, 'Only power users can manage clubs.')
         return redirect('people:user_profile')
+    
+    # Power users see all clubs
+    clubs = Club.objects.all().select_related('convener', 'president')
     
     # Search functionality
     search_query = request.GET.get('search', '')
@@ -216,7 +207,7 @@ def club_detail(request, pk):
 def create_club(request):
     """
     Create a new club.
-    Only level 4+ Faculty or Officers can create clubs.
+    Only power users can create clubs.
     """
     if not check_club_access(request.user):
         messages.error(request, 'You do not have permission to create clubs.')
@@ -398,8 +389,14 @@ def delete_club(request, pk):
 def delete_clubs(request):
     """
     Delete multiple clubs at once.
-    Level 4+ Faculty/Officers or conveners can delete clubs.
+    Only power users can delete clubs.
     """
+    if not check_club_access(request.user):
+        return JsonResponse({
+            'success': False,
+            'message': 'Only power users can delete clubs.'
+        }, status=403)
+    
     club_ids = request.POST.getlist('club_ids[]')
     
     if not club_ids:
@@ -408,22 +405,8 @@ def delete_clubs(request):
             'message': 'No clubs selected for deletion.'
         })
     
-    # Filter clubs based on access
-    if check_club_access(request.user):
-        # Level 4+ can delete any club
-        clubs_to_delete = Club.objects.filter(pk__in=club_ids)
-    else:
-        # Conveners can only delete their own clubs
-        if hasattr(request.user, 'faculty_profile') and request.user.faculty_profile:
-            clubs_to_delete = Club.objects.filter(
-                pk__in=club_ids,
-                convener=request.user.faculty_profile
-            )
-        else:
-            return JsonResponse({
-                'success': False,
-                'message': 'You do not have permission to delete clubs.'
-            }, status=403)
+    # Power users can delete any club
+    clubs_to_delete = Club.objects.filter(pk__in=club_ids)
     
     try:
         clubs = clubs_to_delete

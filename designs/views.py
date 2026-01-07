@@ -22,8 +22,8 @@ def feature_card_detail(request, pk):
 
 @login_required
 def manage_feature_cards(request):
-    """Manage all feature cards - only for users with edit_feature_cards permission"""
-    if not request.user.has_permission('edit_feature_cards'):
+    """Manage all feature cards - all power users OR users with edit_feature_cards permission"""
+    if not request.user.is_power_user and not request.user.has_permission('edit_feature_cards'):
         messages.error(request, 'You do not have permission to manage feature cards.')
         return redirect('people:user_profile')
     
@@ -43,7 +43,7 @@ def manage_feature_cards(request):
 @login_required
 def create_feature_card(request):
     """Create a new feature card"""
-    if not request.user.has_permission('edit_feature_cards'):
+    if not request.user.is_power_user and not request.user.has_permission('edit_feature_cards'):
         messages.error(request, 'You do not have permission to create feature cards.')
         return redirect('people:user_profile')
     
@@ -100,7 +100,7 @@ def create_feature_card(request):
 @login_required
 def edit_feature_card(request, pk):
     """Edit an existing feature card"""
-    if not request.user.has_permission('edit_feature_cards'):
+    if not request.user.is_power_user and not request.user.has_permission('edit_feature_cards'):
         messages.error(request, 'You do not have permission to edit feature cards.')
         return redirect('people:user_profile')
     
@@ -149,7 +149,7 @@ def edit_feature_card(request, pk):
 @login_required
 def delete_feature_card(request, pk):
     """Delete a feature card"""
-    if not request.user.has_permission('edit_feature_cards'):
+    if not request.user.is_power_user and not request.user.has_permission('edit_feature_cards'):
         messages.error(request, 'You do not have permission to delete feature cards.')
         return redirect('people:user_profile')
     
@@ -176,8 +176,8 @@ def delete_feature_card(request, pk):
 
 @login_required
 def manage_head_message(request):
-    """Manage the head message (first feature card)"""
-    if not request.user.has_permission('edit_head_message'):
+    """Manage the head message (first feature card) - all power users OR users with edit_head_message permission"""
+    if not request.user.is_power_user and not request.user.has_permission('edit_head_message'):
         messages.error(request, 'You do not have permission to edit the head message.')
         return redirect('people:user_profile')
     

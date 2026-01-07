@@ -193,9 +193,22 @@
                     </div>
                 </a>
                 
-                <!-- 2. View Public Profile - Faculty/Officer -->
+                <!-- 2. View Public Profile - Faculty/Staff/Officer -->
                 {% if profile_type == 'faculty' %}
                 <a href="{% url 'people:faculty_detail' profile.pk %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">View Public Profile</h3>
+                        <p class="action-desc">See public view</p>
+                    </div>
+                </a>
+                {% elif profile_type == 'staff' %}
+                <a href="{% url 'people:staff_detail' profile.pk %}" class="action-card">
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -222,7 +235,40 @@
                 </a>
                 {% endif %}
                 
-                <!-- 3. My Permissions (power users only) -->
+                <!-- 3. Manage Your Posts (available to all faculty; all power users except club members see this block too) -->
+                {% if profile_type == 'faculty' %}
+                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Your Posts</h3>
+                        <p class="action-desc">Your posts & notices</p>
+                    </div>
+                </a>
+                {% elif user.is_power_user and profile_type != 'club_member' %}
+                <a href="{% url 'office:manage_posts' %}" class="action-card">
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Your Posts</h3>
+                        <p class="action-desc">Your posts & notices</p>
+                    </div>
+                </a>
+                {% endif %}
+                
+                <!-- 4. My Permissions (power users only) -->
                 {% if user.is_power_user %}
                 <a href="{% url 'people:manage_own_permissions' %}" class="action-card">
                     <div class="action-icon">
@@ -237,9 +283,9 @@
                     </div>
                 </a>
                 
-                <!-- 4. Manage All Publications (all power users OR users with manage_all_publications permission) -->
+                <!-- 5. Manage All Publications (all power users OR users with manage_all_publications permission) -->
                 <a href="{% url 'people:faculty_list' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_all_publications' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -255,9 +301,9 @@
                     </div>
                 </a>
                 
-                <!-- 6. Manage Courses -->
-                <a href="{% url 'academics:manage_courses' %}" class="action-card {% if not user|has_permission:'manage_courses' %}action-disabled{% endif %}">
-                    <span class="access-badge permission">P</span>
+                <!-- 6. Manage Courses (all power users OR users with manage_courses permission) -->
+                <a href="{% url 'academics:manage_courses' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_courses' %}action-disabled{% endif %}">
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -274,7 +320,7 @@
                 
                 <!-- 7. Manage Curricula (all power users OR users with manage_academic_calendars permission) -->
                 <a href="{% url 'designs:manage_curricula' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -310,41 +356,9 @@
                 </a>
                 {% endif %}
                 
-                <!-- 8. Manage Your Posts (available to all faculty; all power users except club members see this block too) -->
-                {% if profile_type == 'faculty' %}
-                <a href="{% url 'office:manage_posts' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Manage Your Posts</h3>
-                        <p class="action-desc">Your posts & notices</p>
-                    </div>
-                </a>
-                {% elif user.is_power_user and profile_type != 'club_member' %}
-                <a href="{% url 'office:manage_posts' %}" class="action-card">
-                    <div class="action-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h3 class="action-title">Manage Your Posts</h3>
-                        <p class="action-desc">Your posts & notices</p>
-                    </div>
-                </a>
-                
-                <!-- 9. Manage All Posts (all power users OR users with manage_all_posts permission) -->
+                <!-- 8. Manage All Posts (all power users OR users with manage_all_posts permission) -->
                 <a href="{% url 'office:manage_posts' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_all_posts' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -358,9 +372,9 @@
                     </div>
                 </a>
                 
-                <!-- 10. Head Message -->
-                <a href="{% url 'designs:manage_head_message' %}" class="action-card {% if not user|has_permission:'edit_head_message' %}action-disabled{% endif %}">
-                    <span class="access-badge permission">P</span>
+                <!-- 10. Head Message (all power users OR users with edit_head_message permission) -->
+                <a href="{% url 'designs:manage_head_message' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'edit_head_message' %}action-disabled{% endif %}">
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -374,7 +388,7 @@
                 
                 <!-- 11. Manage Class Routines (all power users OR users with post_routines permission) -->
                 <a href="{% url 'office:manage_routines' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'post_routines' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -388,11 +402,10 @@
                         <p class="action-desc">Class timetables</p>
                     </div>
                 </a>
-                {% endif %}
                 
                 <!-- 12. Manage Exam Routines (all power users OR users with post_routines permission) -->
                 <a href="{% url 'office:manage_exam_routines' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'post_routines' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -410,7 +423,7 @@
                 
                 <!-- 13. Manage Gallery (all power users OR users with manage_gallery permission) -->
                 <a href="{% url 'office:manage_gallery' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_gallery' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -426,7 +439,7 @@
                 
                 <!-- 14. Academic Calendars (all power users OR users with manage_academic_calendars permission) -->
                 <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
-                    <span class="access-badge both">PU+P</span>
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -450,7 +463,7 @@
                 <!-- 15. Admission Results (faculty/officer; also all power users except club members) -->
                 {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card {% if not user|has_permission:'post_admission_results' %}action-disabled{% endif %}">
-                        <span class="access-badge permission">P</span>
+                        <span class="access-badge permission" title="Accessible by users with the required permission">P</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -467,7 +480,7 @@
                     </a>
                 {% elif user.is_power_user and profile_type != 'club_member' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card {% if not user|has_permission:'post_admission_results' %}action-disabled{% endif %}">
-                        <span class="access-badge both">PU+P</span>
+                        <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -484,26 +497,10 @@
                     </a>
                 {% endif %}
                 
-                <!-- 16. Manage Clubs (faculty/officer; also all power users except club members) -->
-                {% if profile_type == 'faculty' or profile_type == 'officer' %}
-                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user|has_permission:'manage_club_settings' %}action-disabled{% endif %}">
-                        <span class="access-badge permission">P</span>
-                        <div class="action-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <div class="action-content">
-                            <h3 class="action-title">Manage Clubs</h3>
-                            <p class="action-desc">Create & edit clubs</p>
-                        </div>
-                    </a>
-                {% elif user.is_power_user and profile_type != 'club_member' %}
-                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user|has_permission:'manage_club_settings' %}action-disabled{% endif %}">
-                        <span class="access-badge both">PU+P</span>
+                <!-- 16. Manage Clubs (power users only) -->
+                {% if user.is_power_user and profile_type != 'club_member' %}
+                    <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                        <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -521,7 +518,7 @@
                 
                 <!-- 17. Manage Users -->
                 <a href="{% url 'people:manage_users' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
-                    <span class="access-badge power-user">PU</span>
+                    <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -538,7 +535,7 @@
                 
                 <!-- 18. Manage Faculty -->
                 <a href="{% url 'people:manage_faculty' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
-                    <span class="access-badge power-user">PU</span>
+                    <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -551,9 +548,9 @@
                     </div>
                 </a>
                 
-                <!-- 19. Feature Cards -->
-                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card {% if not user|has_permission:'edit_feature_cards' %}action-disabled{% endif %}">
-                    <span class="access-badge permission">P</span>
+                <!-- 19. Feature Cards (all power users OR users with edit_feature_cards permission) -->
+                <a href="{% url 'designs:manage_feature_cards' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'edit_feature_cards' %}action-disabled{% endif %}">
+                    <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="7" height="7"></rect>
@@ -570,7 +567,7 @@
                 
                 <!-- 18. Hero Tags -->
                 <a href="{% url 'designs:manage_hero_tags' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
-                    <span class="access-badge power-user">PU</span>
+                    <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 7h.01"></path>
@@ -585,7 +582,7 @@
                 
                 <!-- 19. Admission Elements -->
                 <a href="{% url 'designs:manage_admission_elements' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
-                    <span class="access-badge power-user">PU</span>
+                    <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1130,9 +1127,10 @@
     border-radius: 3px;
     line-height: 1;
     z-index: 10;
-    pointer-events: none;
+    pointer-events: auto;
     white-space: nowrap;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    cursor: help;
 }
 
 .access-badge.power-user {
