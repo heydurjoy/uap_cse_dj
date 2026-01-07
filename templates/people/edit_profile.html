@@ -264,6 +264,24 @@
             <!-- Profile Picture Section -->
             <div class="form-section">
                 <h2 class="section-title">Profile Picture</h2>
+                
+                <!-- Full Width Warning -->
+                <div class="image-upload-warning" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); border-left: 4px solid #ff4757; border-radius: 8px; box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3); animation: pulseWarning 2s ease-in-out infinite;">
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <div style="font-size: 1.5rem; line-height: 1;">⚠️</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; color: white; font-size: 0.95rem; margin-bottom: 0.5rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">
+                                ⚡ Image Requirements & Quality Warning
+                            </div>
+                            <div style="color: rgba(255,255,255,0.95); font-size: 0.9rem; line-height: 1.5;">
+                                <strong>📐 Format:</strong> Square image (1:1 ratio), at least 600x600 pixels | 
+                                <strong>📦 Size:</strong> Max 600KB | 
+                                <strong style="color: #fffacd;">💡 STRONGLY RECOMMENDED:</strong> Upload images <strong>under 600KB</strong> to preserve quality! Larger images will be compressed and lose quality.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="profile-pic-upload-section">
                     <div class="current-pic-preview" id="currentPicPreview">
                         {% if profile %}
@@ -293,7 +311,6 @@
                         <div class="drag-drop-text">Drag and drop an image here, or click to select</div>
                         <div class="drag-drop-hint">Recommended: Square image (1:1 ratio), at least 600x600 pixels</div>
                         <input type="file" id="profile_pic" name="profile_pic" accept="image/*" class="hidden-crop-input">
-                        <small class="form-help" style="display: block; margin-top: 0.5rem;">Max 600KB. Image will be automatically compressed and resized to 600x600px (1:1 ratio) if larger.</small>
                     </div>
                     
                     <!-- Cropper Container -->
@@ -735,6 +752,26 @@
 
 .ckeditor-container .cke_wysiwyg_div {
     min-height: 100% !important;
+}
+
+@keyframes pulseWarning {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 6px 20px rgba(255, 71, 87, 0.5);
+        transform: scale(1.01);
+    }
+}
+
+.image-upload-warning {
+    transition: all 0.3s ease;
+}
+
+.image-upload-warning:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
 }
 
 @keyframes fadeIn {
