@@ -215,11 +215,12 @@ def faculty_detail(request, pk):
     # Calculate publication stats
     from datetime import datetime
     current_year = datetime.now().year
+    last_two_years_start = current_year - 1  # Last 2 years: current_year and previous year
     
     pub_stats = {
         'total': publications.count(),
         'q1': publications.filter(ranking='q1').count(),
-        'current_year': publications.filter(pub_year=current_year).count(),
+        'last_two_years': publications.filter(pub_year__gte=last_two_years_start).count(),
     }
     
     # Check if user can manage publications (own or with permission)
