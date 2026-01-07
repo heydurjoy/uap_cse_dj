@@ -10,6 +10,12 @@ from PIL import Image
 from django.core.files.base import ContentFile
 
 
+def validate_thumbnail_size(value):
+    """Validate that thumbnail image is not larger than 1 MB"""
+    if value.size > 1024 * 1024:  # 1 MB in bytes
+        raise ValidationError('Thumbnail image size cannot exceed 1 MB.')
+
+
 # Semester Choices for Admission Results
 SEMESTER_CHOICES = (
     ('Fall', 'Fall'),
@@ -219,6 +225,14 @@ class Post(models.Model):
         null=True,
         verbose_name="Created By Email",
         help_text="Email of the user who created this post (preserved even if user is deleted)"
+    )
+    thumbnail = models.ImageField(
+        upload_to='posts/thumbnails/',
+        blank=True,
+        null=True,
+        verbose_name="Thumbnail Image",
+        help_text="Optional thumbnail image (max 1 MB, any aspect ratio)",
+        validators=[validate_thumbnail_size]
     )
 
     class Meta:

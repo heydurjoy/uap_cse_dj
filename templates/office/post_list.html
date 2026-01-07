@@ -51,7 +51,7 @@
                         </select>
                     </div>
                     <button type="submit" class="filter-btn">Apply</button>
-                    {% if selected_type or search_query or sort_by != 'pinned' %}
+                    {% if selected_type or search_query or sort_by != 'newest' %}
                     <a href="{% url 'office:post_list' %}" class="clear-btn">Clear</a>
                     {% endif %}
                 </form>
@@ -77,7 +77,15 @@
                 {% for post_item in posts %}
                 {% if post_item.type == 'post' %}
                     {% with post=post_item.object %}
-                    <div class="post-card {% if post.is_pinned %}post-pinned{% endif %}" onclick="openPostModal('post', {{ post.pk }})" style="cursor: pointer;">
+                    <div class="post-card {% if post.is_pinned %}post-pinned{% endif %} {% if post.thumbnail %}post-card-with-thumbnail{% endif %}" onclick="openPostModal('post', {{ post.pk }})" style="cursor: pointer;{% if post.thumbnail %}background-image: url('{{ post.thumbnail.url }}');{% endif %}">
+                        {% if post.thumbnail %}
+                        <div class="post-card-overlay">
+                            <div class="post-card-info">
+                                <h3 class="post-card-title">{{ post.short_title }}</h3>
+                                <p class="post-card-description">{{ post.long_title|truncatewords:8 }}</p>
+                            </div>
+                        </div>
+                        {% else %}
                         <div class="post-card-top">
                             <div class="post-badge post-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
                                 {% if post.is_pinned %}
@@ -119,6 +127,7 @@
                                 {% endif %}
                             </span>
                         </div>
+                        {% endif %}
                         {% endif %}
                     </div>
                     {% endwith %}
@@ -281,6 +290,9 @@
             </button>
         </div>
         <div class="post-modal-body">
+            <div class="post-modal-thumbnail-container" id="postModalThumbnail" style="display: none;">
+                <img src="" alt="" class="post-modal-thumbnail" id="postModalThumbnailImg">
+            </div>
             <div class="post-modal-meta">
                 <span class="post-modal-badge" id="postModalBadge">Event</span>
                 <span class="post-modal-date" id="postModalDate">Dec 11, 2025</span>
@@ -462,6 +474,40 @@
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    position: relative;
+    min-height: 280px;
+    overflow: hidden;
+}
+
+.post-card-with-thumbnail {
+    padding: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    object-fit: cover;
+    position: relative;
+}
+
+.post-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.25rem 1rem 1rem 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-card:hover .post-card-overlay {
+    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.post-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    position: relative;
 }
 
 .post-card:hover {
@@ -531,12 +577,40 @@
     line-height: 1.3;
 }
 
+.post-card-with-thumbnail .post-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.post-card:hover.post-card-with-thumbnail .post-card-title {
+    font-size: 1.2rem;
+}
+
 .post-card-description {
     font-size: 0.85rem;
     color: var(--text-secondary);
     line-height: 1.4;
     margin: 0;
     flex-grow: 1;
+}
+
+.post-card-with-thumbnail .post-card-description {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-card:hover.post-card-with-thumbnail .post-card-description {
+    font-size: 0.85rem;
 }
 
 .post-tags {
@@ -605,7 +679,7 @@
     background: var(--bg-primary);
     border-radius: 16px;
     width: 100%;
-    max-width: 95vw;
+    max-width: 800px;
     max-height: 95vh;
     overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -727,6 +801,54 @@
     color: var(--text-primary);
     line-height: 1.8;
     font-size: 1rem;
+}
+
+.post-modal-thumbnail-container {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+}
+
+.post-modal-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+    display: block;
+}
+
+.post-modal-thumbnail-container img.post-modal-thumbnail {
+    width: auto;
+    max-width: 100%;
+    max-height: 400px;
+}
+
+@media (max-width: 768px) {
+    .post-modal-content {
+        max-width: 95vw;
+    }
+    
+    .post-modal-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .post-modal-content {
+        max-width: 95vw;
+        border-radius: 12px;
+    }
+    
+    .post-modal-body {
+        padding: 1rem;
+    }
+    
+    .post-modal-full-title {
+        font-size: 1.25rem;
+    }
 }
 
 .post-modal-description img {
@@ -979,6 +1101,7 @@ const postsData = {
         'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
         'club_name': null,
         'club_id': null,
+        'thumbnail': {% if post_item.object.thumbnail %}'{{ post_item.object.thumbnail.url|escapejs }}'{% else %}null{% endif %},
         'author_name': {% if post_item.object.created_by_name %}'{{ post_item.object.created_by_name|escapejs }}'{% elif post_item.object.created_by %}{% if post_item.object.created_by.user_type == 'faculty' and post_item.object.created_by.faculty_profile %}'{{ post_item.object.created_by.faculty_profile.name|default:post_item.object.created_by.email|escapejs }}'{% elif post_item.object.created_by.user_type == 'officer' and post_item.object.created_by.officer_profile %}'{{ post_item.object.created_by.officer_profile.name|default:post_item.object.created_by.email|escapejs }}'{% elif post_item.object.created_by.user_type == 'staff' and post_item.object.created_by.staff_profile %}'{{ post_item.object.created_by.staff_profile.name|default:post_item.object.created_by.email|escapejs }}'{% else %}'{{ post_item.object.created_by.get_full_name|default:post_item.object.created_by.email|escapejs }}'{% endif %}{% else %}'Unknown User'{% endif %}
     }{% if not forloop.last %},{% endif %}
     {% else %}
@@ -1014,6 +1137,17 @@ function openPostModal(postType, postId) {
     document.getElementById('postModalBadge').textContent = post.post_type_display;
     document.getElementById('postModalBadge').className = 'post-modal-badge post-badge-' + post.post_type + (post.is_pinned ? ' pinned' : '');
     document.getElementById('postModalDate').textContent = post.date;
+    
+    // Thumbnail
+    const thumbnailContainer = document.getElementById('postModalThumbnail');
+    const thumbnailImg = document.getElementById('postModalThumbnailImg');
+    if (post.thumbnail) {
+        thumbnailImg.src = post.thumbnail;
+        thumbnailImg.alt = post.short_title;
+        thumbnailContainer.style.display = 'flex';
+    } else {
+        thumbnailContainer.style.display = 'none';
+    }
     
     // Title with club name if applicable
     let titleText = post.long_title;

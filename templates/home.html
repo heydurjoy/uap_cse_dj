@@ -110,7 +110,15 @@
                 {% for post_item in uap_now_posts %}
                 {% if post_item.type == 'post' %}
                     {% with post=post_item.object %}
-                    <div class="uapnow-card {% if post.is_pinned %}uapnow-pinned{% endif %}" onclick="openUapNowModal('post', {{ post.pk }})" style="cursor: pointer;">
+                    <div class="uapnow-card {% if post.is_pinned %}uapnow-pinned{% endif %} {% if post.thumbnail %}uapnow-card-with-thumbnail{% endif %}" onclick="openUapNowModal('post', {{ post.pk }})" style="cursor: pointer;{% if post.thumbnail %}background-image: url('{{ post.thumbnail.url }}');{% endif %}">
+                        {% if post.thumbnail %}
+                        <div class="uapnow-card-overlay">
+                            <div class="uapnow-card-info">
+                                <h3 class="uapnow-card-title">{{ post.short_title }}</h3>
+                                <p class="uapnow-card-description">{{ post.long_title|truncatewords:8 }}</p>
+                            </div>
+                        </div>
+                        {% else %}
                         <div class="uapnow-top">
                             <div class="uapnow-badge uapnow-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
                                 {% if post.is_pinned %}
@@ -132,6 +140,7 @@
                             <span class="tag soft">{{ tag }}</span>
                             {% endfor %}
                         </div>
+                        {% endif %}
                         {% endif %}
                     </div>
                     {% endwith %}
@@ -197,6 +206,9 @@
             </button>
         </div>
         <div class="post-modal-body">
+            <div class="post-modal-thumbnail-container" id="uapNowModalThumbnail" style="display: none;">
+                <img src="" alt="" class="post-modal-thumbnail" id="uapNowModalThumbnailImg">
+            </div>
             <div class="post-modal-meta">
                 <span class="post-modal-badge" id="uapNowModalBadge">Event</span>
                 <span class="post-modal-date" id="uapNowModalDate">Dec 11, 2025</span>
@@ -2479,6 +2491,92 @@ html, body {
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(6px);
+    min-height: 280px;
+}
+
+.uapnow-card-with-thumbnail {
+    min-height: 280px;
+}
+
+.uapnow-card-with-thumbnail {
+    padding: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    object-fit: cover;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.uapnow-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 40%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0) 100%);
+    padding: 1.5rem 1rem 1rem 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+}
+
+.uapnow-card:hover .uapnow-card-overlay {
+    padding: 1.75rem 1.25rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0.5) 70%, rgba(0, 0, 0, 0) 100%);
+}
+
+.uapnow-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    position: relative;
+    width: 100%;
+}
+
+.uapnow-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.uapnow-card-with-thumbnail .uapnow-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.uapnow-card:hover.uapnow-card-with-thumbnail .uapnow-card-title {
+    font-size: 1.2rem;
+}
+
+.uapnow-card-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.uapnow-card-with-thumbnail .uapnow-card-description {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.uapnow-card:hover.uapnow-card-with-thumbnail .uapnow-card-description {
+    font-size: 0.85rem;
 }
 
 .uapnow-card:hover {
@@ -2500,6 +2598,10 @@ html, body {
     z-index: 0;
 }
 
+.uapnow-card-with-thumbnail::before {
+    display: none;
+}
+
 .uapnow-card::after {
     content: "";
     position: absolute;
@@ -2513,6 +2615,10 @@ html, body {
     animation: sheen 10s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
+}
+
+.uapnow-card-with-thumbnail::after {
+    display: none;
 }
 
 .uapnow-card > * {
@@ -4378,7 +4484,7 @@ html, body {
     background: var(--bg-primary);
     border-radius: 16px;
     width: 100%;
-    max-width: 95vw;
+    max-width: 800px;
     max-height: 95vh;
     overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -4487,6 +4593,55 @@ html, body {
     height: auto;
     border-radius: 8px;
     margin: 1rem 0;
+}
+
+.post-modal-thumbnail-container {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background: transparent;
+}
+
+.post-modal-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+    display: block;
+}
+
+.post-modal-thumbnail-container img.post-modal-thumbnail {
+    width: auto;
+    max-width: 100%;
+    max-height: 400px;
+}
+
+@media (max-width: 768px) {
+    .post-modal-content {
+        max-width: 95vw;
+    }
+    
+    .post-modal-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .post-modal-content {
+        max-width: 95vw;
+        border-radius: 12px;
+    }
+    
+    .post-modal-body {
+        padding: 1rem;
+    }
+    
+    .post-modal-full-title {
+        font-size: 1.25rem;
+    }
 }
 
 @keyframes slideUp {
@@ -5319,7 +5474,8 @@ const uapNowPostsData = {
         'date': '{{ post_item.object.publish_date|date:"F d, Y" }}',
         'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
         'club_name': null,
-        'club_id': null
+        'club_id': null,
+        'thumbnail': {% if post_item.object.thumbnail %}'{{ post_item.object.thumbnail.url|escapejs }}'{% else %}null{% endif %}
     }{% if not forloop.last %},{% endif %}
     {% else %}
     'club_post_{{ post_item.object.pk }}': {
@@ -5353,6 +5509,17 @@ function openUapNowModal(postType, postId) {
     document.getElementById('uapNowModalBadge').textContent = post.post_type_display;
     document.getElementById('uapNowModalBadge').className = 'post-modal-badge uapnow-badge-' + post.post_type + (post.is_pinned ? ' pinned' : '');
     document.getElementById('uapNowModalDate').textContent = post.date;
+    
+    // Thumbnail (if modal has thumbnail support)
+    const thumbnailContainer = document.getElementById('uapNowModalThumbnail');
+    const thumbnailImg = document.getElementById('uapNowModalThumbnailImg');
+    if (thumbnailContainer && thumbnailImg && post.thumbnail) {
+        thumbnailImg.src = post.thumbnail;
+        thumbnailImg.alt = post.short_title;
+        thumbnailContainer.style.display = 'flex';
+    } else if (thumbnailContainer) {
+        thumbnailContainer.style.display = 'none';
+    }
     
     // Title with club name if applicable
     let titleText = post.long_title;

@@ -47,7 +47,7 @@ class PostAdmin(admin.ModelAdmin):
             'fields': ('post_type', 'short_title', 'long_title', 'publish_date', 'is_pinned')
         }),
         ('Content', {
-            'fields': ('tags', 'description')
+            'fields': ('thumbnail', 'tags', 'description')
         }),
         ('Metadata', {
             'fields': ('created_by',)

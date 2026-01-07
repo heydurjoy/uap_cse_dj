@@ -13,6 +13,12 @@
         </div>
         
         <article class="post-detail-card">
+            {% if post.thumbnail %}
+            <div class="post-detail-thumbnail-container">
+                <img src="{{ post.thumbnail.url }}" alt="{{ post.short_title }}" class="post-detail-thumbnail">
+            </div>
+            {% endif %}
+            
             <div class="post-detail-meta">
                 <div class="post-badge post-badge-{{ post.post_type }}{% if post.is_pinned %} pinned{% endif %}">
                     {% if post.is_pinned %}
@@ -121,6 +127,62 @@
     padding: 2.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--border-color);
+}
+
+.post-detail-thumbnail-container {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.post-detail-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+    display: block;
+}
+
+/* Aspect ratio-aware sizing */
+.post-detail-thumbnail-container img.post-detail-thumbnail {
+    /* Default: full width for wide images (landscape) */
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+}
+
+/* For tall/square images, constrain width to prevent oversized display */
+@media (min-width: 768px) {
+    .post-detail-thumbnail-container {
+        justify-content: center;
+    }
+    
+    /* Wide images (aspect ratio > 1.2) - full width */
+    .post-detail-thumbnail-container img.post-detail-thumbnail[style*="aspect-ratio"] {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Tall/square images - constrain to max 70% width for visual balance */
+    .post-detail-thumbnail-container img.post-detail-thumbnail {
+        max-width: 100%;
+    }
+    
+    /* Use CSS to detect and constrain tall images */
+    .post-detail-thumbnail-container:has(img[style*="height"]) {
+        justify-content: center;
+    }
+}
+
+/* Ensure images never exceed original dimensions */
+.post-detail-thumbnail {
+    max-width: 100%;
+    max-height: 600px;
+    width: auto;
+    height: auto;
 }
 
 .post-detail-meta {
