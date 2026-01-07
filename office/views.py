@@ -494,10 +494,10 @@ def delete_posts(request):
 # ==============================================================================
 
 def check_routine_access(user):
-    """Check if user has post_routines permission"""
+    """Check if user has post_routines permission - all power users OR users with post_routines permission"""
     if not user.is_authenticated:
         return False
-    return user.has_permission('post_routines')
+    return user.is_power_user or user.has_permission('post_routines')
 
 
 def routine_list(request):

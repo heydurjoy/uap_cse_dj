@@ -239,6 +239,7 @@
                 
                 <!-- 4. Manage All Publications (power users / privileged only) -->
                 <a href="{% url 'people:faculty_list' %}" class="action-card {% if not user|has_permission:'manage_all_publications' %}action-disabled{% endif %}">
+                    <span class="access-badge permission">P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -256,6 +257,7 @@
                 
                 <!-- 6. Manage Courses -->
                 <a href="{% url 'academics:manage_courses' %}" class="action-card {% if not user|has_permission:'manage_courses' %}action-disabled{% endif %}">
+                    <span class="access-badge permission">P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -270,8 +272,9 @@
                     </div>
                 </a>
                 
-                <!-- 7. Manage Curricula -->
-                <a href="{% url 'designs:manage_curricula' %}" class="action-card {% if not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
+                <!-- 7. Manage Curricula (all power users OR users with manage_academic_calendars permission) -->
+                <a href="{% url 'designs:manage_curricula' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
+                    <span class="access-badge both">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -341,6 +344,7 @@
                 
                 <!-- 9. Manage All Posts (still permission-gated) -->
                 <a href="{% url 'office:manage_posts' %}" class="action-card {% if not user|has_permission:'manage_all_posts' %}action-disabled{% endif %}">
+                    <span class="access-badge permission">P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -356,6 +360,7 @@
                 
                 <!-- 10. Head Message -->
                 <a href="{% url 'designs:manage_head_message' %}" class="action-card {% if not user|has_permission:'edit_head_message' %}action-disabled{% endif %}">
+                    <span class="access-badge permission">P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -367,8 +372,9 @@
                     </div>
                 </a>
                 
-                <!-- 11. Manage Class Routines -->
-                <a href="{% url 'office:manage_routines' %}" class="action-card {% if not user|has_permission:'post_routines' %}action-disabled{% endif %}">
+                <!-- 11. Manage Class Routines (all power users OR users with post_routines permission) -->
+                <a href="{% url 'office:manage_routines' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'post_routines' %}action-disabled{% endif %}">
+                    <span class="access-badge both">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -384,8 +390,9 @@
                 </a>
                 {% endif %}
                 
-                <!-- 12. Manage Exam Routines -->
-                <a href="{% url 'office:manage_exam_routines' %}" class="action-card {% if not user|has_permission:'post_routines' %}action-disabled{% endif %}">
+                <!-- 12. Manage Exam Routines (all power users OR users with post_routines permission) -->
+                <a href="{% url 'office:manage_exam_routines' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'post_routines' %}action-disabled{% endif %}">
+                    <span class="access-badge both">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -403,6 +410,7 @@
                 
                 <!-- 13. Manage Gallery -->
                 <a href="{% url 'office:manage_gallery' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -416,8 +424,9 @@
                     </div>
                 </a>
                 
-                <!-- 14. Academic Calendars -->
-                <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card {% if not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
+                <!-- 14. Academic Calendars (all power users OR users with manage_academic_calendars permission) -->
+                <a href="{% url 'designs:manage_academic_calendars' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'manage_academic_calendars' %}action-disabled{% endif %}">
+                    <span class="access-badge both">PU+P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -441,6 +450,7 @@
                 <!-- 15. Admission Results (faculty/officer; also all power users except club members) -->
                 {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card {% if not user|has_permission:'post_admission_results' %}action-disabled{% endif %}">
+                        <span class="access-badge permission">P</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -457,6 +467,7 @@
                     </a>
                 {% elif user.is_power_user and profile_type != 'club_member' %}
                     <a href="{% url 'office:manage_admission_results' %}" class="action-card {% if not user|has_permission:'post_admission_results' %}action-disabled{% endif %}">
+                        <span class="access-badge both">PU+P</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -476,6 +487,7 @@
                 <!-- 16. Manage Clubs (faculty/officer; also all power users except club members) -->
                 {% if profile_type == 'faculty' or profile_type == 'officer' %}
                     <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user|has_permission:'manage_club_settings' %}action-disabled{% endif %}">
+                        <span class="access-badge permission">P</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -491,6 +503,7 @@
                     </a>
                 {% elif user.is_power_user and profile_type != 'club_member' %}
                     <a href="{% url 'clubs:manage_clubs' %}" class="action-card {% if not user|has_permission:'manage_club_settings' %}action-disabled{% endif %}">
+                        <span class="access-badge both">PU+P</span>
                         <div class="action-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -508,6 +521,7 @@
                 
                 <!-- 17. Manage Users -->
                 <a href="{% url 'people:manage_users' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -524,6 +538,7 @@
                 
                 <!-- 18. Manage Faculty -->
                 <a href="{% url 'people:manage_faculty' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -538,6 +553,7 @@
                 
                 <!-- 19. Feature Cards -->
                 <a href="{% url 'designs:manage_feature_cards' %}" class="action-card {% if not user|has_permission:'edit_feature_cards' %}action-disabled{% endif %}">
+                    <span class="access-badge permission">P</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="7" height="7"></rect>
@@ -554,6 +570,7 @@
                 
                 <!-- 18. Hero Tags -->
                 <a href="{% url 'designs:manage_hero_tags' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 7h.01"></path>
@@ -568,6 +585,7 @@
                 
                 <!-- 19. Admission Elements -->
                 <a href="{% url 'designs:manage_admission_elements' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user">PU</span>
                     <div class="action-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1097,8 +1115,42 @@
     transition: all 0.3s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     min-height: 80px;
+}
+
+/* Access badge indicators */
+.access-badge {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.15rem 0.35rem;
+    border-radius: 3px;
+    line-height: 1;
+    z-index: 10;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.access-badge.power-user {
+    background: rgba(111, 66, 193, 0.15);
+    color: #6f42c1;
+    border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+.access-badge.permission {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.access-badge.both {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 /* Color labels for different card types */

@@ -277,8 +277,8 @@ def serve_academic_calendar_pdf(request, pk):
 
 @login_required
 def manage_academic_calendars(request):
-    """Manage academic calendars - only for users with manage_academic_calendars permission"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Manage academic calendars - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to manage academic calendars.')
         return redirect('people:user_profile')
     
@@ -292,8 +292,8 @@ def manage_academic_calendars(request):
 
 @login_required
 def create_academic_calendar(request):
-    """Create a new academic calendar"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Create a new academic calendar - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to create academic calendars.')
         return redirect('people:user_profile')
     
@@ -326,8 +326,8 @@ def create_academic_calendar(request):
 
 @login_required
 def edit_academic_calendar(request, pk):
-    """Edit an existing academic calendar"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Edit an existing academic calendar - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to edit academic calendars.')
         return redirect('people:user_profile')
     
@@ -357,8 +357,8 @@ def edit_academic_calendar(request, pk):
 
 @login_required
 def delete_academic_calendar(request, pk):
-    """Delete an academic calendar"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Delete an academic calendar - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to delete academic calendars.')
         return redirect('people:user_profile')
     
@@ -715,8 +715,8 @@ def update_admission_element_order(request):
 
 @login_required
 def manage_curricula(request):
-    """Manage curricula - only for users with manage_academic_calendars permission"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Manage curricula - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to manage curricula.')
         return redirect('people:user_profile')
     
@@ -740,8 +740,8 @@ def manage_curricula(request):
 
 @login_required
 def create_curriculum(request):
-    """Create a new curriculum"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Create a new curriculum - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to create curricula.')
         return redirect('people:user_profile')
     
@@ -811,8 +811,8 @@ def create_curriculum(request):
 
 @login_required
 def edit_curriculum(request, pk):
-    """Edit an existing curriculum"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Edit an existing curriculum - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to edit curricula.')
         return redirect('people:user_profile')
     
@@ -865,8 +865,8 @@ def edit_curriculum(request, pk):
 
 @login_required
 def delete_curriculum(request, pk):
-    """Delete a curriculum"""
-    if not request.user.has_permission('manage_academic_calendars'):
+    """Delete a curriculum - all power users OR users with manage_academic_calendars permission"""
+    if not request.user.is_power_user and not request.user.has_permission('manage_academic_calendars'):
         messages.error(request, 'You do not have permission to delete curricula.')
         return redirect('people:user_profile')
     
