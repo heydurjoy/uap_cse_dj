@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static user_filters %}
 
 {% block title %}Edit Faculty - {{ faculty.name }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
 <link rel="stylesheet" href="https://cdn.ckeditor.com/4.25.1/full-all/contents.css">
 {% endblock %}
 
@@ -116,42 +115,22 @@
                 <div class="form-section">
                     <h3>Profile Picture</h3>
                     <div class="form-group">
-                        <div class="profile-pic-upload-section" style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <div class="profile-pic-upload-section" style="display: flex; gap: 1.5rem; align-items: center;">
                             <div class="current-pic-preview" id="currentPicPreview" style="flex-shrink: 0;">
                                 {% if faculty.profile_pic %}
-                                    <img src="/media/{{ faculty.profile_pic.name }}" alt="Current Profile Picture" id="currentPic" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 3px solid var(--border-color);">
+                                    <img src="/media/{{ faculty.profile_pic.name|cache_bust:faculty }}" alt="Current Profile Picture" id="currentPic" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 3px solid var(--border-color);">
                                 {% else %}
                                     <img src="{% static 'defaults/people.png' %}" alt="Default Profile Picture" id="currentPic" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 3px solid var(--border-color);">
                                 {% endif %}
                             </div>
-                            
-                            <!-- Drag and Drop Area -->
-                            <div class="drag-drop-area" id="dragDropArea" style="flex: 1; border: 2px dashed var(--border-color); border-radius: 12px; padding: 2rem; text-align: center; background: var(--bg-tertiary); transition: all 0.3s ease; cursor: pointer;">
-                                <div class="drag-drop-icon" style="font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.6;">📷</div>
-                                <div class="drag-drop-text" style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.5rem;">Drag and drop an image here, or click to select</div>
-                                <div class="drag-drop-hint" style="color: var(--text-secondary); font-size: 0.85rem;">Recommended: Square image (1:1 ratio), at least 600x600 pixels</div>
+                            <div>
+                                <label for="profile_pic" class="btn-secondary" style="cursor: pointer;">Choose Image</label>
                                 <input type="file" id="profile_pic" name="profile_pic" accept="image/*" style="display: none;">
-                                <small class="form-help" style="display: block; margin-top: 0.5rem;">Max 600KB. Image will be automatically compressed and resized to 600x600px (1:1 ratio) if larger.</small>
+                                <div style="margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                    JPG/PNG recommended. Square images look best (1:1).
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Cropper Container -->
-                        <div class="cropper-container-wrapper" id="cropperWrapper" style="display: none; margin-top: 1.5rem;">
-                            <div class="cropper-container" style="max-width: 100%; margin: 0 auto;">
-                                <img id="cropperImage" style="max-width: 100%; display: block;">
-                            </div>
-                            <div class="cropper-preview-container" style="margin-top: 1.5rem; text-align: center;">
-                                <div class="cropper-preview-label" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600;">Preview (200x200)</div>
-                                <div class="cropper-preview" id="cropperPreview" style="width: 200px; height: 200px; border-radius: 12px; overflow: hidden; margin: 0 auto; border: 3px solid var(--color-primary); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);"></div>
-                            </div>
-                            <div class="cropper-actions" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
-                                <button type="button" class="cropper-btn cropper-btn-primary" id="cropConfirmBtn" style="padding: 0.75rem 1.5rem; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: var(--color-primary); color: white;">Confirm Crop</button>
-                                <button type="button" class="cropper-btn cropper-btn-secondary" id="cropCancelBtn" style="padding: 0.75rem 1.5rem; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: var(--bg-tertiary); color: var(--text-primary);">Cancel</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Hidden input for cropping coordinates -->
-                        <input type="hidden" id="cropping" name="cropping" value="{{ faculty.cropping|default:'' }}">
                     </div>
                 </div>
                 
@@ -550,8 +529,6 @@
 
 <!-- CKEditor for Rich Text Fields -->
 <script src="https://cdn.ckeditor.com/4.25.1/full-all/ckeditor.js"></script>
-<!-- Cropper.js for Image Cropping -->
-<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize CKEditor for rich text fields
@@ -568,199 +545,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Cropper.js initialization for profile picture
-    const dragDropArea = document.getElementById('dragDropArea');
+    // Simple preview for profile picture (no cropper, same as staff)
     const fileInput = document.getElementById('profile_pic');
-    const cropperWrapper = document.getElementById('cropperWrapper');
-    const cropperImage = document.getElementById('cropperImage');
-    const cropperPreview = document.getElementById('cropperPreview');
-    const cropConfirmBtn = document.getElementById('cropConfirmBtn');
-    const cropCancelBtn = document.getElementById('cropCancelBtn');
+    const currentPic = document.getElementById('currentPic');
     const currentPicPreview = document.getElementById('currentPicPreview');
-    const croppingInput = document.getElementById('cropping');
-    
-    let cropper = null;
-    
-    if (dragDropArea && fileInput && cropperWrapper) {
-        // Click to select file
-        dragDropArea.addEventListener('click', function() {
-            fileInput.click();
-        });
-        
-        // Drag and drop handlers
-        dragDropArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            dragDropArea.style.borderColor = 'var(--color-primary)';
-            dragDropArea.style.background = 'color-mix(in srgb, var(--color-primary) 5%, var(--bg-tertiary))';
-        });
-        
-        dragDropArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            dragDropArea.style.borderColor = 'var(--border-color)';
-            dragDropArea.style.background = 'var(--bg-tertiary)';
-        });
-        
-        dragDropArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            dragDropArea.style.borderColor = 'var(--border-color)';
-            dragDropArea.style.background = 'var(--bg-tertiary)';
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type.startsWith('image/')) {
-                handleFileSelect(files[0]);
-            }
-        });
-        
-        // File input change handler
-        fileInput.addEventListener('change', function(e) {
-            if (e.target.files && e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
-        });
-        
-        function handleFileSelect(file) {
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
             if (!file.type.startsWith('image/')) {
                 alert('Please select an image file.');
+                fileInput.value = '';
                 return;
             }
-            
             const reader = new FileReader();
-            reader.onload = function(e) {
-                cropperImage.src = e.target.result;
-                cropperWrapper.style.display = 'block';
-                dragDropArea.style.display = 'none';
-                
-                // Initialize Cropper.js
-                if (cropper) {
-                    cropper.destroy();
+            reader.onload = function (ev) {
+                if (currentPic) {
+                    currentPic.src = ev.target.result;
+                } else if (currentPicPreview) {
+                    const img = document.createElement('img');
+                    img.id = 'currentPic';
+                    img.src = ev.target.result;
+                    img.alt = 'Selected Profile Picture';
+                    img.style.width = '150px';
+                    img.style.height = '150px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '12px';
+                    img.style.border = '3px solid var(--border-color)';
+                    currentPicPreview.innerHTML = '';
+                    currentPicPreview.appendChild(img);
                 }
-                
-                cropper = new Cropper(cropperImage, {
-                    aspectRatio: 1, // 1:1 ratio for square
-                    viewMode: 1,
-                    dragMode: 'move',
-                    autoCropArea: 0.8,
-                    restore: false,
-                    guides: true,
-                    center: true,
-                    highlight: false,
-                    cropBoxMovable: true,
-                    cropBoxResizable: true,
-                    toggleDragModeOnDblclick: false,
-                    preview: cropperPreview,
-                    ready: function() {
-                        // Update preview on crop
-                        cropper.cropper.addEventListener('crop', function() {
-                            updatePreview();
-                        });
-                    }
-                });
             };
             reader.readAsDataURL(file);
-        }
-        
-        function updatePreview() {
-            if (cropper) {
-                const canvas = cropper.getCroppedCanvas({
-                    width: 200,
-                    height: 200,
-                });
-                
-                if (canvas) {
-                    const previewImg = cropperPreview.querySelector('img');
-                    if (previewImg) {
-                        previewImg.src = canvas.toDataURL();
-                    } else {
-                        const img = document.createElement('img');
-                        img.src = canvas.toDataURL();
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        cropperPreview.appendChild(img);
-                    }
-                }
-            }
-        }
-        
-        // Confirm crop button
-        if (cropConfirmBtn) {
-            cropConfirmBtn.addEventListener('click', function() {
-                if (cropper) {
-                    const canvas = cropper.getCroppedCanvas({
-                        width: 400,
-                        height: 400,
-                    });
-                    
-                    if (canvas) {
-                        // Convert canvas to blob
-                        canvas.toBlob(function(blob) {
-                            // Create a new File object from the blob
-                            const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
-                            
-                            // Create a new FileList-like object
-                            const dataTransfer = new DataTransfer();
-                            dataTransfer.items.add(file);
-                            fileInput.files = dataTransfer.files;
-                            
-                            // Get cropping coordinates
-                            const cropData = cropper.getData();
-                            const croppingCoords = `${Math.round(cropData.x)},${Math.round(cropData.y)},${Math.round(cropData.x + cropData.width)},${Math.round(cropData.y + cropData.height)}`;
-                            
-                            // Store cropping coordinates
-                            if (croppingInput) {
-                                croppingInput.value = croppingCoords;
-                            }
-                            
-                            // Update preview
-                            const currentPic = document.getElementById('currentPic');
-                            if (currentPic) {
-                                currentPic.src = canvas.toDataURL();
-                            } else {
-                                const img = document.createElement('img');
-                                img.id = 'currentPic';
-                                img.src = canvas.toDataURL();
-                                img.alt = 'Cropped Profile Picture';
-                                img.style.width = '100%';
-                                img.style.height = '100%';
-                                img.style.objectFit = 'cover';
-                                if (currentPicPreview) {
-                                    currentPicPreview.innerHTML = '';
-                                    currentPicPreview.appendChild(img);
-                                }
-                            }
-                            
-                            // Hide cropper, show drag area again
-                            cropperWrapper.style.display = 'none';
-                            dragDropArea.style.display = 'block';
-                            
-                            // Destroy cropper
-                            if (cropper) {
-                                cropper.destroy();
-                                cropper = null;
-                            }
-                        }, 'image/jpeg', 0.95);
-                    }
-                }
-            });
-        }
-        
-        // Cancel crop button
-        if (cropCancelBtn) {
-            cropCancelBtn.addEventListener('click', function() {
-                // Hide cropper, show drag area again
-                cropperWrapper.style.display = 'none';
-                dragDropArea.style.display = 'block';
-                
-                // Clear file input
-                fileInput.value = '';
-                
-                // Destroy cropper
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-            });
-        }
+        });
     }
 });
 </script>

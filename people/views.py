@@ -8,11 +8,13 @@ from django.db.models import Q, Max
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import UploadedFile
 from types import SimpleNamespace
 from .models import Faculty, Staff, Officer, ClubMember, BaseUser, Permission, UserPermission, AllowedEmail, Publication
 from clubs.models import Club, ClubPosition
 from .permissions import PERMISSION_DEFINITIONS
 import re
+import os
 
 
 def faculty_list(request):
@@ -830,23 +832,11 @@ def edit_profile(request):
                         course_conducted_content = request.POST.get('course_conducted', '').strip()
                         profile.course_conducted = course_conducted_content if course_conducted_content else None
                     
-                    # Handle image uploads (only if new file is provided) - same as Club model
+                    # Handle image uploads (simple replacement, same as staff flow)
                     if 'profile_pic' in request.FILES:
                         profile.profile_pic = request.FILES['profile_pic']
-                        # Explicitly ensure BaseUser.profile_picture is NOT updated for faculty
-                        if user.profile_picture:
-                            user.profile_picture = None
-                            user.save(update_fields=['profile_picture'])
                     elif 'profile_picture' in request.FILES:
-                        # If somehow profile_picture is sent instead, still use Faculty.profile_pic
                         profile.profile_pic = request.FILES['profile_picture']
-                        if user.profile_picture:
-                            user.profile_picture = None
-                            user.save(update_fields=['profile_picture'])
-                    
-                    # Handle cropping field - same as Club model
-                    if 'cropping' in request.POST:
-                        profile.cropping = request.POST.get('cropping', '').strip()
                     
                     # Handle CV upload (PDF only, max 2MB)
                     if 'cv' in request.FILES:
@@ -860,6 +850,16 @@ def edit_profile(request):
                             messages.error(request, 'CV file size must not exceed 2 MB.')
                             return redirect('people:edit_profile')
                         profile.cv = cv_file
+                    else:
+                        # Only check for missing files if no new upload
+                        # Check if it's a new upload (UploadedFile) vs existing file
+                        is_new_upload = isinstance(profile.cv, UploadedFile)
+                        if not is_new_upload and profile.cv and hasattr(profile.cv, 'path'):
+                            try:
+                                if profile.cv.path and not os.path.exists(profile.cv.path):
+                                    profile.cv = None
+                            except Exception:
+                                pass
                     
                 elif profile_type == 'staff':
                     if 'name' in request.POST:
@@ -1773,13 +1773,11 @@ def edit_faculty(request, pk):
             faculty.bio = request.POST.get('bio', '').strip() or None
             faculty.about = request.POST.get('about', '')
             
-            # Handle image uploads (only if new file is provided) - same as Club model
+            # Handle profile picture (simple replacement, identical to staff flow)
             if 'profile_pic' in request.FILES:
                 faculty.profile_pic = request.FILES['profile_pic']
-            
-            # Handle cropping field - same as Club model
-            if 'cropping' in request.POST:
-                faculty.cropping = request.POST.get('cropping', '').strip()
+            elif 'profile_picture' in request.FILES:
+                faculty.profile_pic = request.FILES['profile_picture']
             
             # Update joining date
             joining_date_str = request.POST.get('joining_date', '').strip()
@@ -1848,9 +1846,24 @@ def edit_faculty(request, pk):
             faculty.educational_qualification = request.POST.get('educational_qualification', '')
             faculty.course_conducted = request.POST.get('course_conducted', '')
             
-            # Update CV if provided
+            # Update CV if provided (simple replace, like staff photo handling)
             if 'cv' in request.FILES:
-                faculty.cv = request.FILES['cv']
+                cv_file = request.FILES['cv']
+                # Validate file size (5MB = 5 * 1024 * 1024 bytes)
+                if cv_file.size > 5 * 1024 * 1024:
+                    messages.error(request, 'CV file size must not exceed 5 MB.')
+                    return redirect('people:edit_faculty', pk=faculty.pk)
+                faculty.cv = cv_file
+            else:
+                # Only check for missing files if no new upload
+                # Check if it's a new upload (UploadedFile) vs existing file
+                is_new_upload = isinstance(faculty.cv, UploadedFile)
+                if not is_new_upload and faculty.cv and hasattr(faculty.cv, 'path'):
+                    try:
+                        if faculty.cv.path and not os.path.exists(faculty.cv.path):
+                            faculty.cv = None
+                    except Exception:
+                        pass
             
             # Update cropping if provided
             if 'cropping' in request.POST:

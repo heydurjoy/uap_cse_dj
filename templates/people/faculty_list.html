@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static user_filters %}
 
 {% block title %}Faculty - CSE UAP{% endblock %}
 
@@ -95,7 +95,7 @@
             <div class="head-faculty-card">
                 <div class="head-faculty-content">
                     <div class="head-faculty-image">
-                        <img src="{% if head_faculty.profile_pic %}/media/{{ head_faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ head_faculty.name }}">
+                        <img src="{% if head_faculty.profile_pic %}/media/{{ head_faculty.profile_pic.name|cache_bust:head_faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ head_faculty.name }}">
                     </div>
                     <div class="head-faculty-details">
                         <div class="head-faculty-header">
@@ -213,7 +213,7 @@
                                             {% endif %}
                                             <div class="faculty-card">
                                                 <div class="faculty-card-image">
-                                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                                                     <div class="faculty-card-overlay">
                                                         <div class="faculty-card-info">
                                                             <h3 class="faculty-name">{{ faculty.name }}</h3>
@@ -263,7 +263,7 @@
                                 {% endif %}
                                 <div class="faculty-card">
                                     <div class="faculty-card-image">
-                                        <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                        <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                                         <div class="faculty-card-overlay">
                                             <div class="faculty-card-info">
                                                 <div class="faculty-name-row">
@@ -322,7 +322,7 @@
                                         {% endif %}
                                         <div class="faculty-card former-card">
                                             <div class="faculty-card-image">
-                                                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                                <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                                                 <div class="faculty-card-overlay">
                                                     <div class="faculty-card-info">
                                                         <h3 class="faculty-name">{{ faculty.name }}</h3>
@@ -375,7 +375,7 @@
                             {% endif %}
                             <div class="faculty-card former-card">
                                 <div class="faculty-card-image">
-                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                                     <div class="faculty-card-overlay">
                                         <div class="faculty-card-info">
                                             <div class="faculty-name-row">

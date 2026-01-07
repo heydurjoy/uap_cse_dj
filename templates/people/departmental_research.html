@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
-{% load user_filters %}
+{% load static user_filters %}
 
 {% block title %}Departmental Research - CSE UAP{% endblock %}
 
@@ -264,7 +263,7 @@
                                 <a href="{% url 'people:faculty_detail' item.faculty.pk %}" class="faculty-card-item">
                                     <div class="faculty-card {% if item.badges %}has-badges{% endif %}">
                                         <div class="faculty-card-image">
-                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
+                                            <img src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name|cache_bust:item.faculty }}{% else %}{% static 'defaults/people.png' %}{% endif %}" alt="{{ item.faculty.name }}">
                                             {% if item.badges %}
                                             <div class="faculty-badges">
                                                 {% if 'most_cited' in item.badges %}
@@ -324,7 +323,7 @@
 
                 <div class="faculty-card-image">
                     <img src="{% if item.faculty.profile_pic %}
-                        /media/{{ item.faculty.profile_pic.name }}
+                        /media/{{ item.faculty.profile_pic.name|cache_bust:item.faculty }}
                         {% else %}
                         {% static 'defaults/people.png' %}
                         {% endif %}"
@@ -373,7 +372,7 @@
 
                 <div class="faculty-card-image">
                     <img src="{% if item.faculty.profile_pic %}
-                        /media/{{ item.faculty.profile_pic.name }}
+                        /media/{{ item.faculty.profile_pic.name|cache_bust:item.faculty }}
                         {% else %}
                         {% static 'defaults/people.png' %}
                         {% endif %}"
@@ -433,7 +432,7 @@
                         <!-- Image -->
                         <div class="faculty-card-image">
                             <img
-                                src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name }}{% else %}{% static 'defaults/people.png' %}{% endif %}"
+                                src="{% if item.faculty.profile_pic %}/media/{{ item.faculty.profile_pic.name|cache_bust:item.faculty }}{% else %}{% static 'defaults/people.png' %}{% endif %}"
                                 alt="{{ item.faculty.name }}"
                             >
 

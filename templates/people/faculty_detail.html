@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static user_filters %}
 
 {% block title %}{{ faculty.name }} - Faculty{% endblock %}
 
@@ -26,7 +26,7 @@
         <div class="faculty-profile-section">
             <div class="faculty-image-bio-column">
                 <div class="faculty-profile-image">
-                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
                     {% if faculty.shortname %}
                     <div class="faculty-shortname-overlay">{{ faculty.shortname }}</div>
                     {% endif %}
