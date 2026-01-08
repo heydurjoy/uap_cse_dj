@@ -1,0 +1,797 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Staff - CSE UAP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="manage-staff-page">
+        <div class="page-header">
+            <a href="{% url 'people:user_profile' %}" class="back-link">← Back to Profile</a>
+            <h1>Manage Staff</h1>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Toolbar: Search, Sort -->
+        <div class="staff-toolbar">
+            <div class="toolbar-left">
+                <div class="search-form">
+                    <input type="text" name="search" id="search-input" placeholder="Search by name, designation, email, or phone..." value="{{ search_query }}" class="search-input">
+                    <div class="search-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </div>
+                    {% if search_query %}
+                    <a href="?{% if sort_by != 'sl' %}sort={{ sort_by }}{% endif %}" class="clear-search-btn" title="Clear search">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <form method="get" class="sort-form">
+                    {% if search_query %}
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                    {% endif %}
+                    <select name="sort" id="sort-select" class="sort-select" onchange="this.form.submit()">
+                        <option value="sl" {% if sort_by == 'sl' %}selected{% endif %}>Sort by Serial</option>
+                        <option value="designation" {% if sort_by == 'designation' %}selected{% endif %}>Sort by Designation</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+        
+        <div class="staff-list-container">
+            {% if staff_members %}
+            <div class="info-note" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid var(--color-primary);">
+                <p style="margin: 0; color: var(--text-primary); font-size: 0.9rem;">
+                    <strong>💡 Tip:</strong> Drag staff members up or down using the handle icon to change their display order. Changes are saved automatically.
+                </p>
+            </div>
+            <table class="staff-table sortable-table">
+                <thead>
+                    <tr>
+                        <th class="drag-handle-col"></th>
+                        <th>Serial</th>
+                        <th>Name</th>
+                        <th>Designation</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="sortable-tbody">
+                    {% for staff in staff_members %}
+                    <tr class="staff-row" data-staff-id="{{ staff.pk }}">
+                        <td class="drag-handle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="9" y1="5" x2="9" y2="19"></line>
+                                <line x1="15" y1="5" x2="15" y2="19"></line>
+                            </svg>
+                        </td>
+                        <td><strong>{{ staff.sl|default:"-" }}</strong></td>
+                        <td><strong>{{ staff.name }}</strong></td>
+                        <td>{{ staff.get_designation_display|default:"-" }}</td>
+                        <td>{{ staff.base_user.email|default:"-" }}</td>
+                        <td>{{ staff.phone|default:"-" }}</td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <a href="{% url 'people:staff_detail' staff.pk %}" class="action-icon-btn view-icon-btn" title="View">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-staff-message">
+                <p>{% if search_query %}No staff members found matching "{{ search_query }}".{% else %}No staff members found.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<!-- Hidden CSRF token for JavaScript -->
+{% csrf_token %}
+
+<style>
+/* Ensure page can scroll */
+html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: auto;
+    overflow: visible;
+}
+
+.manage-staff-page {
+    background: var(--bg-primary);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 2.8rem;
+    color: var(--color-primary);
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.staff-table thead {
+    background: var(--bg-tertiary);
+}
+
+.staff-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.staff-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.staff-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.staff-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.drag-handle-col {
+    width: 40px;
+    text-align: center;
+}
+
+.drag-handle {
+    cursor: move;
+    cursor: grab;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.drag-handle:hover {
+    color: var(--color-primary);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.staff-row {
+    cursor: move;
+    cursor: grab;
+}
+
+.staff-row:active {
+    cursor: grabbing;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: var(--bg-tertiary);
+}
+
+.sortable-chosen {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-primary));
+}
+
+.sortable-drag {
+    opacity: 0.8;
+}
+
+.actions-col {
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.action-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    background: transparent;
+}
+
+.view-icon-btn {
+    color: var(--text-secondary);
+}
+
+.view-icon-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--color-primary);
+}
+
+.staff-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: 'Lexend', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.clear-search-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.sort-form {
+    display: flex;
+    align-items: center;
+}
+
+.sort-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: 'Lexend', sans-serif;
+    cursor: pointer;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.no-staff-message {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .manage-staff-page {
+        padding: 1.5rem;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        text-align: left;
+    }
+    
+    .staff-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .staff-table {
+        font-size: 0.85rem;
+    }
+    
+    .staff-table th,
+    .staff-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+
+<!-- SortableJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+// Initialize SortableJS when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        if (typeof Sortable === 'undefined') {
+            console.error('SortableJS not loaded');
+            showToast('Drag and drop library failed to load. Please refresh the page.', 'error');
+            return;
+        }
+        initializeSortable();
+    }, 200);
+});
+
+function initializeSortable() {
+    const sortableTbody = document.querySelector('.sortable-tbody');
+    
+    if (!sortableTbody) {
+        console.log('No sortable tbody found');
+        return;
+    }
+    
+    if (typeof Sortable === 'undefined') {
+        console.error('Sortable is not defined');
+        return;
+    }
+    
+    try {
+        let autoScrollInterval = null;
+        
+        const sortableInstance = new Sortable(sortableTbody, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            scroll: true,
+            scrollSensitivity: 100,
+            scrollSpeed: 30,
+            bubbleScroll: true,
+            forceFallback: true,
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+            onStart: function(evt) {
+                // Start auto-scroll when dragging starts
+                let lastMouseY = evt.clientY || 0;
+                
+                const handleMouseMove = function(e) {
+                    lastMouseY = e.clientY;
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                
+                autoScrollInterval = setInterval(function() {
+                    const scrollThreshold = 150;
+                    
+                    // Calculate dynamic scroll speed based on distance from edge
+                    let scrollSpeed = 0;
+                    
+                    // Scroll up if mouse is near top
+                    if (lastMouseY < scrollThreshold && window.scrollY > 0) {
+                        // Closer to top = faster scroll (up to 200px per frame)
+                        const distanceFromTop = lastMouseY;
+                        scrollSpeed = Math.max(50, (scrollThreshold - distanceFromTop) * 2.5);
+                        window.scrollBy(0, -scrollSpeed);
+                    }
+                    // Scroll down if mouse is near bottom
+                    if (lastMouseY > window.innerHeight - scrollThreshold) {
+                        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                        if (window.scrollY < maxScroll) {
+                            // Closer to bottom = faster scroll (up to 200px per frame)
+                            const distanceFromBottom = window.innerHeight - lastMouseY;
+                            scrollSpeed = Math.max(50, (scrollThreshold - distanceFromBottom) * 2.5);
+                            window.scrollBy(0, scrollSpeed);
+                        }
+                    }
+                }, 10); // Check every 10ms for very responsive scrolling
+                
+                // Clean up on drag end
+                const cleanup = function() {
+                    clearInterval(autoScrollInterval);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', cleanup);
+                };
+                document.addEventListener('mouseup', cleanup, { once: true });
+            },
+            onEnd: function(evt) {
+                console.log('Drag ended');
+                // Get all staff IDs in the new order
+                const rows = Array.from(sortableTbody.querySelectorAll('.staff-row'));
+                const staffIds = rows.map(row => {
+                    const id = row.getAttribute('data-staff-id');
+                    return parseInt(id);
+                });
+                
+                console.log('New order:', staffIds);
+                
+                // Auto-save the new order
+                updateStaffOrder(staffIds);
+            }
+        });
+        console.log('Sortable initialized successfully');
+    } catch (error) {
+        console.error('Error initializing Sortable:', error);
+    }
+}
+
+function updateStaffOrder(staffIds) {
+    // Get CSRF token from cookie or hidden input
+    let csrftoken = getCookie('csrftoken');
+    if (!csrftoken) {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+            csrftoken = csrfInput.value;
+        }
+    }
+    
+    if (!csrftoken) {
+        console.error('CSRF token not found');
+        showToast('Error: CSRF token not found', 'error');
+        return;
+    }
+    
+    console.log('Updating order:', staffIds);
+    
+    fetch('{% url "people:update_staff_order" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            staff_ids: staffIds
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Server error');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            showToast('Serial numbers updated successfully!', 'success');
+            // Update serial numbers in the table
+            const rows = document.querySelectorAll('.staff-row');
+            rows.forEach((row, index) => {
+                const serialCell = row.querySelector('td:nth-child(2)');
+                if (serialCell) {
+                    serialCell.innerHTML = '<strong>' + (index + 1) + '</strong>';
+                }
+            });
+        } else {
+            showToast('Error: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error updating order: ' + error.message, 'error');
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Floating Toast Notification Function
+function showToast(message, type = 'success') {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => toast.remove());
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    
+    // Icon based on type
+    const icon = type === 'success' ? '✓' : '✕';
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">${icon}</span>
+            <span class="toast-message">${message}</span>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Real-time search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchValue = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Debounce: wait 500ms after user stops typing
+            searchTimeout = setTimeout(function() {
+                const currentUrl = new URL(window.location.href);
+                const sortBy = currentUrl.searchParams.get('sort') || 'sl';
+                
+                // Build new URL
+                const params = new URLSearchParams();
+                if (sortBy !== 'sl') {
+                    params.set('sort', sortBy);
+                }
+                if (searchValue) {
+                    params.set('search', searchValue);
+                }
+                
+                // Update URL and reload
+                window.location.href = '?' + params.toString();
+            }, 500);
+        });
+        
+        // Allow Enter key to search immediately (without debounce)
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                
+                const searchValue = this.value.trim();
+                const currentUrl = new URL(window.location.href);
+                const sortBy = currentUrl.searchParams.get('sort') || 'sl';
+                
+                // Build new URL
+                const params = new URLSearchParams();
+                if (sortBy !== 'sl') {
+                    params.set('sort', sortBy);
+                }
+                if (searchValue) {
+                    params.set('search', searchValue);
+                }
+                
+                // Update URL and reload
+                window.location.href = '?' + params.toString();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.toast-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toast-icon {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.toast-success {
+    border-left: 4px solid #28a745;
+}
+
+.toast-success .toast-icon {
+    color: #28a745;
+}
+
+.toast-error {
+    border-left: 4px solid #dc3545;
+}
+
+.toast-error .toast-icon {
+    color: #dc3545;
+}
+
+.toast-message {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.staff-list-container {
+    overflow: visible;
+    min-height: auto;
+    margin-bottom: 2rem;
+}
+
+.manage-staff-page {
+    overflow: visible;
+    min-height: auto;
+}
+</style>
+{% endblock %}
