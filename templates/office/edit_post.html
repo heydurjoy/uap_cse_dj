@@ -71,6 +71,27 @@
                 </div>
                 
                 <div class="form-section">
+                    <h3>Thumbnail Image</h3>
+                    {% if post.thumbnail %}
+                    <div class="existing-thumbnail">
+                        <h4>Current Thumbnail</h4>
+                        <div class="thumbnail-preview">
+                            <img src="{{ post.thumbnail.url }}" alt="{{ post.short_title }}" style="max-width: 300px; border-radius: 8px; margin-bottom: 1rem;">
+                            <label class="delete-thumbnail-label">
+                                <input type="checkbox" name="delete_thumbnail" id="delete_thumbnail">
+                                <span>Delete current thumbnail</span>
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <label for="thumbnail">{% if post.thumbnail %}Replace Thumbnail{% else %}Upload Thumbnail{% endif %} (Optional)</label>
+                        <input type="file" name="thumbnail" id="thumbnail" accept="image/*">
+                        <small class="form-help">Optional thumbnail image (max 1 MB, any aspect ratio). Will be displayed as card background and in post detail view.</small>
+                    </div>
+                </div>
+                
+                <div class="form-section">
                     <h3>Attachments (Max 10 files total)</h3>
                     {% if post.attachments.all %}
                     <div class="existing-attachments">

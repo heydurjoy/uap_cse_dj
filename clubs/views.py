@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from datetime import datetime
+import os
 from .models import Club, ClubPosition, ClubPost, SEMESTER_CHOICES, CLUB_POST_TYPE_CHOICES
 
 
@@ -286,13 +287,17 @@ def create_club(request):
 def edit_club(request, pk):
     """
     Edit an existing club.
-    Level 4+ Faculty/Officers or conveners can edit clubs.
+    Level 4+ Faculty/Officers, conveners, or presidents can edit clubs.
+    Presidents cannot change the convener.
     """
     club = get_object_or_404(Club, pk=pk)
     
     if not check_club_management_access(request.user, club):
         messages.error(request, 'You do not have permission to edit this club.')
         return redirect('people:user_profile')
+    
+    # Check if user is president (not convener or power user)
+    is_president_only = check_club_president_access(request.user, club) and not check_club_convener_access(request.user, club) and not check_club_access(request.user)
     
     if request.method == 'POST':
         try:
@@ -304,15 +309,18 @@ def edit_club(request, pk):
             club.description = request.POST.get('description', '') or None
             
             # Handle ForeignKey fields
-            convener_id = request.POST.get('convener', '')
-            if convener_id:
-                try:
-                    from people.models import Faculty
-                    club.convener = Faculty.objects.get(pk=convener_id)
-                except (Faculty.DoesNotExist, ValueError):
+            # Presidents cannot change the convener
+            if not is_president_only:
+                convener_id = request.POST.get('convener', '')
+                if convener_id:
+                    try:
+                        from people.models import Faculty
+                        club.convener = Faculty.objects.get(pk=convener_id)
+                    except (Faculty.DoesNotExist, ValueError):
+                        club.convener = None
+                else:
                     club.convener = None
-            else:
-                club.convener = None
+            # If president only, preserve existing convener (don't change it)
             
             president_id = request.POST.get('president', '')
             if president_id:
@@ -356,6 +364,7 @@ def edit_club(request, pk):
         'club': club,
         'faculties': Faculty.objects.all().order_by('name'),
         'club_members': ClubMember.objects.all().order_by('name'),
+        'is_president_only': is_president_only,  # Pass flag to template
     }
     return render(request, 'clubs/edit_club.html', context)
 
@@ -599,7 +608,188 @@ def add_club_position(request, pk):
                 )
                 
                 club_member_id = club_member.pk
-                messages.info(request, f'Dummy club member created for {new_member_email}. They can sign up later to complete their profile and access their account.')
+                
+                # Send invitation email
+                email_sent = False
+                email_error = None
+                
+                # Get inviter name (convener or president)
+                inviter_name = 'Club Administrator'
+                if request.user.user_type == 'faculty' and hasattr(request.user, 'faculty_profile'):
+                    inviter_name = request.user.faculty_profile.name or inviter_name
+                elif request.user.user_type == 'officer' and hasattr(request.user, 'officer_profile'):
+                    inviter_name = request.user.officer_profile.name or inviter_name
+                elif request.user.user_type == 'club_member' and hasattr(request.user, 'club_member_profile'):
+                    inviter_name = request.user.club_member_profile.name or inviter_name
+                
+                # Build signup URL using helper function from uap_cse_dj.views
+                from uap_cse_dj.views import get_frontend_domain
+                DOMAIN = get_frontend_domain(request)
+                signup_url = f"{DOMAIN}{reverse('signup')}"
+                
+                # Email content (include position title)
+                subject = f'Invitation to Join {club.name} as {position_title} - CSE UAP'
+                html_content = f'''
+                    <p>Hello,</p>
+                    <p>You have been invited by {inviter_name} to join <strong>{club.name}</strong> as <strong>{position_title}</strong> at the Department of Computer Science and Engineering (CSE), University of Asia Pacific (UAP).</p>
+                    <p>To complete your registration, please follow these steps:</p>
+                    <ol>
+                        <li>Visit the signup page: <a href="{signup_url}">{signup_url}</a></li>
+                        <li>Enter your email address: <strong>{new_member_email}</strong></li>
+                        <li>Fill in your full name and create a password (minimum 8 characters)</li>
+                        <li>Click "Sign Up" to create your account</li>
+                    </ol>
+                    <p>Once you sign up, you will be able to:</p>
+                    <ul>
+                        <li>Access club information and announcements</li>
+                        <li>Participate in club activities</li>
+                        <li>Connect with other club members</li>
+                        <li>Manage your position responsibilities</li>
+                    </ul>
+                    <p>If you have any questions or need assistance, please contact the club administrator or the CSE department.</p>
+                    <p>Best regards,<br>CSE UAP Team</p>
+                '''
+                text_content = f'''Hello,
+
+You have been invited by {inviter_name} to join {club.name} as {position_title} at the Department of Computer Science and Engineering (CSE), University of Asia Pacific (UAP).
+
+To complete your registration, please follow these steps:
+
+1. Visit the signup page: {signup_url}
+2. Enter your email address: {new_member_email}
+3. Fill in your full name and create a password (minimum 8 characters)
+4. Click "Sign Up" to create your account
+
+Once you sign up, you will be able to:
+- Access club information and announcements
+- Participate in club activities
+- Connect with other club members
+- Manage your position responsibilities
+
+If you have any questions or need assistance, please contact the club administrator or the CSE department.
+
+Best regards,
+CSE UAP Team'''
+                
+                BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
+                EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@uap-cse.edu')
+                
+                # Send email via Brevo API
+                if BREVO_API_KEY:
+                    try:
+                        import requests
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        
+                        brevo_url = 'https://api.brevo.com/v3/smtp/email'
+                        headers = {
+                            'accept': 'application/json',
+                            'api-key': BREVO_API_KEY,
+                            'content-type': 'application/json'
+                        }
+                        payload = {
+                            'sender': {'name': 'CSE UAP', 'email': EMAIL_FROM},
+                            'to': [{'email': new_member_email}],
+                            'subject': subject,
+                            'htmlContent': html_content,
+                            'textContent': text_content
+                        }
+                        logger.info(f"Attempting to send club position invitation email to {new_member_email} via Brevo API")
+                        response = requests.post(brevo_url, json=payload, headers=headers, timeout=10)
+                        response.raise_for_status()
+                        email_sent = True
+                        logger.info(f"✅ Club position invitation email sent successfully to {new_member_email} via Brevo API")
+                    except requests.exceptions.RequestException as e:
+                        email_error = f"Brevo API error: {str(e)}"
+                        if hasattr(e, 'response') and e.response is not None:
+                            try:
+                                error_detail = e.response.json()
+                                email_error = f"Brevo API error: {error_detail}"
+                                logger.error(f"Brevo API response: {error_detail}")
+                            except:
+                                email_error = f"Brevo API error: {e.response.status_code} - {e.response.text}"
+                        logger.exception(f"❌ Failed to send via Brevo API: {email_error}")
+                        # Fallback to SMTP
+                        try:
+                            EMAIL_HOST = os.getenv('EMAIL_HOST')
+                            EMAIL_PORT = os.getenv('EMAIL_PORT', '587')
+                            EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+                            EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+                            
+                            if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+                                logger.info(f"Attempting SMTP fallback for {new_member_email}")
+                                from django.core.mail import get_connection, send_mail
+                                connection = get_connection(
+                                    host=EMAIL_HOST,
+                                    port=int(EMAIL_PORT),
+                                    username=EMAIL_HOST_USER,
+                                    password=EMAIL_HOST_PASSWORD,
+                                    use_tls=True,
+                                    fail_silently=False
+                                )
+                                send_mail(
+                                    subject=subject,
+                                    message=text_content,
+                                    from_email=EMAIL_FROM,
+                                    recipient_list=[new_member_email],
+                                    connection=connection
+                                )
+                                email_sent = True
+                                logger.info(f"✅ Club position invitation email sent successfully to {new_member_email} via SMTP fallback")
+                            else:
+                                logger.warning("SMTP credentials not configured, cannot use SMTP fallback")
+                                email_error = "SMTP credentials not configured"
+                        except Exception as smtp_err:
+                            email_error = f"SMTP fallback failed: {str(smtp_err)}"
+                            logger.exception(f"❌ SMTP fallback also failed: {email_error}")
+                    except Exception as e:
+                        email_error = f"Unexpected error: {str(e)}"
+                        logger.exception(f"❌ Unexpected error sending email: {email_error}")
+                else:
+                    # Try SMTP if BREVO_API_KEY is not set
+                    try:
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.warning("⚠️ BREVO_API_KEY not set, attempting SMTP fallback")
+                        
+                        EMAIL_HOST = os.getenv('EMAIL_HOST')
+                        EMAIL_PORT = os.getenv('EMAIL_PORT', '587')
+                        EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+                        EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+                        
+                        if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+                            from django.core.mail import get_connection, send_mail
+                            connection = get_connection(
+                                host=EMAIL_HOST,
+                                port=int(EMAIL_PORT),
+                                username=EMAIL_HOST_USER,
+                                password=EMAIL_HOST_PASSWORD,
+                                use_tls=True,
+                                fail_silently=False
+                            )
+                            send_mail(
+                                subject=subject,
+                                message=text_content,
+                                from_email=EMAIL_FROM,
+                                recipient_list=[new_member_email],
+                                connection=connection
+                            )
+                            email_sent = True
+                            logger.info(f"✅ Club position invitation email sent successfully to {new_member_email} via SMTP")
+                        else:
+                            email_error = "Email credentials not configured (BREVO_API_KEY and SMTP credentials missing)"
+                            logger.warning(f"⚠️ {email_error}")
+                    except Exception as e:
+                        email_error = f"SMTP error: {str(e)}"
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.exception(f"❌ Failed to send email: {email_error}")
+                
+                # Update success message based on email sending result
+                if email_sent:
+                    messages.info(request, f'Dummy club member created for {new_member_email} and invitation email sent! They can sign up to complete their profile and access their account.')
+                else:
+                    messages.warning(request, f'Dummy club member created for {new_member_email}, but failed to send invitation email. Error: {email_error}. They can still sign up using their email address.')
             
             # Get the next serial number for this club, year, and semester
             existing_positions = ClubPosition.objects.filter(

@@ -49,15 +49,15 @@
     
     // Update badge count
     function updateBadge(count) {
-        const badge = document.querySelector('.notification-badge');
-        if (badge) {
+        const badges = document.querySelectorAll('.notification-badge');
+        badges.forEach(badge => {
             if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : count;
+                badge.textContent = count > 99 ? '99+' : count.toString();
                 badge.style.display = 'flex';
             } else {
                 badge.style.display = 'none';
             }
-        }
+        });
     }
     
     // Format date for display

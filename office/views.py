@@ -83,7 +83,7 @@ def post_list(request):
         })
     
     # Sort functionality
-    sort_by = request.GET.get('sort', 'pinned')
+    sort_by = request.GET.get('sort', 'newest')
     if sort_by == 'oldest':
         unified_posts.sort(key=lambda p: p['date'])
     elif sort_by == 'newest':
@@ -96,8 +96,8 @@ def post_list(request):
         # Pinned first, then by date
         unified_posts.sort(key=lambda p: (not p['is_pinned'], p['date']), reverse=True)
     else:
-        # Default: pinned first, then by date
-        unified_posts.sort(key=lambda p: (not p['is_pinned'], p['date']), reverse=True)
+        # Default: newest first
+        unified_posts.sort(key=lambda p: p['date'], reverse=True)
     
     # Count posts by type for stats
     total_posts_count = len(unified_posts)
@@ -278,6 +278,10 @@ def create_post(request):
             post.is_pinned = request.POST.get('is_pinned') == 'on'
             post.created_by = request.user
             
+            # Handle thumbnail upload
+            if 'thumbnail' in request.FILES:
+                post.thumbnail = request.FILES['thumbnail']
+            
             # Check permissions
             can_manage_all = request.user.is_power_user or request.user.has_permission('manage_all_posts')
             
@@ -361,6 +365,14 @@ def edit_post(request, pk):
             post.long_title = request.POST.get('long_title', '').strip()
             post.tags = request.POST.get('tags', '').strip()
             post.description = request.POST.get('description', '')
+            
+            # Handle thumbnail upload
+            if 'thumbnail' in request.FILES:
+                post.thumbnail = request.FILES['thumbnail']
+            # Handle thumbnail deletion
+            if request.POST.get('delete_thumbnail') == 'on':
+                post.thumbnail.delete(save=False)
+                post.thumbnail = None
             
             # Handle pinned status
             new_pinned = request.POST.get('is_pinned') == 'on'
