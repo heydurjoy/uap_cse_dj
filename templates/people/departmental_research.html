@@ -2382,14 +2382,85 @@
 </style>
 
 <!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Load Chart.js with fallback support
+(function() {
+    function loadChartJS() {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        script.async = true;
+        script.onload = function() {
+            console.log('Chart.js loaded successfully');
+            // Trigger chart initialization if DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof Chart !== 'undefined') {
+                        {% if request.GET.tab != 'faculty' and request.GET.tab != 'publications' or not request.GET.tab %}
+                        waitForChartJS(function() {
+                            initializeCharts();
+                        });
+                        {% endif %}
+                    }
+                });
+            } else {
+                {% if request.GET.tab != 'faculty' and request.GET.tab != 'publications' or not request.GET.tab %}
+                waitForChartJS(function() {
+                    initializeCharts();
+                });
+                {% endif %}
+            }
+        };
+        script.onerror = function() {
+            console.error('Failed to load Chart.js from jsdelivr CDN, trying fallback...');
+            loadChartJSFallback();
+        };
+        document.head.appendChild(script);
+    }
+    
+    // Start loading Chart.js
+    loadChartJS();
+})();
+</script>
 
 <script>
+// Fallback function to load Chart.js if CDN fails
+function loadChartJSFallback() {
+    console.log('Attempting to load Chart.js from alternative CDN...');
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+    script.async = true;
+    script.onload = function() {
+        console.log('Chart.js loaded from fallback CDN');
+        // Retry chart initialization after fallback loads
+        waitForChartJS(function() {
+            initializeCharts();
+        });
+    };
+    script.onerror = function() {
+        console.error('Failed to load Chart.js from fallback CDN as well');
+    };
+    document.head.appendChild(script);
+}
+
+// Wait for Chart.js to be available before initializing
+function waitForChartJS(callback, maxAttempts = 50) {
+    let attempts = 0;
+    const checkInterval = setInterval(function() {
+        attempts++;
+        if (typeof Chart !== 'undefined') {
+            clearInterval(checkInterval);
+            callback();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            console.error('Chart.js failed to load after ' + maxAttempts + ' attempts');
+            loadChartJSFallback();
+        }
+    }, 100);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Charts if on stats tab
-    {% if request.GET.tab != 'faculty' and request.GET.tab != 'publications' or not request.GET.tab %}
-    initializeCharts();
-    {% endif %}
+    // Charts are initialized automatically when Chart.js loads
+    // This is handled in the Chart.js loading script above
     
     // Get current tab from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -2667,9 +2738,12 @@ document.addEventListener('DOMContentLoaded', function() {
 // Chart Initialization
 function initializeCharts() {
     if (typeof Chart === 'undefined') {
-        console.error('Chart.js is not loaded');
+        console.error('Chart.js is not loaded - attempting fallback');
+        loadChartJSFallback();
         return;
     }
+    
+    console.log('Initializing charts...');
     
     // Ranking Chart (Bar Chart)
     const rankingCtx = document.getElementById('rankingChart');
