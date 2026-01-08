@@ -9,8 +9,8 @@
 <style>
 /* Critical CSS for above-the-fold content - prevents layout shift */
 .home-hero {
-    min-height: 80vh;
-    padding: 2rem 0 4rem;
+    min-height: auto;
+    padding: 2rem 0 2rem;
     background: linear-gradient(180deg,
         var(--bg-primary) 0%,
         color-mix(in srgb, var(--color-primary) 8%, var(--bg-primary)) 50%,
@@ -22,10 +22,10 @@
 .hero-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0;
     display: flex;
     align-items: flex-start;
-    gap: 4rem;
+    gap: 2rem;
 }
 
 .hero-content {
@@ -33,13 +33,14 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 4rem;
+    gap: 2rem;
     width: 100%;
+    padding-left: 0;
 }
 
 .hero-text {
     flex: 1;
-    max-width: 600px;
+    max-width: 650px;
 }
 
 .hero-welcome {
@@ -52,14 +53,34 @@
 }
 
 .hero-title {
-    font-size: clamp(3.5rem, 10vw, 7rem);
+    font-size: clamp(3.5rem, 10vw, 6.5rem);
     font-weight: 800;
-    background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 50%, #f093fb 100%);
+    background: linear-gradient(90deg, var(--color-primary), #764ba2, #f093fb, #667eea, var(--color-primary));
+    background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    white-space: nowrap;
+    animation: heroColorShift 6s ease-in-out infinite;
+}
+
+@keyframes heroColorShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.hero-text {
+    text-align: left;
+}
+
+.hero-tagline {
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    max-width: 380px;
+    text-align: left;
 }
 
 .hero-visuals {
@@ -102,7 +123,13 @@
     }
     
     .hero-title {
-        font-size: clamp(2.5rem, 12vw, 4rem);
+        font-size: clamp(3rem, 14vw, 5rem);
+        white-space: nowrap;
+    }
+    
+    .hero-tagline {
+        font-size: 0.85rem;
+        max-width: 280px;
     }
     
     .home-hero {
@@ -266,7 +293,7 @@
                          onclick="openUapNowModal('club_post', {{ club_post.pk }})" 
                          style="cursor: pointer;">
                         <div class="uapnow-top">
-                            <div class="uapnow-badge uapnow-badge-{{ club_post.post_type }}{% if club_post.is_pinned %} pinned{% endif %}">
+                            <div class="uapnow-badge uapnow-badge-club{% if club_post.is_pinned %} pinned{% endif %}">
                                 {% if club_post.is_pinned %}
                                 <span class="pin-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -274,20 +301,15 @@
                                     </svg>
                                 </span>
                                 {% endif %}
-                                {{ club_post.get_post_type_display }}
+                                {{ club_post.club.short_name|default:club_post.club.name|truncatechars:12 }}
                             </div>
                             <div class="uapnow-date">{{ club_post.created_at|date:"M d, Y" }}</div>
                         </div>
-                        {% if club_post.club.short_name %}
-                        <div class="uapnow-club-badge">
-                            <a href="{% url 'clubs:club_detail' club_post.club.pk %}" class="club-link" onclick="event.stopPropagation();">{{ club_post.club.short_name }}</a>
-                        </div>
-                        {% endif %}
-                        <h3>{{ club_post.short_title }}</h3>
-                        <p>{{ club_post.long_title|truncatewords:15 }}</p>
+                        <h3>{{ club_post.short_title|truncatewords:5 }}</h3>
+                        <p>{{ club_post.long_title|truncatewords:10 }}</p>
                         {% if club_post.tags %}
                         <div class="uapnow-tags">
-                            {% for tag in club_post.get_tags_list|slice:":3" %}
+                            {% for tag in club_post.get_tags_list|slice:":2" %}
                             <span class="tag soft">{{ tag }}</span>
                             {% endfor %}
                         </div>
@@ -375,6 +397,10 @@
             <h1 class="post-modal-full-title" id="uapNowModalFullTitle">Post Title</h1>
             <div class="post-modal-tags" id="uapNowModalTags"></div>
             <div class="post-modal-description" id="uapNowModalDescription"></div>
+            <div class="post-modal-attachments" id="uapNowModalAttachments" style="display: none;">
+                <h3 class="attachments-title">Attachments</h3>
+                <div class="attachments-list" id="uapNowModalAttachmentsList"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -3056,18 +3082,22 @@ html, body {
 
 .uapnow-tags {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    flex-wrap: nowrap;
+    gap: 0.3rem;
+    overflow: hidden;
+    max-height: 1.8rem;
 }
 
 .tag.soft {
-    padding: 0.25rem 0.6rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 999px;
     background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .uapnow-meta {
@@ -5042,6 +5072,49 @@ html, body {
     font-size: 1rem;
 }
 
+.post-modal-attachments {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.post-modal-attachments .attachments-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+}
+
+.post-modal-attachments .attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.post-modal-attachments .attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.post-modal-attachments .attachment-item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.post-modal-attachments .attachment-item svg {
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
 .post-modal-description img {
     max-width: 100%;
     height: auto;
@@ -5937,7 +6010,8 @@ const uapNowPostsData = {
         'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
         'club_name': null,
         'club_id': null,
-        'thumbnail': {% if post_item.object.thumbnail %}'{{ post_item.object.thumbnail.url|escapejs }}'{% else %}null{% endif %}
+        'thumbnail': {% if post_item.object.thumbnail %}'{{ post_item.object.thumbnail.url|escapejs }}'{% else %}null{% endif %},
+        'attachments': [{% for attachment in post_item.object.attachments.all %}{'url': '{{ attachment.file.url|escapejs }}', 'name': '{{ attachment.file.name|escapejs }}'}{% if not forloop.last %},{% endif %}{% endfor %}]
     }{% if not forloop.last %},{% endif %}
     {% else %}
     'club_post_{{ post_item.object.pk }}': {
@@ -5951,7 +6025,8 @@ const uapNowPostsData = {
         'date': '{{ post_item.object.created_at|date:"F d, Y" }}',
         'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
         'club_name': '{{ post_item.object.club.short_name|default:post_item.object.club.name|escapejs }}',
-        'club_id': {{ post_item.object.club.pk }}
+        'club_id': {{ post_item.object.club.pk }},
+        'attachments': [{% for attachment in post_item.object.attachments.all %}{'url': '{{ attachment.file.url|escapejs }}', 'name': '{{ attachment.file.name|escapejs }}'}{% if not forloop.last %},{% endif %}{% endfor %}]
     }{% if not forloop.last %},{% endif %}
     {% endif %}
     {% endfor %}
@@ -6019,6 +6094,34 @@ function openUapNowModal(postType, postId) {
     
     // Description
     document.getElementById('uapNowModalDescription').innerHTML = post.description;
+    
+    // Attachments
+    const attachmentsContainer = document.getElementById('uapNowModalAttachments');
+    const attachmentsList = document.getElementById('uapNowModalAttachmentsList');
+    if (attachmentsContainer && attachmentsList) {
+        attachmentsList.innerHTML = '';
+        if (post.attachments && post.attachments.length > 0) {
+            post.attachments.forEach(attachment => {
+                const fileName = attachment.name.split('/').pop();
+                const link = document.createElement('a');
+                link.href = attachment.url;
+                link.target = '_blank';
+                link.className = 'attachment-item';
+                link.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>${fileName}</span>
+                `;
+                attachmentsList.appendChild(link);
+            });
+            attachmentsContainer.style.display = 'block';
+        } else {
+            attachmentsContainer.style.display = 'none';
+        }
+    }
     
     // Show modal
     modal.classList.add('active');

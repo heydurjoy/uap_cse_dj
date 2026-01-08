@@ -3131,7 +3131,7 @@ p {
 .home-hero {
     display: flex;
     align-items: flex-start;
-    padding: 2rem 0 0 0;
+    padding: 1.5rem 0 1rem 0;
     background: var(--bg-primary);
     position: relative;
 }
@@ -3425,8 +3425,8 @@ p {
 /* Web view only styles */
 @media (min-width: 769px) {
   .hero-visuals {
-    margin-left: -19px;
-    margin-top: 30px;
+    margin-left: -50px;
+    margin-top: 10px;
   }
 }
 

@@ -99,35 +99,33 @@
                             </div>
                             <div class="post-date">{{ post.publish_date|date:"M d, Y" }}</div>
                         </div>
-                        <h3 class="post-card-title">{{ post.short_title }}</h3>
-                        <p class="post-card-description">{{ post.long_title|truncatewords:20 }}</p>
+                        <h3 class="post-card-title">{{ post.short_title|truncatewords:6 }}</h3>
+                        <p class="post-card-description">{{ post.long_title|truncatewords:12 }}</p>
                         {% if post.tags %}
                         <div class="post-tags">
-                            {% for tag in post.get_tags_list|slice:":3" %}
+                            {% for tag in post.get_tags_list|slice:":2" %}
                             <span class="tag soft">{{ tag }}</span>
                             {% endfor %}
                         </div>
                         {% endif %}
-                        {% if post.created_by_name or post.created_by %}
                         <div class="post-card-author">
                             <span class="author-label">Posted by:</span>
                             <span class="author-name">
                                 {% if post.created_by %}
                                     {% if post.created_by.user_type == 'faculty' and post.created_by.faculty_profile %}
-                                        {{ post.created_by.faculty_profile.name|default:post.created_by.email }}
+                                        {{ post.created_by.faculty_profile.name|default:post.created_by.email|truncatewords:2 }}
                                     {% elif post.created_by.user_type == 'officer' and post.created_by.officer_profile %}
-                                        {{ post.created_by.officer_profile.name|default:post.created_by.email }}
+                                        {{ post.created_by.officer_profile.name|default:post.created_by.email|truncatewords:2 }}
                                     {% elif post.created_by.user_type == 'staff' and post.created_by.staff_profile %}
-                                        {{ post.created_by.staff_profile.name|default:post.created_by.email }}
+                                        {{ post.created_by.staff_profile.name|default:post.created_by.email|truncatewords:2 }}
                                     {% else %}
-                                        {{ post.created_by.get_full_name|default:post.created_by.email }}
+                                        {{ post.created_by.get_full_name|default:post.created_by.email|truncatewords:2 }}
                                     {% endif %}
                                 {% else %}
-                                    {{ post.created_by_name|default:"Unknown User" }}
+                                    {{ post.created_by_name|default:"Unknown"|truncatewords:2 }}
                                 {% endif %}
                             </span>
                         </div>
-                        {% endif %}
                         {% endif %}
                     </div>
                     {% endwith %}
@@ -135,7 +133,7 @@
                     {% with club_post=post_item.object %}
                     <div class="post-card {% if club_post.is_pinned %}post-pinned{% endif %}" onclick="openPostModal('club_post', {{ club_post.pk }})" style="cursor: pointer;">
                         <div class="post-card-top">
-                            <div class="post-badge post-badge-{{ club_post.post_type }}{% if club_post.is_pinned %} pinned{% endif %}">
+                            <div class="post-badge post-badge-club{% if club_post.is_pinned %} pinned{% endif %}">
                                 {% if club_post.is_pinned %}
                                 <span class="pin-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -143,44 +141,37 @@
                                     </svg>
                                 </span>
                                 {% endif %}
-                                {{ club_post.get_post_type_display }}
+                                {{ club_post.club.short_name|default:club_post.club.name|truncatechars:12 }}
                             </div>
                             <div class="post-date">{{ club_post.created_at|date:"M d, Y" }}</div>
                         </div>
-                        {% if club_post.club.short_name %}
-                        <div class="post-club-badge">
-                            <a href="{% url 'clubs:club_detail' club_post.club.pk %}" class="club-link" onclick="event.stopPropagation();">{{ club_post.club.short_name }}</a>
-                        </div>
-                        {% endif %}
-                        <h3 class="post-card-title">{{ club_post.short_title }}</h3>
-                        <p class="post-card-description">{{ club_post.long_title|truncatewords:20 }}</p>
+                        <h3 class="post-card-title">{{ club_post.short_title|truncatewords:6 }}</h3>
+                        <p class="post-card-description">{{ club_post.long_title|truncatewords:12 }}</p>
                         {% if club_post.tags %}
                         <div class="post-tags">
-                            {% for tag in club_post.get_tags_list|slice:":3" %}
+                            {% for tag in club_post.get_tags_list|slice:":2" %}
                             <span class="tag soft">{{ tag }}</span>
                             {% endfor %}
                         </div>
                         {% endif %}
-                        {% if club_post.posted_by_name or club_post.posted_by %}
                         <div class="post-card-author">
                             <span class="author-label">Posted by:</span>
                             <span class="author-name">
                                 {% if club_post.posted_by %}
                                     {% if club_post.posted_by.user_type == 'faculty' and club_post.posted_by.faculty_profile %}
-                                        {{ club_post.posted_by.faculty_profile.name|default:club_post.posted_by.email }}
+                                        {{ club_post.posted_by.faculty_profile.name|default:club_post.posted_by.email|truncatewords:2 }}
                                     {% elif club_post.posted_by.user_type == 'officer' and club_post.posted_by.officer_profile %}
-                                        {{ club_post.posted_by.officer_profile.name|default:club_post.posted_by.email }}
+                                        {{ club_post.posted_by.officer_profile.name|default:club_post.posted_by.email|truncatewords:2 }}
                                     {% elif club_post.posted_by.user_type == 'club_member' and club_post.posted_by.club_member_profile %}
-                                        {{ club_post.posted_by.club_member_profile.name|default:club_post.posted_by.email }}
+                                        {{ club_post.posted_by.club_member_profile.name|default:club_post.posted_by.email|truncatewords:2 }}
                                     {% else %}
-                                        {{ club_post.posted_by.get_full_name|default:club_post.posted_by.email }}
+                                        {{ club_post.posted_by.get_full_name|default:club_post.posted_by.email|truncatewords:2 }}
                                     {% endif %}
                                 {% else %}
-                                    {{ club_post.posted_by_name|default:"Unknown User" }}
+                                    {{ club_post.posted_by_name|default:"Unknown"|truncatewords:2 }}
                                 {% endif %}
                             </span>
                         </div>
-                        {% endif %}
                     </div>
                     {% endwith %}
                 {% endif %}
@@ -318,6 +309,10 @@
             <div class="post-modal-author" id="postModalAuthor"></div>
             <div class="post-modal-tags" id="postModalTags"></div>
             <div class="post-modal-description" id="postModalDescription"></div>
+            <div class="post-modal-attachments" id="postModalAttachments" style="display: none;">
+                <h3 class="attachments-title">Attachments</h3>
+                <div class="attachments-list" id="postModalAttachmentsList"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -569,6 +564,14 @@
 .post-badge.seminars { background: color-mix(in srgb, var(--color-primary) 12%, var(--bg-secondary)); }
 .post-badge.workshop { background: color-mix(in srgb, var(--color-primary-dark) 12%, var(--bg-secondary)); }
 .post-badge.others { background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-tertiary)); }
+.post-badge.post-badge-club { 
+    background: linear-gradient(135deg, color-mix(in srgb, #6366f1 20%, var(--bg-tertiary)), color-mix(in srgb, #8b5cf6 15%, var(--bg-tertiary)));
+    border-color: color-mix(in srgb, #6366f1 30%, var(--border-color));
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 .post-badge.pinned {
     background: color-mix(in srgb, var(--color-primary) 20%, var(--bg-tertiary));
@@ -598,6 +601,10 @@
     color: var(--text-primary);
     margin: 0;
     line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .post-card-with-thumbnail .post-card-title {
@@ -619,6 +626,10 @@
     line-height: 1.4;
     margin: 0;
     flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .post-card-with-thumbnail .post-card-description {
@@ -638,38 +649,46 @@
 
 .post-tags {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    flex-wrap: nowrap;
+    gap: 0.3rem;
+    overflow: hidden;
+    max-height: 1.8rem;
 }
 
 .tag.soft {
-    padding: 0.25rem 0.6rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 999px;
     background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-secondary));
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .post-card-author {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-    padding-top: 0.75rem;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--border-color);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 .post-card-author .author-label {
     color: var(--text-secondary);
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .post-card-author .author-name {
     color: var(--text-primary);
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .post-club-badge {
@@ -860,6 +879,49 @@
     color: var(--text-primary);
     line-height: 1.8;
     font-size: 1rem;
+}
+
+.post-modal-attachments {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.post-modal-attachments .attachments-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+}
+
+.post-modal-attachments .attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.post-modal-attachments .attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.post-modal-attachments .attachment-item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.post-modal-attachments .attachment-item svg {
+    flex-shrink: 0;
+    color: var(--color-primary);
 }
 
 .post-modal-thumbnail-container {
@@ -1216,7 +1278,8 @@ const postsData = {
         'club_name': null,
         'club_id': null,
         'thumbnail': {% if post_item.object.thumbnail %}'{{ post_item.object.thumbnail.url|escapejs }}'{% else %}null{% endif %},
-        'author_name': {% if post_item.object.created_by_name %}'{{ post_item.object.created_by_name|escapejs }}'{% elif post_item.object.created_by %}{% if post_item.object.created_by.user_type == 'faculty' and post_item.object.created_by.faculty_profile %}'{{ post_item.object.created_by.faculty_profile.name|default:post_item.object.created_by.email|escapejs }}'{% elif post_item.object.created_by.user_type == 'officer' and post_item.object.created_by.officer_profile %}'{{ post_item.object.created_by.officer_profile.name|default:post_item.object.created_by.email|escapejs }}'{% elif post_item.object.created_by.user_type == 'staff' and post_item.object.created_by.staff_profile %}'{{ post_item.object.created_by.staff_profile.name|default:post_item.object.created_by.email|escapejs }}'{% else %}'{{ post_item.object.created_by.get_full_name|default:post_item.object.created_by.email|escapejs }}'{% endif %}{% else %}'Unknown User'{% endif %}
+        'author_name': {% if post_item.object.created_by_name %}'{{ post_item.object.created_by_name|escapejs }}'{% elif post_item.object.created_by %}{% if post_item.object.created_by.user_type == 'faculty' and post_item.object.created_by.faculty_profile %}'{{ post_item.object.created_by.faculty_profile.name|default:post_item.object.created_by.email|escapejs }}'{% elif post_item.object.created_by.user_type == 'officer' and post_item.object.created_by.officer_profile %}'{{ post_item.object.created_by.officer_profile.name|default:post_item.object.created_by.email|escapejs }}'{% elif post_item.object.created_by.user_type == 'staff' and post_item.object.created_by.staff_profile %}'{{ post_item.object.created_by.staff_profile.name|default:post_item.object.created_by.email|escapejs }}'{% else %}'{{ post_item.object.created_by.get_full_name|default:post_item.object.created_by.email|escapejs }}'{% endif %}{% else %}'Unknown User'{% endif %},
+        'attachments': [{% for attachment in post_item.object.attachments.all %}{'url': '{{ attachment.file.url|escapejs }}', 'name': '{{ attachment.file.name|escapejs }}'}{% if not forloop.last %},{% endif %}{% endfor %}]
     }{% if not forloop.last %},{% endif %}
     {% else %}
     'club_post_{{ post_item.object.pk }}': {
@@ -1231,7 +1294,8 @@ const postsData = {
         'is_pinned': {{ post_item.object.is_pinned|yesno:"true,false" }},
         'club_name': '{{ post_item.object.club.short_name|default:post_item.object.club.name|escapejs }}',
         'club_id': {{ post_item.object.club.pk }},
-        'author_name': {% if post_item.object.posted_by_name %}'{{ post_item.object.posted_by_name|escapejs }}'{% elif post_item.object.posted_by %}{% if post_item.object.posted_by.user_type == 'faculty' and post_item.object.posted_by.faculty_profile %}'{{ post_item.object.posted_by.faculty_profile.name|default:post_item.object.posted_by.email|escapejs }}'{% elif post_item.object.posted_by.user_type == 'officer' and post_item.object.posted_by.officer_profile %}'{{ post_item.object.posted_by.officer_profile.name|default:post_item.object.posted_by.email|escapejs }}'{% elif post_item.object.posted_by.user_type == 'club_member' and post_item.object.posted_by.club_member_profile %}'{{ post_item.object.posted_by.club_member_profile.name|default:post_item.object.posted_by.email|escapejs }}'{% else %}'{{ post_item.object.posted_by.get_full_name|default:post_item.object.posted_by.email|escapejs }}'{% endif %}{% else %}'Unknown User'{% endif %}
+        'author_name': {% if post_item.object.posted_by_name %}'{{ post_item.object.posted_by_name|escapejs }}'{% elif post_item.object.posted_by %}{% if post_item.object.posted_by.user_type == 'faculty' and post_item.object.posted_by.faculty_profile %}'{{ post_item.object.posted_by.faculty_profile.name|default:post_item.object.posted_by.email|escapejs }}'{% elif post_item.object.posted_by.user_type == 'officer' and post_item.object.posted_by.officer_profile %}'{{ post_item.object.posted_by.officer_profile.name|default:post_item.object.posted_by.email|escapejs }}'{% elif post_item.object.posted_by.user_type == 'club_member' and post_item.object.posted_by.club_member_profile %}'{{ post_item.object.posted_by.club_member_profile.name|default:post_item.object.posted_by.email|escapejs }}'{% else %}'{{ post_item.object.posted_by.get_full_name|default:post_item.object.posted_by.email|escapejs }}'{% endif %}{% else %}'Unknown User'{% endif %},
+        'attachments': [{% for attachment in post_item.object.attachments.all %}{'url': '{{ attachment.file.url|escapejs }}', 'name': '{{ attachment.file.name|escapejs }}'}{% if not forloop.last %},{% endif %}{% endfor %}]
     }{% if not forloop.last %},{% endif %}
     {% endif %}
     {% endfor %}
@@ -1308,6 +1372,32 @@ function openPostModal(postType, postId) {
     
     // Description
     document.getElementById('postModalDescription').innerHTML = post.description;
+    
+    // Attachments
+    const attachmentsContainer = document.getElementById('postModalAttachments');
+    const attachmentsList = document.getElementById('postModalAttachmentsList');
+    attachmentsList.innerHTML = '';
+    if (post.attachments && post.attachments.length > 0) {
+        post.attachments.forEach(attachment => {
+            const fileName = attachment.name.split('/').pop();
+            const link = document.createElement('a');
+            link.href = attachment.url;
+            link.target = '_blank';
+            link.className = 'attachment-item';
+            link.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>${fileName}</span>
+            `;
+            attachmentsList.appendChild(link);
+        });
+        attachmentsContainer.style.display = 'block';
+    } else {
+        attachmentsContainer.style.display = 'none';
+    }
     
     // Show modal
     modal.classList.add('active');
