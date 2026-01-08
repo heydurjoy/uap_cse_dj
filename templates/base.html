@@ -322,29 +322,59 @@
                 if (loaderHidden) return;
                 loaderHidden = true;
                 
-                var loader = document.getElementById('pageLoader');
-                if (loader) {
-                    loader.classList.add('hidden');
-                    setTimeout(function() { 
-                        if (loader.parentNode) loader.parentNode.removeChild(loader); 
-                    }, 300);
+                // Use double requestAnimationFrame to ensure styles are painted
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        var loader = document.getElementById('pageLoader');
+                        if (loader) {
+                            loader.classList.add('hidden');
+                            setTimeout(function() { 
+                                if (loader.parentNode) loader.parentNode.removeChild(loader); 
+                            }, 300);
+                        }
+                        // Ensure page is visible
+                        document.documentElement.classList.add('css-loaded');
+                    });
+                });
+            }
+            
+            // Wait for all stylesheets to load
+            function checkStylesLoaded() {
+                var stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
+                var allLoaded = true;
+                
+                stylesheets.forEach(function(link) {
+                    if (!link.sheet) {
+                        allLoaded = false;
+                    }
+                });
+                
+                return allLoaded;
+            }
+            
+            function tryHideLoader() {
+                if (checkStylesLoaded() && document.documentElement.classList.contains('css-loaded')) {
+                    // Wait one more frame for styles to apply
+                    setTimeout(hideLoader, 50);
                 }
-                // Ensure page is visible
-                document.documentElement.classList.add('css-loaded');
             }
             
             // Check if CSS already loaded
-            if (document.documentElement.classList.contains('css-loaded')) {
-                hideLoader();
+            if (document.documentElement.classList.contains('css-loaded') && checkStylesLoaded()) {
+                setTimeout(hideLoader, 50);
             } else {
                 // Watch for css-loaded class to be added
                 var observer = new MutationObserver(function(mutations) {
-                    if (document.documentElement.classList.contains('css-loaded')) {
-                        hideLoader();
-                        observer.disconnect();
-                    }
+                    tryHideLoader();
+                    if (loaderHidden) observer.disconnect();
                 });
                 observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                
+                // Also check periodically for stylesheet loading
+                var checkInterval = setInterval(function() {
+                    tryHideLoader();
+                    if (loaderHidden) clearInterval(checkInterval);
+                }, 50);
                 
                 // Fallback timers
                 setTimeout(hideLoader, 1000); // 1s fallback
