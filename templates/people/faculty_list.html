@@ -95,7 +95,11 @@
             <div class="head-faculty-card">
                 <div class="head-faculty-content">
                     <div class="head-faculty-image">
-                        <img src="{% if head_faculty.profile_pic %}/media/{{ head_faculty.profile_pic.name|cache_bust:head_faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ head_faculty.name }}">
+                        {% if head_faculty.profile_pic %}
+                            <img src="/media/{{ head_faculty.profile_pic.name|cache_bust:head_faculty }}" alt="{{ head_faculty.name }}">
+                        {% else %}
+                            <div class="faculty-emoji-placeholder">👤</div>
+                        {% endif %}
                     </div>
                     <div class="head-faculty-details">
                         <div class="head-faculty-header">
@@ -213,7 +217,11 @@
                                             {% endif %}
                                             <div class="faculty-card">
                                                 <div class="faculty-card-image">
-                                                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                                    {% if faculty.profile_pic %}
+                                                        <img src="/media/{{ faculty.profile_pic.name|cache_bust:faculty }}" alt="{{ faculty.name }}">
+                                                    {% else %}
+                                                        <div class="faculty-emoji-placeholder">👤</div>
+                                                    {% endif %}
                                                     <div class="faculty-card-overlay">
                                                         <div class="faculty-card-info">
                                                             <h3 class="faculty-name">{{ faculty.name }}</h3>
@@ -263,7 +271,11 @@
                                 {% endif %}
                                 <div class="faculty-card">
                                     <div class="faculty-card-image">
-                                        <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                                        {% if faculty.profile_pic %}
+                                            <img src="/media/{{ faculty.profile_pic.name|cache_bust:faculty }}" alt="{{ faculty.name }}">
+                                        {% else %}
+                                            <div class="faculty-emoji-placeholder">👤</div>
+                                        {% endif %}
                                         <div class="faculty-card-overlay">
                                             <div class="faculty-card-info">
                                                 <div class="faculty-name-row">
@@ -768,6 +780,18 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faculty-emoji-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 16px;
 }
 
 .faculty-card-link:hover .faculty-card-image img {
@@ -1716,6 +1740,18 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.head-faculty-image .faculty-emoji-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 16px;
 }
 
 .head-faculty-details {

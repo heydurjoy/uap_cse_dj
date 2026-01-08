@@ -26,7 +26,11 @@
         <div class="faculty-profile-section">
             <div class="faculty-image-bio-column">
                 <div class="faculty-profile-image">
-                    <img src="{% if faculty.profile_pic %}/media/{{ faculty.profile_pic.name|cache_bust:faculty }}{% else %}/media/defaults/people.png{% endif %}" alt="{{ faculty.name }}">
+                    {% if faculty.profile_pic %}
+                        <img src="/media/{{ faculty.profile_pic.name|cache_bust:faculty }}" alt="{{ faculty.name }}">
+                    {% else %}
+                        <div class="faculty-emoji-placeholder">👤</div>
+                    {% endif %}
                     {% if faculty.shortname %}
                     <div class="faculty-shortname-overlay">{{ faculty.shortname }}</div>
                     {% endif %}
@@ -412,6 +416,18 @@
 
 .faculty-profile-image:hover img {
     transform: scale(1.05);
+}
+
+.faculty-emoji-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 20px;
 }
 
 /* Shortname Overlay */

@@ -1949,6 +1949,276 @@ def update_faculty_order(request):
 
 
 @login_required
+def manage_staff(request):
+    """
+    Manage staff list with drag-and-drop reordering, search, and sorting.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('people:user_profile')
+    
+    # Get all staff members
+    all_staff = Staff.objects.all().select_related('base_user')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    search_filter = Q()
+    if search_query:
+        search_filter = (
+            Q(name__icontains=search_query) |
+            Q(designation__icontains=search_query) |
+            Q(base_user__email__icontains=search_query) |
+            Q(phone__icontains=search_query)
+        )
+    
+    # Apply search
+    if search_query:
+        all_staff = all_staff.filter(search_filter)
+    
+    # Sort by serial number (default)
+    sort_by = request.GET.get('sort', 'sl')
+    designation_order = {
+        'Lab Assistant': 1,
+        'Lab Attendant': 2,
+    }
+    
+    def sort_staff(staff_queryset):
+        """Helper function to sort staff"""
+        # If no serial numbers, assign them first
+        if isinstance(staff_queryset, list):
+            if not any(s.sl for s in staff_queryset):
+                for index, staff in enumerate(staff_queryset, start=1):
+                    staff.sl = index
+                    staff.save()
+        elif staff_queryset.exists() and not any(s.sl for s in staff_queryset):
+            for index, staff in enumerate(staff_queryset, start=1):
+                staff.sl = index
+                staff.save()
+        
+        # Apply sorting
+        if sort_by == 'designation':
+            # Convert to list and sort by designation
+            if not isinstance(staff_queryset, list):
+                staff_list = list(staff_queryset)
+            else:
+                staff_list = staff_queryset
+            staff_list.sort(key=lambda s: (
+                designation_order.get(s.designation, 999) if s.designation else 999,
+                s.sl if s.sl else 999
+            ))
+            return staff_list
+        else:
+            # Default: sort by serial number
+            if isinstance(staff_queryset, list):
+                # Convert list back to queryset for ordering
+                pks = [s.pk for s in staff_queryset]
+                return Staff.objects.filter(pk__in=pks).select_related('base_user').order_by('sl')
+            return staff_queryset.order_by('sl')
+    
+    # Sort staff
+    all_staff = sort_staff(all_staff)
+    
+    # Get unique designations for filter dropdown
+    all_designations = Staff.objects.exclude(designation__isnull=True).exclude(designation='').values_list('designation', flat=True).distinct().order_by('designation')
+    
+    context = {
+        'staff_members': all_staff,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'all_designations': all_designations,
+    }
+    
+    return render(request, 'people/manage_staff.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_staff_order(request):
+    """
+    Update the order (serial numbers) of staff via drag and drop.
+    Expects JSON: {"staff_ids": [1, 2, 3, ...]}
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to update staff order.'
+        }, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        staff_ids = data.get('staff_ids', [])
+        
+        if not staff_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'Missing required data: staff_ids.'
+            }, status=400)
+        
+        # Verify all staff IDs exist
+        staff_members = Staff.objects.filter(pk__in=staff_ids)
+        
+        if staff_members.count() != len(staff_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some staff IDs do not exist.'
+            }, status=400)
+        
+        # Update serial numbers based on the order provided
+        for index, staff_id in enumerate(staff_ids, start=1):
+            Staff.objects.filter(pk=staff_id).update(sl=index)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Staff order updated successfully!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating order: {str(e)}'
+        }, status=500)
+
+
+@login_required
+def manage_officers(request):
+    """
+    Manage officers list with drag-and-drop reordering, search, and sorting.
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('people:user_profile')
+    
+    # Get all officers
+    all_officers = Officer.objects.all().select_related('base_user')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    search_filter = Q()
+    if search_query:
+        search_filter = (
+            Q(name__icontains=search_query) |
+            Q(position__icontains=search_query) |
+            Q(base_user__email__icontains=search_query) |
+            Q(phone__icontains=search_query)
+        )
+    
+    # Apply search
+    if search_query:
+        all_officers = all_officers.filter(search_filter)
+    
+    # Sort by serial number (default)
+    sort_by = request.GET.get('sort', 'sl')
+    
+    def sort_officers(officers_queryset):
+        """Helper function to sort officers"""
+        # If no serial numbers, assign them first
+        if isinstance(officers_queryset, list):
+            if not any(o.sl for o in officers_queryset):
+                for index, officer in enumerate(officers_queryset, start=1):
+                    officer.sl = index
+                    officer.save()
+        elif officers_queryset.exists() and not any(o.sl for o in officers_queryset):
+            for index, officer in enumerate(officers_queryset, start=1):
+                officer.sl = index
+                officer.save()
+        
+        # Apply sorting
+        if sort_by == 'name':
+            # Convert to list and sort by name
+            if not isinstance(officers_queryset, list):
+                officers_list = list(officers_queryset)
+            else:
+                officers_list = officers_queryset
+            officers_list.sort(key=lambda o: (
+                o.name.lower() if o.name else '',
+                o.sl if o.sl else 999
+            ))
+            return officers_list
+        else:
+            # Default: sort by serial number
+            if isinstance(officers_queryset, list):
+                # Convert list back to queryset for ordering
+                pks = [o.pk for o in officers_queryset]
+                return Officer.objects.filter(pk__in=pks).select_related('base_user').order_by('sl')
+            return officers_queryset.order_by('sl')
+    
+    # Sort officers
+    all_officers = sort_officers(all_officers)
+    
+    context = {
+        'officers': all_officers,
+        'search_query': search_query,
+        'sort_by': sort_by,
+    }
+    
+    return render(request, 'people/manage_officers.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_officer_order(request):
+    """
+    Update the order (serial numbers) of officers via drag and drop.
+    Expects JSON: {"officer_ids": [1, 2, 3, ...]}
+    Only accessible to power users.
+    """
+    if not request.user.is_power_user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to update officer order.'
+        }, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        officer_ids = data.get('officer_ids', [])
+        
+        if not officer_ids:
+            return JsonResponse({
+                'success': False,
+                'message': 'Missing required data: officer_ids.'
+            }, status=400)
+        
+        # Verify all officer IDs exist
+        officers = Officer.objects.filter(pk__in=officer_ids)
+        
+        if officers.count() != len(officer_ids):
+            return JsonResponse({
+                'success': False,
+                'message': 'Some officer IDs do not exist.'
+            }, status=400)
+        
+        # Update serial numbers based on the order provided
+        for index, officer_id in enumerate(officer_ids, start=1):
+            Officer.objects.filter(pk=officer_id).update(sl=index)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Officer order updated successfully!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating order: {str(e)}'
+        }, status=500)
+
+
+@login_required
 def create_faculty(request):
     """
     Create a new faculty member.

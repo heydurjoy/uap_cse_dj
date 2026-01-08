@@ -548,7 +548,41 @@
                     </div>
                 </a>
                 
-                <!-- 19. Feature Cards (all power users OR users with edit_feature_cards permission) -->
+                <!-- 19. Manage Staff -->
+                <a href="{% url 'people:manage_staff' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Staff</h3>
+                        <p class="action-desc">Edit & reorder</p>
+                    </div>
+                </a>
+                
+                <!-- 20. Manage Officers -->
+                <a href="{% url 'people:manage_officers' %}" class="action-card {% if not user.is_power_user %}action-disabled{% endif %}">
+                    <span class="access-badge power-user" title="Accessible by Power Users only">PU</span>
+                    <div class="action-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Manage Officers</h3>
+                        <p class="action-desc">Edit & reorder</p>
+                    </div>
+                </a>
+                
+                <!-- 21. Feature Cards (all power users OR users with edit_feature_cards permission) -->
                 <a href="{% url 'designs:manage_feature_cards' %}" class="action-card {% if not user.is_power_user and not user|has_permission:'edit_feature_cards' %}action-disabled{% endif %}">
                     <span class="access-badge both" title="Accessible by Power Users OR users with the required permission">PU+P</span>
                     <div class="action-icon">

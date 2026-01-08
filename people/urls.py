@@ -35,6 +35,12 @@ urlpatterns = [
     path('manage-faculty/<int:pk>/edit/', views.edit_faculty, name='edit_faculty'),
     path('manage-faculty/update-order/', views.update_faculty_order, name='update_faculty_order'),
     path('manage-faculty/bulk-delete/', views.bulk_delete_faculty, name='bulk_delete_faculty'),
+    # Staff management (power users only)
+    path('manage-staff/', views.manage_staff, name='manage_staff'),
+    path('manage-staff/update-order/', views.update_staff_order, name='update_staff_order'),
+    # Officer management (power users only)
+    path('manage-officers/', views.manage_officers, name='manage_officers'),
+    path('manage-officers/update-order/', views.update_officer_order, name='update_officer_order'),
     # Power users API
     path('api/power-users/', views.get_power_users, name='get_power_users'),
     # Publication management

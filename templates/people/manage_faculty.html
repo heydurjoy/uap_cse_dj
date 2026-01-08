@@ -161,10 +161,20 @@
 {% csrf_token %}
 
 <style>
+/* Ensure page can scroll */
+html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
+    min-height: auto;
+    overflow: visible;
 }
 
 .manage-faculty-page {
@@ -648,6 +658,17 @@
     line-height: 1.4;
 }
 
+.faculty-list-container {
+    overflow: visible;
+    min-height: auto;
+    margin-bottom: 2rem;
+}
+
+.manage-faculty-page {
+    overflow: visible;
+    min-height: auto;
+}
+
 @media (max-width: 768px) {
     .manage-faculty-page {
         padding: 1.5rem;
@@ -732,12 +753,64 @@ function initializeSortable() {
     }
     
     try {
-        new Sortable(sortableTbody, {
+        let autoScrollInterval = null;
+        
+        const sortableInstance = new Sortable(sortableTbody, {
             handle: '.drag-handle',
             animation: 150,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
+            scroll: true,
+            scrollSensitivity: 100,
+            scrollSpeed: 30,
+            bubbleScroll: true,
+            forceFallback: true,
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+            onStart: function(evt) {
+                // Start auto-scroll when dragging starts
+                let lastMouseY = evt.clientY || 0;
+                
+                const handleMouseMove = function(e) {
+                    lastMouseY = e.clientY;
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                
+                autoScrollInterval = setInterval(function() {
+                    const scrollThreshold = 150;
+                    
+                    // Calculate dynamic scroll speed based on distance from edge
+                    let scrollSpeed = 0;
+                    
+                    // Scroll up if mouse is near top
+                    if (lastMouseY < scrollThreshold && window.scrollY > 0) {
+                        // Closer to top = faster scroll (up to 200px per frame)
+                        const distanceFromTop = lastMouseY;
+                        scrollSpeed = Math.max(50, (scrollThreshold - distanceFromTop) * 2.5);
+                        window.scrollBy(0, -scrollSpeed);
+                    }
+                    // Scroll down if mouse is near bottom
+                    if (lastMouseY > window.innerHeight - scrollThreshold) {
+                        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                        if (window.scrollY < maxScroll) {
+                            // Closer to bottom = faster scroll (up to 200px per frame)
+                            const distanceFromBottom = window.innerHeight - lastMouseY;
+                            scrollSpeed = Math.max(50, (scrollThreshold - distanceFromBottom) * 2.5);
+                            window.scrollBy(0, scrollSpeed);
+                        }
+                    }
+                }, 10); // Check every 10ms for very responsive scrolling
+                
+                // Clean up on drag end
+                const cleanup = function() {
+                    clearInterval(autoScrollInterval);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', cleanup);
+                };
+                document.addEventListener('mouseup', cleanup, { once: true });
+            },
             onEnd: function(evt) {
                 console.log('Drag ended');
                 // Get all faculty IDs in the new order
