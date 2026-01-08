@@ -292,7 +292,7 @@
 {% endif %}
 
                                                 {% if 'top_designation' in item.badges %}
-                                                <span class="faculty-badge badge-top-designation" title="Top by Designation">
+                                                <span class="faculty-badge badge-top-designation" title="Most Cited in {{ item.faculty.designation }}">
                                                       <i class="fa-solid fa-trophy"></i>
                                                    </span>
 
@@ -3092,21 +3092,9 @@ function initializeCharts() {
             </button>
         </div>
         <div class="info-modal-body-home">
-            <p>This section showcases researchers grouped by their academic designation (Professor, Associate Professor, Assistant Professor, Lecturer). The top researcher from each designation is highlighted with a golden badge.</p>
-            <p>The selection is based on their overall research score, calculated from all their publications:</p>
-            <ul>
-                <li><strong>Q1 publications:</strong> 10 points each</li>
-                <li><strong>Q2 publications:</strong> 7 points each</li>
-                <li><strong>Q3 publications:</strong> 5 points each</li>
-                <li><strong>Q4 publications:</strong> 3 points each</li>
-                <li><strong>A* publications:</strong> 8 points each</li>
-                <li><strong>A publications:</strong> 6 points each</li>
-                <li><strong>B publications:</strong> 4 points each</li>
-                <li><strong>C publications:</strong> 2 points each</li>
-                <li><strong>WOS/Scopus Indexed:</strong> 2 points each</li>
-                <li><strong>Not Indexed:</strong> 1 point each</li>
-            </ul>
-            <p>In case of a tie in score, the researcher with publications spanning fewer years (more concentrated research) is selected.</p>
+            <p>This section showcases researchers grouped by their academic designation (Professor, Associate Professor, Assistant Professor, Lecturer). The <strong>most cited</strong> researcher from each designation is highlighted with a golden badge.</p>
+            <p>The selection is based on <strong>total citation count</strong> - the researcher with the highest number of citations in each designation receives the badge.</p>
+            <p>This recognizes faculty members whose research has made significant impact within their respective academic ranks.</p>
         </div>
     </div>
 </div>

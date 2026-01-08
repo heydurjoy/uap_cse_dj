@@ -3605,15 +3605,17 @@ def departmental_research(request):
     top_4_leading_active_ids = {item['faculty'].pk for item in leading_active_researchers}
     
     # ===== SECTION 3: Top Researchers (Designation Wise) =====
-    # Get top researcher from each designation using existing ranking logic
+    # Get the MOST CITED researcher from each designation
     top_by_designation = {}
     designations = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
     
     for designation in designations:
         designation_faculty = [item for item in faculty_scores if item['faculty'].designation == designation]
-        # Get only the top 1 (best researcher in this designation)
-        if designation_faculty:
-            top_by_designation[designation] = designation_faculty[0]
+        # Sort by citations (descending) to get the most cited person in this designation
+        designation_faculty_sorted = sorted(designation_faculty, key=lambda x: -x['citations'])
+        # Get only the top 1 (most cited in this designation)
+        if designation_faculty_sorted:
+            top_by_designation[designation] = designation_faculty_sorted[0]
         else:
             top_by_designation[designation] = None
     
@@ -3624,7 +3626,7 @@ def departmental_research(request):
         if top_by_designation[designation] is not None
     ]
     
-    # Get set of top by designation faculty IDs for badge checking
+    # Get set of top by designation faculty IDs for badge checking (most cited in each designation)
     top_by_designation_ids = {item['faculty'].pk for item in top_researchers_designation_wise}
     
     # Add badge information to faculty_scores for "All Faculties" tab
