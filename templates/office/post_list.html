@@ -492,11 +492,14 @@
     flex-direction: column;
     gap: 0.6rem;
     position: relative;
-    min-height: 280px;
+    height: 280px;
+    max-height: 280px;
     overflow: hidden;
 }
 
 .post-card-with-thumbnail {
+    height: 280px;
+    max-height: 280px;
     padding: 0;
     background-size: cover;
     background-position: center;
@@ -1012,9 +1015,15 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .post-card {
+        height: 240px;
+        max-height: 240px;
+    }
+
     .post-card-with-thumbnail {
         padding: 0 !important; /* Ensure no padding on thumbnail cards */
-        min-height: 240px; /* Reduced min-height for mobile */
+        height: 240px;
+        max-height: 240px;
     }
 
     .post-card-overlay {
@@ -1039,9 +1048,15 @@
         gap: 0.4rem;
     }
 
+    .post-card {
+        height: 220px;
+        max-height: 220px;
+    }
+
     .post-card-with-thumbnail {
         padding: 0 !important; /* Ensure no padding on thumbnail cards */
-        min-height: 220px; /* Further reduced for small mobile */
+        height: 220px;
+        max-height: 220px;
     }
 
     .post-card-overlay {

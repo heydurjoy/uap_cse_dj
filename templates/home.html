@@ -86,8 +86,8 @@
 }
 
 .uapnow-card {
-    height: 280px;
-    max-height: 280px;
+    height: 320px;
+    max-height: 320px;
     background: var(--bg-secondary);
     border-radius: 16px;
     padding: 1.15rem;
@@ -2651,8 +2651,8 @@ html, body {
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(6px);
-    height: 280px;
-    max-height: 280px;
+    height: 320px;
+    max-height: 320px;
     transform-origin: center center;
 }
 
@@ -2869,14 +2869,14 @@ html, body {
 
 /* Ensure all cards have same fixed dimensions */
 .uapnow-card {
-    height: 280px;
-    max-height: 280px;
+    height: 320px;
+    max-height: 320px;
     overflow: hidden;
 }
 
 .uapnow-card-with-thumbnail {
-    height: 280px;
-    max-height: 280px;
+    height: 320px;
+    max-height: 320px;
     padding: 0;
     background-size: cover;
     background-position: center;
@@ -3272,11 +3272,14 @@ html, body {
     .uapnow-card {
         padding: 0.9rem;
         border-radius: 12px;
+        height: 280px;
+        max-height: 280px;
     }
 
     .uapnow-card-with-thumbnail {
         padding: 0 !important; /* Ensure no padding on thumbnail cards */
-        min-height: 240px; /* Reduced min-height for mobile */
+        height: 280px;
+        max-height: 280px;
     }
 
     .uapnow-card-overlay {
@@ -3326,11 +3329,14 @@ html, body {
         padding: 0.85rem;
         gap: 0.4rem;
         border-radius: 10px;
+        height: 260px;
+        max-height: 260px;
     }
 
     .uapnow-card-with-thumbnail {
         padding: 0 !important; /* Ensure no padding on thumbnail cards */
-        min-height: 220px; /* Further reduced for small mobile */
+        height: 260px;
+        max-height: 260px;
     }
 
     .uapnow-card-overlay {
