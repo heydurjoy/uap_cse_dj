@@ -86,10 +86,12 @@
 }
 
 .uapnow-card {
-    min-height: 280px;
+    height: 280px;
+    max-height: 280px;
     background: var(--bg-secondary);
     border-radius: 16px;
     padding: 1.15rem;
+    overflow: hidden;
 }
 
 /* Mobile critical styles */
@@ -2649,7 +2651,8 @@ html, body {
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(6px);
-    min-height: 280px;
+    height: 280px;
+    max-height: 280px;
     transform-origin: center center;
 }
 
@@ -2864,11 +2867,16 @@ html, body {
     display: none !important;
 }
 
-.uapnow-card-with-thumbnail {
-    min-height: 280px;
+/* Ensure all cards have same fixed dimensions */
+.uapnow-card {
+    height: 280px;
+    max-height: 280px;
+    overflow: hidden;
 }
 
 .uapnow-card-with-thumbnail {
+    height: 280px;
+    max-height: 280px;
     padding: 0;
     background-size: cover;
     background-position: center;
