@@ -8,27 +8,36 @@
 
     <!-- CRITICAL: Hide page until CSS loads to prevent FOUC -->
     <style id="critical-css">
-        /* Hide everything until CSS loads */
-        html { visibility: hidden; opacity: 0; }
-        html.css-loaded { visibility: visible; opacity: 1; transition: opacity 0.15s ease-out; }
+        /* Hide everything until CSS loads - works on all devices including mobile */
+        html:not(.css-loaded) { 
+            visibility: hidden !important; 
+            opacity: 0 !important; 
+        }
+        html.css-loaded { 
+            visibility: visible !important; 
+            opacity: 1 !important; 
+            transition: opacity 0.15s ease-out; 
+        }
         
         /* Page loader styles - inline for instant display */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 99999;
             opacity: 1;
-            visibility: visible;
+            visibility: visible !important;
             transition: opacity 0.3s ease, visibility 0.3s ease;
+            -webkit-overflow-scrolling: touch;
         }
-        .page-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .page-loader.hidden { opacity: 0; visibility: hidden !important; pointer-events: none; }
         .loader-content { text-align: center; }
         .loader-spinner {
             width: 48px;
