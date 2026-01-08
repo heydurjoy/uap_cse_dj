@@ -2770,16 +2770,18 @@ function initializeCharts() {
         
         {% for ranking_code, data_item in stats_by_ranking.items %}
         {% if data_item.count > 0 %}
-        labels.push('{{ data_item.label }}');
+        labels.push('{{ data_item.label|escapejs }}');
         data.push({{ data_item.count }});
-        const rankingCode = '{{ ranking_code }}';
-        if (rankingColors[rankingCode]) {
-            backgroundColor.push(rankingColors[rankingCode].bg);
-            borderColor.push(rankingColors[rankingCode].border);
-        } else {
-            backgroundColor.push('rgba(107, 114, 128, 0.8)');
-            borderColor.push('rgb(107, 114, 128)');
-        }
+        (function(code) {
+            var color = rankingColors[code];
+            if (color) {
+                backgroundColor.push(color.bg);
+                borderColor.push(color.border);
+            } else {
+                backgroundColor.push('rgba(107, 114, 128, 0.8)');
+                borderColor.push('rgb(107, 114, 128)');
+            }
+        })('{{ ranking_code }}');
         {% endif %}
         {% endfor %}
         
