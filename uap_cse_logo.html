@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAP CSE Logo Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 500;
+            opacity: 0.7;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .logo-container {
+            display: flex;
+            gap: 3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        /* Logo Style 1: Gradient Circuit */
+        .logo-1 {
+            width: 320px;
+            height: 320px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo-1:hover {
+            transform: scale(1.05) rotate(-2deg);
+            box-shadow: 0 30px 80px rgba(102, 126, 234, 0.5);
+        }
+
+        .logo-1::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent 30%);
+            animation: rotate 8s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo-1 .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .logo-1 .uni {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-1 .main-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            line-height: 1;
+        }
+
+        .logo-1 .dept {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 0.2em;
+            margin-top: 0.5rem;
+        }
+
+        .logo-1 .circuit-lines {
+            position: absolute;
+            inset: 0;
+            opacity: 0.15;
+        }
+
+        .logo-1 .circuit-lines::before,
+        .logo-1 .circuit-lines::after {
+            content: '';
+            position: absolute;
+            background: #fff;
+        }
+
+        .logo-1 .circuit-lines::before {
+            top: 20%;
+            left: 10%;
+            width: 30%;
+            height: 2px;
+            box-shadow: 
+                0 40px 0 #fff,
+                60px 80px 0 #fff,
+                -20px 120px 0 #fff;
+        }
+
+        .logo-1 .circuit-lines::after {
+            bottom: 15%;
+            right: 15%;
+            width: 2px;
+            height: 25%;
+            box-shadow: 
+                -30px 0 0 #fff,
+                -60px -20px 0 #fff;
+        }
+
+        /* Logo Style 2: Minimal Dark */
+        .logo-2 {
+            width: 320px;
+            height: 320px;
+            background: #0a0a0f;
+            border-radius: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        .logo-2:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        .logo-2::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff006e);
+        }
+
+        .logo-2 .bracket {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 5rem;
+            color: #00d4ff;
+            opacity: 0.3;
+            position: absolute;
+        }
+
+        .logo-2 .bracket.left {
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .logo-2 .bracket.right {
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .logo-2 .content {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .logo-2 .main-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #ff006e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-2 .sub {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        /* Logo Style 3: Geometric */
+        .logo-3 {
+            width: 320px;
+            height: 320px;
+            background: linear-gradient(180deg, #1e3a5f 0%, #0d1b2a 100%);
+            border-radius: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 20px 60px rgba(30, 58, 95, 0.4);
+            overflow: hidden;
+        }
+
+        .logo-3:hover {
+            transform: scale(1.05);
+            box-shadow: 0 30px 80px rgba(30, 58, 95, 0.5);
+        }
+
+        .logo-3 .hex-grid {
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .logo-3 .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .logo-3 .shield {
+            width: 140px;
+            height: 160px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px 8px 70px 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-3 .shield .uni-name {
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-3 .shield .main-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4cc9f0;
+            text-shadow: 0 0 30px rgba(76, 201, 240, 0.5);
+        }
+
+        .logo-3 .shield .dept-full {
+            font-size: 0.45rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .logo-3 .glow-ring {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            border-radius: 50%;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.1; }
+        }
+
+        /* Logo Style 4: Neon Tech */
+        .logo-4 {
+            width: 320px;
+            height: 320px;
+            background: #000;
+            border-radius: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.2);
+            overflow: hidden;
+        }
+
+        .logo-4:hover {
+            transform: scale(1.05) rotate(-1deg);
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.3), 0 0 0 1px rgba(0, 255, 136, 0.4);
+        }
+
+        .logo-4 .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .logo-4 .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .logo-4 .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .logo-4 .terminal-prompt {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #00ff88;
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-4 .main-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8), 0 0 40px rgba(0, 255, 136, 0.4);
+            position: relative;
+        }
+
+        .logo-4 .main-text::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .logo-4 .sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: rgba(0, 255, 136, 0.5);
+            letter-spacing: 0.2em;
+            margin-top: 0.75rem;
+        }
+
+        /* Download buttons */
+        .download-section {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .tip {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
+            text-align: center;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>UAP CSE Logo Designs</h1>
+    
+    <div class="logo-container">
+        <div class="logo-wrapper">
+            <div class="logo-1" id="logo1">
+                <div class="circuit-lines"></div>
+                <div class="content">
+                    <div class="uni">University of Asia Pacific</div>
+                    <div class="main-text">CSE</div>
+                    <div class="dept">Computer Science & Engineering</div>
+                </div>
+            </div>
+            <span class="logo-label">Gradient Circuit</span>
+        </div>
+
+        <div class="logo-wrapper">
+            <div class="logo-2" id="logo2">
+                <span class="bracket left">{</span>
+                <span class="bracket right">}</span>
+                <div class="content">
+                    <div class="main-text">CSE</div>
+                    <div class="sub">UAP • Computer Science</div>
+                </div>
+            </div>
+            <span class="logo-label">Minimal Code</span>
+        </div>
+
+        <div class="logo-wrapper">
+            <div class="logo-3" id="logo3">
+                <div class="hex-grid"></div>
+                <div class="glow-ring"></div>
+                <div class="content">
+                    <div class="shield">
+                        <div class="uni-name">University of Asia Pacific</div>
+                        <div class="main-text">CSE</div>
+                        <div class="dept-full">Department of<br>Computer Science<br>& Engineering</div>
+                    </div>
+                </div>
+            </div>
+            <span class="logo-label">Shield Badge</span>
+        </div>
+
+        <div class="logo-wrapper">
+            <div class="logo-4" id="logo4">
+                <div class="scan-line"></div>
+                <div class="grid-bg"></div>
+                <div class="content">
+                    <div class="terminal-prompt">$ ./uap</div>
+                    <div class="main-text">CSE</div>
+                    <div class="sub">// hack the future</div>
+                </div>
+            </div>
+            <span class="logo-label">Terminal Neon</span>
+        </div>
+    </div>
+
+    <div class="download-section">
+        <p class="tip">💡 Right-click on any logo and select "Take Screenshot" or use a screenshot tool to save it. For best quality, zoom in browser to 100% before capturing.</p>
+    </div>
+
+    <script>
+        // Add click effect
+        document.querySelectorAll('[id^="logo"]').forEach(logo => {
+            logo.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
+

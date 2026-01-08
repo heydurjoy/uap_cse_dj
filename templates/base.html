@@ -6,11 +6,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.botpress.cloud/webchat/v3.5/inject.js"></script>
-<script src="https://files.bpcontent.cloud/2026/01/05/11/20260105113643-A7I6939G.js" defer></script>
+    <!-- CRITICAL: Hide page until CSS loads to prevent FOUC -->
+    <style id="critical-css">
+        /* Hide everything until CSS loads */
+        html { visibility: hidden; opacity: 0; }
+        html.css-loaded { visibility: visible; opacity: 1; transition: opacity 0.15s ease-out; }
+        
+        /* Page loader styles - inline for instant display */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .page-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-content { text-align: center; }
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: loader-spin 0.8s linear infinite;
+        }
+        .loader-text {
+            margin-top: 1rem;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 0.875rem;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+        @keyframes loader-spin { to { transform: rotate(360deg); } }
+        
+        /* Dark theme loader */
+        [data-theme="dark"] .page-loader { background: linear-gradient(135deg, #1e1e2e 0%, #0f0f1a 100%); }
+        [data-theme="dark"] .loader-spinner { border-color: #3f3f5a; border-top-color: #a78bfa; }
+        [data-theme="dark"] .loader-text { color: #94a3b8; }
+    </style>
 
-    <title>{% block title %}Design System{% endblock %}</title>
-    
     <!-- Apply theme immediately to prevent flash -->
     <script>
         (function() {
@@ -21,8 +63,21 @@
         })();
     </script>
 
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>{% block title %}Design System{% endblock %}</title>
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{% static 'css/main.css' %}" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Load Font Awesome with lower priority -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+
+    <script src="https://cdn.botpress.cloud/webchat/v3.5/inject.js" defer></script>
+    <script src="https://files.bpcontent.cloud/2026/01/05/11/20260105113643-A7I6939G.js" defer></script>
 
 
     <style>
@@ -216,12 +271,12 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icon.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icon.png' %}">
     <link rel="apple-touch-icon" href="{% static 'images/icon.png' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <!-- Google Fonts with display=swap for better performance -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" onload="document.documentElement.classList.add('css-loaded');">
+    <noscript><link rel="stylesheet" href="{% static 'css/main.css' %}"></noscript>
     {% block extra_css %}{% endblock %}
     <!-- Animated Favicon (Optional - cycles through multiple images) -->
     <script>
@@ -250,6 +305,55 @@
     </script>
 </head>
 <body>
+    <!-- Page Loader - prevents jittery CSS loading -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Script to hide loader once page is ready -->
+    <script>
+        (function() {
+            var loaderHidden = false;
+            
+            function hideLoader() {
+                if (loaderHidden) return;
+                loaderHidden = true;
+                
+                var loader = document.getElementById('pageLoader');
+                if (loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(function() { 
+                        if (loader.parentNode) loader.parentNode.removeChild(loader); 
+                    }, 300);
+                }
+                // Ensure page is visible
+                document.documentElement.classList.add('css-loaded');
+            }
+            
+            // Check if CSS already loaded
+            if (document.documentElement.classList.contains('css-loaded')) {
+                hideLoader();
+            } else {
+                // Watch for css-loaded class to be added
+                var observer = new MutationObserver(function(mutations) {
+                    if (document.documentElement.classList.contains('css-loaded')) {
+                        hideLoader();
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                
+                // Fallback timers
+                setTimeout(hideLoader, 1000); // 1s fallback
+                document.addEventListener('DOMContentLoaded', function() { setTimeout(hideLoader, 150); });
+                window.addEventListener('load', hideLoader);
+            }
+        })();
+    </script>
+
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -1262,6 +1366,357 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
  {% block extra_js %}
 
     {% endblock %}
+
+    <!-- Custom AI Chat Button -->
+    <div class="ai-chat-fab" id="aiChatFab" onclick="openBotpressChat()" title="Chat with AI Assistant">
+        <div class="ai-chat-fab-glow"></div>
+        <div class="ai-chat-fab-inner">
+            <svg class="ai-chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 13.54 2.36 14.99 3 16.28L2 22L7.72 21C9.01 21.64 10.46 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="8" cy="12" r="1.5" fill="currentColor" class="ai-dot ai-dot-1"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" class="ai-dot ai-dot-2"/>
+                <circle cx="16" cy="12" r="1.5" fill="currentColor" class="ai-dot ai-dot-3"/>
+            </svg>
+            <span class="ai-chat-pulse"></span>
+        </div>
+        <span class="ai-chat-label">Ask AI</span>
+    </div>
+
+    <style>
+        /* Hide default Botpress button - AGGRESSIVE */
+        .bpw-widget-btn, 
+        .bpw-floating-button,
+        [class*="bpFab"],
+        [class*="bpw-"],
+        [class*="bp-widget"],
+        #bp-web-widget-container button,
+        #bp-web-widget-container > div > button,
+        #bp-web-widget-container [role="button"],
+        .bpw-button-bubble,
+        .bpw-chat-bubble,
+        .bpw-widget-launcher,
+        [data-testid="launcher"],
+        div[class^="bpFab"],
+        button[class^="bpFab"],
+        .bpFab,
+        iframe[title*="Chat"] + button,
+        #webchat button:not(.bpw-send-button):not(.bpw-form-button),
+        #bp-web-widget > div:first-child > button {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+        }
+
+        /* Custom AI Chat FAB */
+        .ai-chat-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ai-chat-fab:hover {
+            transform: scale(1.05);
+        }
+
+        .ai-chat-fab:hover .ai-chat-label {
+            max-width: 120px;
+            opacity: 1;
+            padding: 0 16px 0 8px;
+            margin-left: -8px;
+        }
+
+        .ai-chat-fab-glow {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #667eea,
+                #764ba2,
+                #f093fb,
+                #4facfe,
+                #00f2fe,
+                #667eea
+            );
+            animation: ai-glow-rotate 3s linear infinite;
+            filter: blur(15px);
+            opacity: 0.6;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .ai-chat-fab:hover .ai-chat-fab-glow {
+            opacity: 0.9;
+            filter: blur(20px);
+            width: 80px;
+            height: 80px;
+        }
+
+        @keyframes ai-glow-rotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .ai-chat-fab-inner {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                0 8px 30px rgba(118, 75, 162, 0.3),
+                inset 0 -2px 10px rgba(0, 0, 0, 0.1),
+                inset 0 2px 10px rgba(255, 255, 255, 0.2);
+            animation: ai-gradient-shift 4s ease-in-out infinite;
+            overflow: hidden;
+        }
+
+        @keyframes ai-gradient-shift {
+            0%, 100% { 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            }
+            25% { 
+                background: linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #4facfe 100%);
+            }
+            50% { 
+                background: linear-gradient(135deg, #f093fb 0%, #4facfe 50%, #00f2fe 100%);
+            }
+            75% { 
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
+            }
+        }
+
+        .ai-chat-fab-inner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(255, 255, 255, 0.3) 60deg,
+                transparent 120deg
+            );
+            animation: ai-shine-rotate 4s linear infinite;
+        }
+
+        @keyframes ai-shine-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ai-chat-icon {
+            width: 28px;
+            height: 28px;
+            color: white;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        /* Animated dots */
+        .ai-dot {
+            animation: ai-dot-bounce 1.4s ease-in-out infinite;
+        }
+
+        .ai-dot-1 { animation-delay: 0s; }
+        .ai-dot-2 { animation-delay: 0.2s; }
+        .ai-dot-3 { animation-delay: 0.4s; }
+
+        @keyframes ai-dot-bounce {
+            0%, 60%, 100% { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+            30% { 
+                transform: translateY(-3px);
+                opacity: 0.7;
+            }
+        }
+
+        /* Pulse ring */
+        .ai-chat-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            animation: ai-pulse 2s ease-out infinite;
+        }
+
+        @keyframes ai-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Label that appears on hover */
+        .ai-chat-label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0;
+            border-radius: 20px;
+            white-space: nowrap;
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            height: 40px;
+            line-height: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .ai-chat-fab {
+                bottom: 16px;
+                right: 16px;
+            }
+
+            .ai-chat-fab-inner {
+                width: 54px;
+                height: 54px;
+            }
+
+            .ai-chat-fab-glow {
+                width: 64px;
+                height: 64px;
+            }
+
+            .ai-chat-icon {
+                width: 24px;
+                height: 24px;
+            }
+
+            .ai-chat-fab:hover .ai-chat-label {
+                max-width: 0;
+                opacity: 0;
+                padding: 0;
+            }
+        }
+
+        /* Active/clicked state */
+        .ai-chat-fab:active .ai-chat-fab-inner {
+            transform: scale(0.95);
+        }
+
+        /* When chat is open */
+        .ai-chat-fab.chat-open .ai-chat-fab-inner {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #667eea 100%);
+        }
+
+        .ai-chat-fab.chat-open .ai-chat-icon {
+            transform: rotate(180deg);
+            transition: transform 0.3s ease;
+        }
+    </style>
+
+    <script>
+        // Function to hide all Botpress default buttons
+        function hideBotpressButtons() {
+            const selectors = [
+                '.bpw-widget-btn',
+                '.bpw-floating-button', 
+                '[class*="bpFab"]',
+                '[class*="bpw-"]',
+                '#bp-web-widget-container button',
+                '.bpw-button-bubble',
+                '.bpw-chat-bubble',
+                '.bpw-widget-launcher',
+                '[data-testid="launcher"]',
+                'button[class^="bpFab"]'
+            ];
+            
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(el => {
+                    // Don't hide elements inside the chat widget itself
+                    if (!el.closest('.bpw-chat-container') && !el.closest('[class*="bpw-composer"]')) {
+                        el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; position: absolute !important; left: -9999px !important;';
+                    }
+                });
+            });
+        }
+
+        // Open Botpress chat when clicking our custom button
+        function openBotpressChat() {
+            const fab = document.getElementById('aiChatFab');
+            
+            // Try different methods to open Botpress chat
+            if (window.botpressWebChat) {
+                window.botpressWebChat.sendEvent({ type: 'toggle' });
+                fab.classList.toggle('chat-open');
+            } else if (window.botpress) {
+                if (fab.classList.contains('chat-open')) {
+                    window.botpress.close();
+                } else {
+                    window.botpress.open();
+                }
+                fab.classList.toggle('chat-open');
+            } else {
+                // Fallback: try to find and click any Botpress trigger
+                const bpContainer = document.getElementById('bp-web-widget-container') || document.getElementById('webchat');
+                if (bpContainer) {
+                    const btn = bpContainer.querySelector('button');
+                    if (btn) {
+                        btn.click();
+                        fab.classList.toggle('chat-open');
+                    }
+                }
+            }
+        }
+
+        // Hide Botpress buttons when page loads and periodically
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial hide
+            hideBotpressButtons();
+            
+            // Hide again after delays (for async loading)
+            setTimeout(hideBotpressButtons, 500);
+            setTimeout(hideBotpressButtons, 1000);
+            setTimeout(hideBotpressButtons, 2000);
+            setTimeout(hideBotpressButtons, 3000);
+            setTimeout(hideBotpressButtons, 5000);
+            
+            // Watch for new elements being added
+            const observer = new MutationObserver(function(mutations) {
+                hideBotpressButtons();
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
 </body>
 </html>
 
