@@ -85,6 +85,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 
+    {#chatbot#}
+
     <script src="https://cdn.botpress.cloud/webchat/v3.5/inject.js" defer></script>
     <script src="https://files.bpcontent.cloud/2026/01/05/11/20260105113643-A7I6939G.js" defer></script>
 
@@ -1407,7 +1409,7 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
     {% endblock %}
 
     <!-- Custom AI Chat Button -->
-    <div class="ai-chat-fab" id="aiChatFab" onclick="openBotpressChat()" title="Chat with AI Assistant">
+    <div class="ai-chat-fab" id="bp-toggle-chat" title="Chat with AI Assistant">
         <div class="ai-chat-fab-glow"></div>
         <div class="ai-chat-fab-inner">
             <svg class="ai-chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1422,36 +1424,6 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
     </div>
 
     <style>
-        /* Hide default Botpress button - AGGRESSIVE */
-        .bpw-widget-btn, 
-        .bpw-floating-button,
-        [class*="bpFab"],
-        [class*="bpw-"],
-        [class*="bp-widget"],
-        #bp-web-widget-container button,
-        #bp-web-widget-container > div > button,
-        #bp-web-widget-container [role="button"],
-        .bpw-button-bubble,
-        .bpw-chat-bubble,
-        .bpw-widget-launcher,
-        [data-testid="launcher"],
-        div[class^="bpFab"],
-        button[class^="bpFab"],
-        .bpFab,
-        iframe[title*="Chat"] + button,
-        #webchat button:not(.bpw-send-button):not(.bpw-form-button),
-        #bp-web-widget > div:first-child > button {
-            display: none !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-            width: 0 !important;
-            height: 0 !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            left: -9999px !important;
-        }
-
         /* Custom AI Chat FAB */
         .ai-chat-fab {
             position: fixed;
@@ -1519,7 +1491,7 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 
+            box-shadow:
                 0 4px 15px rgba(102, 126, 234, 0.4),
                 0 8px 30px rgba(118, 75, 162, 0.3),
                 inset 0 -2px 10px rgba(0, 0, 0, 0.1),
@@ -1529,16 +1501,16 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
         }
 
         @keyframes ai-gradient-shift {
-            0%, 100% { 
+            0%, 100% {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             }
-            25% { 
+            25% {
                 background: linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #4facfe 100%);
             }
-            50% { 
+            50% {
                 background: linear-gradient(135deg, #f093fb 0%, #4facfe 50%, #00f2fe 100%);
             }
-            75% { 
+            75% {
                 background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
             }
         }
@@ -1583,11 +1555,11 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
         .ai-dot-3 { animation-delay: 0.4s; }
 
         @keyframes ai-dot-bounce {
-            0%, 60%, 100% { 
+            0%, 60%, 100% {
                 transform: translateY(0);
                 opacity: 1;
             }
-            30% { 
+            30% {
                 transform: translateY(-3px);
                 opacity: 0.7;
             }
@@ -1679,83 +1651,6 @@ body:has(.construction-toast:not([style*="display: none"])) .main-content {
         }
     </style>
 
-    <script>
-        // Function to hide all Botpress default buttons
-        function hideBotpressButtons() {
-            const selectors = [
-                '.bpw-widget-btn',
-                '.bpw-floating-button', 
-                '[class*="bpFab"]',
-                '[class*="bpw-"]',
-                '#bp-web-widget-container button',
-                '.bpw-button-bubble',
-                '.bpw-chat-bubble',
-                '.bpw-widget-launcher',
-                '[data-testid="launcher"]',
-                'button[class^="bpFab"]'
-            ];
-            
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(el => {
-                    // Don't hide elements inside the chat widget itself
-                    if (!el.closest('.bpw-chat-container') && !el.closest('[class*="bpw-composer"]')) {
-                        el.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; position: absolute !important; left: -9999px !important;';
-                    }
-                });
-            });
-        }
-
-        // Open Botpress chat when clicking our custom button
-        function openBotpressChat() {
-            const fab = document.getElementById('aiChatFab');
-            
-            // Try different methods to open Botpress chat
-            if (window.botpressWebChat) {
-                window.botpressWebChat.sendEvent({ type: 'toggle' });
-                fab.classList.toggle('chat-open');
-            } else if (window.botpress) {
-                if (fab.classList.contains('chat-open')) {
-                    window.botpress.close();
-                } else {
-                    window.botpress.open();
-                }
-                fab.classList.toggle('chat-open');
-            } else {
-                // Fallback: try to find and click any Botpress trigger
-                const bpContainer = document.getElementById('bp-web-widget-container') || document.getElementById('webchat');
-                if (bpContainer) {
-                    const btn = bpContainer.querySelector('button');
-                    if (btn) {
-                        btn.click();
-                        fab.classList.toggle('chat-open');
-                    }
-                }
-            }
-        }
-
-        // Hide Botpress buttons when page loads and periodically
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initial hide
-            hideBotpressButtons();
-            
-            // Hide again after delays (for async loading)
-            setTimeout(hideBotpressButtons, 500);
-            setTimeout(hideBotpressButtons, 1000);
-            setTimeout(hideBotpressButtons, 2000);
-            setTimeout(hideBotpressButtons, 3000);
-            setTimeout(hideBotpressButtons, 5000);
-            
-            // Watch for new elements being added
-            const observer = new MutationObserver(function(mutations) {
-                hideBotpressButtons();
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        });
-    </script>
 </body>
 </html>
 
