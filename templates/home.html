@@ -7,91 +7,6 @@
 
 {% block extra_css %}
 <style>
-/* Critical CSS for above-the-fold content - prevents layout shift */
-.home-hero {
-    min-height: auto;
-    padding: 2rem 0 2rem;
-    background: linear-gradient(180deg,
-        var(--bg-primary) 0%,
-        color-mix(in srgb, var(--color-primary) 8%, var(--bg-primary)) 50%,
-        var(--bg-primary) 100%);
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 2rem;
-}
-
-.hero-content {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
-    width: 100%;
-    padding-left: 0;
-}
-
-.hero-text {
-    flex: 1;
-    max-width: 650px;
-}
-
-.hero-welcome {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 400;
-    color: var(--text-secondary);
-    margin-top: 2.5rem;
-    margin-bottom: 0.25rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-}
-
-.hero-title {
-    font-size: clamp(3.5rem, 10vw, 6.5rem);
-    font-weight: 800;
-    background: linear-gradient(90deg, var(--color-primary), #764ba2, #f093fb, #667eea, var(--color-primary));
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-    margin-bottom: 1rem;
-    white-space: nowrap;
-    animation: heroColorShift 6s ease-in-out infinite;
-}
-
-@keyframes heroColorShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-.hero-text {
-    text-align: left;
-}
-
-.hero-tagline {
-    font-size: clamp(0.95rem, 2vw, 1.1rem);
-    color: var(--text-secondary);
-    line-height: 1.4;
-    max-width: 380px;
-    text-align: left;
-}
-
-.hero-visuals {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-}
-
 /* UAP Now Section Critical CSS */
 .uapnow-section {
     padding: 3rem 0 2rem;
@@ -114,30 +29,6 @@
     border-radius: 16px;
     padding: 1.15rem;
     overflow: hidden;
-}
-
-/* Mobile critical styles */
-@media (max-width: 768px) {
-    .hero-content {
-        flex-direction: column;
-        gap: 2rem;
-        margin-left: 2rem;
-    }
-    
-    .hero-title {
-        font-size: clamp(3rem, 14vw, 5rem);
-        white-space: nowrap;
-    }
-    
-    .hero-tagline {
-        font-size: 0.85rem;
-        max-width: 280px;
-    }
-    
-    .home-hero {
-        min-height: auto;
-        padding: 1.5rem 0 2rem;
-    }
 }
 </style>
 {% endblock %}
