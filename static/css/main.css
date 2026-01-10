@@ -1075,7 +1075,7 @@ body {
     }
     
     .nav-menu {
-        top: 42px !important;
+        top: 150px !important;
         height: calc(100vh - 42px) !important;
         max-height: calc(100vh - 42px) !important;
         overflow-y: auto !important;
@@ -1965,6 +1965,7 @@ body {
 }
 
 .nav-menu.active {
+    top:220px;
     transform: translateX(0);
 }
 
